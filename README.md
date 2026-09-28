@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="apps/web/public/ergoscan-mark.svg" width="72" height="72" alt="ErgoScan" />
+  <a href="https://ergoscan.me"><img src="apps/web/public/og.png" alt="ErgoScan" /></a>
 </p>
 
 <h1 align="center">ErgoScan</h1>
@@ -13,10 +13,6 @@
   <a href="https://ergoscan.me"><img src="https://img.shields.io/badge/live-ergoscan.me-3ca2ff?style=flat-square" alt="Live" /></a>
   <a href="https://ergoscan.me/docs"><img src="https://img.shields.io/badge/API-docs-ff8a65?style=flat-square" alt="API" /></a>
   <a href="https://ergoscan.me/status"><img src="https://img.shields.io/badge/status-public-5ee6a4?style=flat-square" alt="Status" /></a>
-</p>
-
-<p align="center">
-  <a href="https://ergoscan.me"><img src="apps/web/public/og.png" width="640" alt="ErgoScan on Ergo mainnet" /></a>
 </p>
 
 **https://ergoscan.me**
