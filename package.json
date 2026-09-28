@@ -1,0 +1,20 @@
+{
+  "name": "ergoscan",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @ergoscan/gateway & npm run dev -w @ergoscan/web",
+    "dev:web": "npm run dev -w @ergoscan/web",
+    "dev:gateway": "npm run dev -w @ergoscan/gateway",
+    "build": "npm run build -w @ergoscan/shared && npm run build -w @ergoscan/gateway && npm run build -w @ergoscan/web",
+    "start": "npm run start -w @ergoscan/gateway & npm run start -w @ergoscan/web",
+    "typecheck": "npm run typecheck -w @ergoscan/shared && npm run typecheck -w @lumen/amm-chart && npm run typecheck -w @ergoscan/gateway && npm run typecheck -w @ergoscan/indexer && npm run typecheck -w @ergoscan/defi-projector && npm run typecheck -w @ergoscan/rosen-projector && npm run typecheck -w @ergoscan/oracle-projector && npm run typecheck -w @ergoscan/web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

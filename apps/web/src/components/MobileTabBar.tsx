@@ -1,0 +1,71 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import clsx from "clsx";
+import { useT } from "@/lib/i18n/I18nProvider";
+import { MOBILE_TABS, moreActive, pathActive } from "@/lib/mobile-tab";
+import { NavIcon, type NavIconId } from "./nav-icons";
+
+const TAB_ICON: Record<string, NavIconId> = {
+  "/": "home",
+  "/mempool": "mempool",
+  "/transactions": "txs",
+  "/tokens": "tokens",
+};
+
+export function MobileTabBar({ onMore }: { onMore: () => void }) {
+  const path = usePathname();
+  const t = useT();
+  const moreOn = moreActive(path);
+
+  return (
+    <nav
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--border)] bg-[var(--bg)] pb-[env(safe-area-inset-bottom)] lg:hidden"
+      aria-label={t("nav.menu")}
+    >
+      <div className="grid h-14 grid-cols-5">
+        {MOBILE_TABS.map((item) => {
+          const active = pathActive(path, item);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={clsx(
+                "chip-press mx-1 my-1 flex min-h-[44px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[10px] text-[10px] font-medium",
+                active ? "is-pressed text-[var(--text)]" : "text-[var(--muted)]"
+              )}
+            >
+              <NavIcon id={TAB_ICON[item.href] ?? "home"} className="size-[22px] text-accent" />
+              <span>{t(item.key)}</span>
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={onMore}
+          aria-label={t("nav.more")}
+          className={clsx(
+            "chip-press mx-1 my-1 flex min-h-[44px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[10px] text-[10px] font-medium",
+            moreOn ? "is-pressed text-[var(--text)]" : "text-[var(--muted)]"
+          )}
+        >
+          <MoreGlyph />
+          <span>{t("nav.more")}</span>
+        </button>
+      </div>
+    </nav>
+  );
+}
+
+function MoreGlyph() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden className="text-accent">
+      <circle cx="7" cy="7" r="1.7" fill="currentColor" />
+      <circle cx="17" cy="7" r="1.7" fill="currentColor" />
+      <circle cx="7" cy="17" r="1.7" fill="currentColor" />
+      <circle cx="17" cy="17" r="1.7" fill="currentColor" />
+    </svg>
+  );
+}

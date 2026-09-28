@@ -1,0 +1,31 @@
+[Unit]
+Description=ErgoScan Rosen projector (bridge event tape)
+After=network-online.target docker.service ergoscan-indexer.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ergoscan
+SyslogIdentifier=ergoscan-rosen-projector
+Environment=ROSEN_ENABLED=0
+Environment=ROSEN_REQUIRE_GENESIS=1
+Environment=ROSEN_INDEXER_PAUSE_LAG=2
+Environment=DATABASE_URL=postgres://ergoscan:changeme@127.0.0.1:5432/ergoscan
+Environment=POLL_MS=4000
+Environment=BATCH_HEIGHTS=40
+Environment=TRAIL_RESCAN=16
+Environment=TIP_LAG_SAFE=2
+Environment=ROSEN_FROM_HEIGHT=989400
+Environment=KPI_MS=30000
+Environment=HEALTH_PORT=8794
+Environment=DETECT_TIMEOUT_MS=8000
+Nice=10
+# Stay disabled until the index window reaches genesis (min_height=0).
+# Then: drop-in or unit ROSEN_ENABLED=1 && systemctl enable --now ergoscan-rosen-projector
+# Do not enable --now from this file. Do not DROP schema rosen.
+ExecStart=/usr/bin/npx tsx apps/rosen-projector/src/index.ts
+Restart=on-failure
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

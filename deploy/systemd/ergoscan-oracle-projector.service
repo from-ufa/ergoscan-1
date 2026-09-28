@@ -1,0 +1,26 @@
+[Unit]
+Description=ErgoScan oracle projector (cooperative pool snaps)
+After=network-online.target docker.service ergoscan-indexer.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ergoscan
+SyslogIdentifier=ergoscan-oracle-projector
+Environment=ORACLE_ENABLED=0
+Environment=ORACLE_HISTORY=0
+Environment=ORACLE_HISTORY_BLOCKS=21600
+Environment=ORACLE_INDEXER_PAUSE_LAG=2
+Environment=DATABASE_URL=postgres://ergoscan:changeme@127.0.0.1:5432/ergoscan
+Environment=POLL_MS=4000
+Environment=HEALTH_PORT=8796
+Nice=10
+# Tip-only until you set ORACLE_ENABLED=1. Do not set ORACLE_HISTORY=1
+# unless you asked for a bounded lookback. Do not DROP schema oracle.
+# Do not enable --now from this file. Do not restart indexer / DeFi / Rosen / node.
+ExecStart=/usr/bin/npx tsx apps/oracle-projector/src/index.ts
+Restart=on-failure
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

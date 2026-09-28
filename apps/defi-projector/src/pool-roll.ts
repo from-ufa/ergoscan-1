@@ -1,0 +1,166 @@
+import type { PoolClient } from "pg";
+import type { Db } from "./db.js";
+import { getState, setState } from "./db.js";
+
+/** One-shot fold of existing swaps. Not a chain cursor. */
+export const POOL_ROLL_KEY = "pool_roll_v1";
+const POOL_ROLL_LOCK = 736202;
+const ERG_ZERO = "0".repeat(64);
+
+/** Same cap as ranks / Spectrum volume tile (`RANKS_MAX_TRADE_ERG`). */
+export const POOL_VOL_MAX_ERG_DEFAULT = 3_000;
+
+export function poolVolMaxErg(raw: string | undefined = process.env.RANKS_MAX_TRADE_ERG): number {
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : POOL_VOL_MAX_ERG_DEFAULT;
+}
+
+/**
+ * ERG to add to the pool's all-time volume.
+ * null = not an N2T pool (do not touch vol_erg).
+ * 0 = N2T fill that the Spectrum volume tile also drops.
+ */
+export function n2tErgVolume(
+  venue: string,
+  baseId: string | null | undefined,
+  baseAmount: number,
+  tokenAmount: number,
+  maxErg: number
+): number | null {
+  if (String(venue || "").trim().toLowerCase() !== "spectrum_cfmm") return null;
+  const base = String(baseId || "").trim().toLowerCase();
+  if (base && base !== ERG_ZERO) return null;
+  const cap = Number.isFinite(maxErg) && maxErg > 0 ? maxErg : POOL_VOL_MAX_ERG_DEFAULT;
+  if (!(baseAmount > 0) || baseAmount > cap) return 0;
+  if (!(tokenAmount > 0)) return 0;
+  return baseAmount;
+}
+
+export type PoolRollInput = {
+  poolId: string;
+  tokenId: string;
+  venue: string;
+  baseId: string;
+  baseAmount: number;
+  tokenAmount: number;
+  tsMs: number;
+};
+
+/** Call only after a new `defi.swaps` insert. A rescan update must not call this. */
+export async function applyPoolRoll(
+  client: PoolClient,
+  row: PoolRollInput,
+  maxErg: number
+): Promise<void> {
+  const poolId = String(row.poolId || "").trim().toLowerCase();
+  const tokenId = String(row.tokenId || "").trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(poolId)) return;
+  const vol = n2tErgVolume(row.venue, row.baseId, row.baseAmount, row.tokenAmount, maxErg);
+  const ts = Number(row.tsMs);
+  const tsMs = Number.isFinite(ts) && ts > 0 ? Math.trunc(ts) : null;
+  const now = Date.now();
+  await client.query(
+    `INSERT INTO defi.pool_snap
+       (pool_id, token_id, tvl_erg, volume_erg_24h, updated_at_ms,
+        trades_n, vol_erg, first_ts_ms, last_ts_ms)
+     VALUES ($1, $2, 0, 0, $3, 1, $4, $5, $5)
+     ON CONFLICT (pool_id) DO UPDATE SET
+       trades_n = COALESCE(defi.pool_snap.trades_n, 0) + 1,
+       vol_erg = CASE
+         WHEN $4::float8 IS NULL THEN defi.pool_snap.vol_erg
+         ELSE COALESCE(defi.pool_snap.vol_erg, 0) + $4::float8
+       END,
+       first_ts_ms = CASE
+         WHEN $5::bigint IS NULL THEN defi.pool_snap.first_ts_ms
+         WHEN defi.pool_snap.first_ts_ms IS NULL THEN $5::bigint
+         ELSE LEAST(defi.pool_snap.first_ts_ms, $5::bigint)
+       END,
+       last_ts_ms = CASE
+         WHEN $5::bigint IS NULL THEN defi.pool_snap.last_ts_ms
+         WHEN defi.pool_snap.last_ts_ms IS NULL THEN $5::bigint
+         ELSE GREATEST(defi.pool_snap.last_ts_ms, $5::bigint)
+       END`,
+    [poolId, /^[0-9a-f]{64}$/.test(tokenId) ? tokenId : ERG_ZERO, now, vol, tsMs]
+  );
+}
+
+/**
+ * Fold swaps already in `defi.swaps` into the snap columns.
+ * Runs once. Does not move scan cursors. Later fills only increment.
+ */
+export async function seedPoolRoll(db: Db, maxErg = poolVolMaxErg()): Promise<{ pools: number } | null> {
+  const client = await db.connect();
+  let locked = false;
+  try {
+    const lock = await client.query<{ ok: boolean }>(
+      `SELECT pg_try_advisory_lock($1) AS ok`,
+      [POOL_ROLL_LOCK]
+    );
+    locked = lock.rows[0]?.ok === true;
+    if (!locked) return null;
+    const done = await getState(db, POOL_ROLL_KEY);
+    if (done === "1") return null;
+
+    await client.query("BEGIN");
+    await client.query(`SET LOCAL statement_timeout = 20000`);
+    const wrote = await client.query(
+      `WITH agg AS (
+         SELECT pool_id,
+                count(*)::bigint AS trades_n,
+                min(ts_ms) FILTER (WHERE ts_ms > 0) AS first_ts,
+                max(ts_ms) FILTER (WHERE ts_ms > 0) AS last_ts,
+                min(token_id) FILTER (WHERE length(token_id) = 64) AS token_id,
+                coalesce(sum(base_amount) FILTER (
+                  WHERE venue = 'spectrum_cfmm'
+                    AND (base_id IS NULL OR base_id = repeat('0', 64))
+                    AND base_amount > 0
+                    AND base_amount <= $1
+                    AND coalesce(token_amount, 0) > 0
+                ), 0)::float8 AS vol_erg
+         FROM defi.swaps
+         WHERE venue IN ('spectrum_cfmm', 'spectrum_n2n')
+           AND event_kind = 'swap'
+         GROUP BY pool_id
+       )
+       INSERT INTO defi.pool_snap
+         (pool_id, token_id, tvl_erg, volume_erg_24h, updated_at_ms,
+          trades_n, vol_erg, first_ts_ms, last_ts_ms)
+       SELECT a.pool_id,
+              COALESCE(r.quote_token, a.token_id, repeat('0', 64)),
+              0,
+              0,
+              (extract(epoch FROM now()) * 1000)::bigint,
+              a.trades_n,
+              CASE WHEN r.venue = 'spectrum_n2n' THEN NULL ELSE a.vol_erg END,
+              a.first_ts,
+              a.last_ts
+       FROM agg a
+       LEFT JOIN defi.pool_registry r ON r.pool_id = a.pool_id
+       ON CONFLICT (pool_id) DO UPDATE SET
+         trades_n = EXCLUDED.trades_n,
+         vol_erg = EXCLUDED.vol_erg,
+         first_ts_ms = EXCLUDED.first_ts_ms,
+         last_ts_ms = EXCLUDED.last_ts_ms`,
+      [maxErg]
+    );
+    await client.query("COMMIT");
+    await setState(db, POOL_ROLL_KEY, "1");
+    return { pools: wrote.rowCount ?? 0 };
+  } catch (e) {
+    try {
+      await client.query("ROLLBACK");
+    } catch {
+      /* ignore */
+    }
+    throw e;
+  } finally {
+    if (locked) {
+      try {
+        await client.query(`SELECT pg_advisory_unlock($1)`, [POOL_ROLL_LOCK]);
+      } catch {
+        /* ignore */
+      }
+    }
+    client.release();
+  }
+}

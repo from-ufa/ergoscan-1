@@ -1,0 +1,32 @@
+{
+  "name": "@ergoscan/gateway",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npx tsx --test src/lib/ergoAddress.test.ts src/lib/nftNameGroups.test.ts src/lib/explorerCompat.test.ts src/lib/gix.test.ts src/lib/ergoTree.test.ts src/lib/spectrum-page.test.ts src/lib/address-token-tape.test.ts src/lib/addressListFilter.test.ts src/lib/later-ts.test.ts src/lib/public-health.test.ts src/lib/submit-tx.test.ts src/lib/openapi-intro.test.ts src/lib/page-limit.test.ts src/lib/holder-cursor.test.ts src/lib/token-holder-activity.test.ts src/lib/flow-parties.test.ts src/graphql/execute.test.ts"
+  },
+  "dependencies": {
+    "@ergoscan/shared": "*",
+    "@noble/hashes": "^2.4.0",
+    "cors": "^2.8.5",
+    "express": "^4.22.3",
+    "graphql": "^17.0.2",
+    "pg": "^8.14.1",
+    "sigmastate-js": "^0.6.2",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.11.11",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.19.4",
+    "typescript": "~5.8.3"
+  }
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512" fill="none">
+  <defs>
+    <linearGradient id="box" x1="22" y1="22" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7ED3FF"/>
+      <stop offset="1" stop-color="#2F94E8"/>
+    </linearGradient>
+  </defs>
+  <!-- viewfinder -->
+  <path d="M18 10H10v8M46 10h8v8M10 46v8h8M54 46v8h-8" stroke="#4DB7F2" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+  <!-- ergo box -->
+  <rect x="22" y="22" width="20" height="20" rx="4" fill="url(#box)"/>
+</svg>

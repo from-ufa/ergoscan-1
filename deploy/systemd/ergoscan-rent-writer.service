@@ -1,0 +1,25 @@
+[Unit]
+Description=ErgoScan rent claim writer (history verify + tip)
+After=network-online.target docker.service ergoscan-indexer.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ergoscan
+SyslogIdentifier=ergoscan-rent-writer
+Environment=DATABASE_URL=postgres://ergoscan:changeme@127.0.0.1:5432/ergoscan
+Environment=ERGO_NODE_URL=http://127.0.0.1:9053
+Environment=POLL_MS=250
+Environment=RENT_VERIFY_BATCH=32
+Environment=RENT_FETCH_CONCURRENCY=16
+Environment=HEALTH_PORT=8798
+Nice=10
+# Owns rent_claim_verify_height, rent_claim_live_height, rent_claim_full_height.
+# Do not reset those cursors. Do not DROP rent_collected.
+# 8796 stays AgeUSD.
+ExecStart=/usr/bin/npx tsx apps/indexer/src/rentWriter.ts
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

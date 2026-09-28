@@ -1,0 +1,35 @@
+[Unit]
+Description=ErgoScan DeFi projector
+After=network-online.target docker.service ergoscan-indexer.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ergoscan
+SyslogIdentifier=ergoscan-defi-projector
+Environment=PROJECTOR_ENABLED=1
+Environment=DATABASE_URL=postgres://ergoscan:changeme@127.0.0.1:5432/ergoscan
+Environment=POLL_MS=4000
+Environment=BATCH_HEIGHTS=40
+Environment=TRAIL_RESCAN=24
+Environment=TIP_LAG_SAFE=2
+Environment=RANKS_MS=90000
+Environment=REGISTRY_REFRESH_MS=1800000
+Environment=HEALTH_PORT=8793
+Environment=HEALTH_ALIAS_PORT=8795
+Environment=DETECT_TIMEOUT_MS=4000
+Environment=REWIND_BLOCKS=2000
+Environment=DEFI_HISTORY=0
+Environment=DEFI_FROM_HEIGHT=452000
+Environment=PG_POOL_MAX=4
+# Off until AgeUSD history is at tip. Watcher writes ageusd-unified.conf.
+# Environment=DEFI_AGEUSD_UNIFIED=1
+Nice=10
+# Draft — enable only after lab smoke:
+#   systemctl enable --now ergoscan-defi-projector
+ExecStart=/usr/bin/npx tsx apps/defi-projector/src/index.ts
+Restart=on-failure
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

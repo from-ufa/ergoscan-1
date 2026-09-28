@@ -1,0 +1,234 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import * as echarts from "echarts/core";
+import { LineChart } from "echarts/charts";
+import { AxisPointerComponent, GridComponent, TooltipComponent } from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+import type { LinePoint } from "@lumen/amm-chart";
+import { chartChrome } from "@/lib/chart-chrome";
+import { formatDottedDate, formatH24 } from "@/lib/format";
+import { neonLine } from "@/lib/chart-neon";
+import { useInk } from "@/lib/use-ink";
+import {
+  TX_ACTIVITY_TZ,
+  binLinePoints,
+  formatActivityWindow,
+} from "@/lib/tx-activity-bin";
+
+echarts.use([
+  LineChart,
+  GridComponent,
+  TooltipComponent,
+  AxisPointerComponent,
+  CanvasRenderer,
+]);
+
+function fmtTime(t: number, _locale?: string): string {
+  return `${formatDottedDate(t, TX_ACTIVITY_TZ)}, ${formatH24(t, TX_ACTIVITY_TZ, false)}`;
+}
+
+export function AreaChart({
+  points,
+  height = 220,
+  formatValue,
+  onHover,
+  color,
+  compact = false,
+  binMs = 0,
+  locale,
+  fillOpacity = 0.45,
+  lineWidth = 1.5,
+  glow = false,
+  fill = false,
+  showTip = true,
+}: {
+  points: LinePoint[];
+  height?: number;
+  formatValue: (v: number) => string;
+  onHover?: (v: number | null, t?: number | null) => void;
+  /** Override PnL green/red (e.g. volume uses link cyan). */
+  color?: string;
+  /** KPI spark: no axis labels, tight grid. */
+  compact?: boolean;
+  /** Display-only mean bins. Snapshot stays hourly. */
+  binMs?: number;
+  locale?: string;
+  /** 0 = stroke only. Home KPI keeps 0.45. */
+  fillOpacity?: number;
+  lineWidth?: number;
+  /** Neon core, halo, and a fade under the stroke. Home KPI sparks. */
+  glow?: boolean;
+  /** Stretch to the parent. Parent must have a height. */
+  fill?: boolean;
+  /** False keeps the axis hair and the hover callback, and hides the date box. */
+  showTip?: boolean;
+}) {
+  const el = useRef<HTMLDivElement>(null);
+  const chart = useRef<echarts.ECharts | null>(null);
+  const fmt = useRef(formatValue);
+  const hover = useRef(onHover);
+  const quietMove = useRef<((ev: MouseEvent) => void) | null>(null);
+  const loc = useRef(locale);
+  fmt.current = formatValue;
+  hover.current = onHover;
+  loc.current = locale;
+  const ink = useInk();
+
+  useEffect(() => {
+    const node = el.current;
+    if (!node) return;
+    const c = echarts.init(node, undefined, { renderer: "canvas" });
+    chart.current = c;
+    const ro = new ResizeObserver(() => c.resize());
+    ro.observe(node);
+    const leave = () => hover.current?.(null);
+    node.addEventListener("mouseleave", leave);
+    return () => {
+      node.removeEventListener("mouseleave", leave);
+      if (quietMove.current) node.removeEventListener("mousemove", quietMove.current);
+      ro.disconnect();
+      c.dispose();
+      chart.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const c = chart.current;
+    if (!c) return;
+    const binned = binMs > 0 ? binLinePoints(points, binMs) : [];
+    const seriesPts = binned.length >= 2 ? binned : points;
+    const windowMs = binned.length >= 2 ? binMs : 0;
+    if (seriesPts.length < 2) {
+      c.clear();
+      return;
+    }
+    const chrome = chartChrome();
+    const day = ink === "day";
+    const up = seriesPts[seriesPts.length - 1]!.v >= seriesPts[0]!.v;
+    const stroke = color ?? (up ? chrome.up : chrome.down);
+    const data = seriesPts.map((p) => [p.t, p.v] as [number, number]);
+    const line =
+      glow
+        ? neonLine({
+            data,
+            color: stroke,
+            name: "",
+            day,
+            smooth: 0.15,
+            width: lineWidth,
+            wash: 0.55,
+          })
+        : [
+            {
+              type: "line" as const,
+              data,
+              showSymbol: false,
+              symbol: "none" as const,
+              smooth: fillOpacity <= 0.15 ? 0.65 : true,
+              ...(windowMs > 0 && fillOpacity > 0.15 ? { smoothMonotone: "x" as const } : {}),
+              lineStyle: { width: lineWidth, color: stroke, cap: "round" as const, join: "round" as const },
+              ...(fillOpacity > 0 ? { areaStyle: { color: stroke, opacity: fillOpacity } } : {}),
+            },
+          ];
+    c.setOption(
+      {
+        animationDuration: 280,
+        animationEasing: "cubicOut",
+        grid: compact
+          ? { top: glow ? 4 : 6, right: 2, bottom: glow ? 4 : 4, left: 2 }
+          : { top: 16, right: 4, bottom: 22, left: 4 },
+        tooltip: {
+          trigger: "axis",
+          showContent: showTip,
+          axisPointer: {
+            type: "line",
+            lineStyle: { color: showTip ? chrome.hair : stroke, width: 1, opacity: showTip ? 1 : 0.45 },
+          },
+          backgroundColor: chrome.module,
+          borderColor: chrome.border,
+          borderWidth: showTip ? 1 : 0,
+          padding: showTip ? [8, 12] : 0,
+          textStyle: { color: chrome.text, fontSize: 12 },
+          formatter: (raw: unknown) => {
+            const row = Array.isArray(raw) ? raw[0] : raw;
+            const rec = row as { value?: [number, number] };
+            const pair = rec?.value;
+            if (!pair) return "";
+            hover.current?.(pair[1], pair[0]);
+            if (!showTip) return "";
+            const when =
+              windowMs > 0
+                ? formatActivityWindow(pair[0], windowMs, loc.current)
+                : fmtTime(pair[0], loc.current);
+            return `${when}<br/>${fmt.current(pair[1])}`;
+          },
+        },
+        xAxis: {
+          type: "time",
+          axisLine: { show: false },
+          axisTick: { show: false },
+          splitLine: { show: false },
+          axisLabel: compact
+            ? { show: false }
+            : { color: chrome.muted, fontSize: 10, hideOverlap: true },
+        },
+        yAxis: {
+          type: "value",
+          scale: true,
+          show: false,
+          ...(glow
+            ? {
+                min: (ext: { min: number; max: number }) => {
+                  const span = Math.max(ext.max - ext.min, Math.abs(ext.max) * 0.004, 1e-9);
+                  return ext.min - span * 0.04;
+                },
+                max: (ext: { min: number; max: number }) => {
+                  const span = Math.max(ext.max - ext.min, Math.abs(ext.max) * 0.004, 1e-9);
+                  return ext.max + span * 0.04;
+                },
+              }
+            : {}),
+        },
+        series: line,
+      },
+      { notMerge: true }
+    );
+    const node = el.current;
+    if (node && quietMove.current) {
+      node.removeEventListener("mousemove", quietMove.current);
+      quietMove.current = null;
+    }
+    if (node && !showTip) {
+      const onMove = (ev: MouseEvent) => {
+        const rect = node.getBoundingClientRect();
+        const raw = c.convertFromPixel({ gridIndex: 0 }, [ev.clientX - rect.left, ev.clientY - rect.top]);
+        const t = Array.isArray(raw) ? raw[0] : null;
+        if (typeof t !== "number" || !Number.isFinite(t)) return;
+        let best = seriesPts[0];
+        let dist = Infinity;
+        for (const p of seriesPts) {
+          const d = Math.abs(p.t - t);
+          if (d < dist) {
+            dist = d;
+            best = p;
+          }
+        }
+        if (!best) return;
+        hover.current?.(best.v, best.t);
+      };
+      quietMove.current = onMove;
+      node.addEventListener("mousemove", onMove);
+    }
+  }, [points, color, compact, binMs, locale, fillOpacity, lineWidth, glow, showTip, ink]);
+
+  return (
+    <div
+      ref={el}
+      className={fill ? "h-full w-full" : "w-full"}
+      style={fill ? undefined : { height }}
+    />
+  );
+}
+
+export default AreaChart;

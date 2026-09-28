@@ -1,0 +1,41 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { chromeFor } from "./chrome";
+
+test("toolbar chrome is a title only — no page lead", () => {
+  const home = chromeFor("/");
+  assert.equal(home.titleKey, "nav.home");
+  assert.equal(home.heading, true);
+  assert.equal("leadKey" in home, false);
+
+  assert.equal(chromeFor("/blocks").titleKey, "nav.blocks");
+  assert.equal(chromeFor("/block/abc").titleKey, "nav.blocks");
+  assert.equal(chromeFor("/block/abc").heading, false);
+  assert.equal(chromeFor("/transactions").titleKey, "nav.txs");
+  assert.equal(chromeFor("/mempool").titleKey, "nav.mempool");
+  assert.equal(chromeFor("/box/xyz").titleKey, "chrome.boxTitle");
+  assert.equal(chromeFor("/names").titleKey, "nav.names");
+  assert.equal(chromeFor("/names").heading, true);
+  assert.equal(chromeFor("/rosen").titleKey, "nav.rosen");
+  assert.equal(chromeFor("/defi").titleKey, "nav.defiSpectrum");
+  assert.equal(chromeFor("/defi/spectrum").titleKey, "nav.defiSpectrum");
+  assert.equal(chromeFor("/defi/pool").titleKey, "nav.defiPool");
+  assert.equal(chromeFor("/defi/lithos").titleKey, "nav.defiLithos");
+  assert.equal(chromeFor("/defi/stable").titleKey, "nav.defiAgeusd");
+  assert.equal(chromeFor("/oracles").titleKey, "nav.oracles");
+  assert.equal(chromeFor("/oracles/ergusd").titleKey, "nav.oraclesOfficial");
+  assert.equal(chromeFor("/oracles/erg-usd").titleKey, "nav.oraclesUsd");
+  assert.equal(chromeFor("/oracles/xau-erg").titleKey, "nav.oraclesXau");
+  assert.equal(chromeFor("/nfts").titleKey, "nav.nfts");
+  assert.equal(chromeFor("/nfts/collection/wolves").titleKey, "nav.nfts");
+  assert.equal(chromeFor("/nfts/collection/wolves").heading, false);
+  assert.equal(chromeFor("/nfts/issuer/9abc").titleKey, "nav.nfts");
+  assert.equal(chromeFor("/nfts/issuer/9abc").heading, false);
+  assert.equal(chromeFor("/learn").titleKey, "nav.learn");
+  assert.equal(chromeFor("/about").titleKey, "nav.about");
+  assert.equal(chromeFor("/settings").titleKey, "nav.settings");
+  assert.equal(chromeFor("/rent").titleKey, "nav.rentUpcoming");
+  assert.equal(chromeFor("/rent/history").titleKey, "nav.rentHistory");
+  assert.equal(chromeFor("/docs").titleKey, "nav.docs");
+  assert.equal(chromeFor("/status").titleKey, "nav.status");
+});

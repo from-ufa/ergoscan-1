@@ -1,0 +1,69 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import clsx from "clsx";
+
+/** Same delay as menu hops: bar at once, pulsing mark after this. */
+export const SCAN_WAIT_SLOW_MS = 500;
+
+/**
+ * AdaStat wait chrome: running top accent bar + delayed pulsing ErgoScan mark.
+ * Menu hops (`RouteNavProgress`) and in-page first packs share this paint.
+ */
+export function ScanWait({
+  slow,
+  label,
+}: {
+  slow: boolean;
+  label: string;
+}) {
+  return (
+    <>
+      <div
+        className="pointer-events-none fixed inset-x-0 top-0 z-[80] h-0.5 overflow-hidden"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-busy="true"
+        aria-label={label}
+      >
+        <div
+          className={clsx(
+            "h-full w-full bg-accent",
+            "motion-safe:animate-[route-nav-bar_2s_cubic-bezier(0.4,0,0.2,1)_infinite]"
+          )}
+        />
+      </div>
+      {slow ? (
+        <div
+          className="pointer-events-none fixed inset-0 z-[70] grid place-items-center bg-black/25"
+          aria-hidden
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/ergoscan-mark.svg"
+            alt=""
+            width={64}
+            height={64}
+            className="route-nav-mark h-16 w-16"
+          />
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+export function useScanWait(active: boolean, slowMs = SCAN_WAIT_SLOW_MS) {
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      setSlow(false);
+      return;
+    }
+    const overlay = window.setTimeout(() => setSlow(true), slowMs);
+    return () => window.clearTimeout(overlay);
+  }, [active, slowMs]);
+
+  return { bar: active, slow: active && slow };
+}

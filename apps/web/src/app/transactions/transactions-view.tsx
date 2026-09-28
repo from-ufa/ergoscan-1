@@ -1,0 +1,340 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Shell } from "@/components/Shell";
+import { KpiGrid } from "@/components/KpiGrid";
+import {
+  KpiMarkDice5,
+  KpiMarkLayers,
+  KpiMarkReceipt,
+  KpiMarkWorkflow,
+} from "@/components/kpi-marks";
+import { INK } from "@/lib/palette";
+import { RankWindow } from "@/components/RankWindow";
+import { TxLaneRow } from "@/components/TxLaneRow";
+import { getGateway } from "@/lib/config";
+import { fetchChainStats, type ChainStats } from "@/lib/chain-stats";
+import { formatCompact } from "@/lib/format";
+import clsx from "clsx";
+import { useI18n, useT } from "@/lib/i18n/I18nProvider";
+import { useChainTipRefresh, usePageSync } from "@/lib/page-sync";
+import { SNAPSHOT_FETCH, enteringIds, snapshotPath, useEnterIds } from "@/lib/keyed-enter";
+import { TX_PACK, parseTxListItems, type TxListItem } from "@/lib/list-snapshots";
+
+function loc(locale: string): string {
+  return locale === "ru" ? "ru-RU" : "en-US";
+}
+
+export function TransactionsView({
+  initialItems,
+  initialUpdatedAt = null,
+  initialHasMore = false,
+  initialNextCursor = null,
+  initialStats = null,
+}: {
+  initialItems: TxListItem[];
+  initialUpdatedAt?: string | null;
+  initialHasMore?: boolean;
+  initialNextCursor?: string | null;
+  initialStats?: ChainStats | null;
+}) {
+  const t = useT();
+  const { locale } = useI18n();
+  const { markSynced, tip } = usePageSync();
+  const tipRef = useRef(tip);
+  tipRef.current = tip;
+  const [items, setItems] = useState<TxListItem[]>(initialItems);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
+  const [page, setPage] = useState(0);
+  const [pending, setPending] = useState(false);
+  const [ready, setReady] = useState(initialItems.length > 0);
+  const [err, setErr] = useState<string | null>(null);
+  const [stats, setStats] = useState<ChainStats | null>(initialStats);
+  const [stuck, setStuck] = useState(false);
+  const enter = useEnterIds();
+  const packEnter = useEnterIds();
+  const [listReady, setListReady] = useState(false);
+  const opened = useRef(false);
+  const cursorRef = useRef<string | null>(null);
+  const cursorStack = useRef<(string | null)[]>([]);
+  const nextCursorRef = useRef<string | null>(initialNextCursor);
+  nextCursorRef.current = nextCursor;
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  const pinRef = useRef<HTMLDivElement>(null);
+
+  const load = useCallback(
+    (silent = false) => {
+      if (!silent && itemsRef.current.length) setPending(true);
+      const want = cursorRef.current;
+      const q = new URLSearchParams({
+        limit: String(TX_PACK),
+        mempool: "0",
+      });
+      if (want) q.set("cursor", want);
+      else q.set("offset", "0");
+      void fetch(
+        `${getGateway()}${snapshotPath(`/v1/transactions/recent?${q}`, tipRef.current?.height)}`,
+        SNAPSHOT_FETCH
+      )
+        .then(async (r) => {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.json() as Promise<{
+            items?: TxListItem[];
+            updatedAt?: string | null;
+            hasMore?: boolean;
+            nextCursor?: string | null;
+          }>;
+        })
+        .then((j) => {
+          if (cursorRef.current !== want) return;
+          const next = parseTxListItems(j.items);
+          if (!next.length && want) {
+            const prev = cursorStack.current.pop() ?? null;
+            cursorRef.current = prev;
+            setPage(cursorStack.current.length);
+            return;
+          }
+          if (!next.length && !want) {
+            setErr(null);
+            setReady(true);
+            markSynced(j.updatedAt);
+            return;
+          }
+          const more = typeof j.hasMore === "boolean" ? j.hasMore : next.length >= TX_PACK;
+          const last = next[next.length - 1];
+          const nxt =
+            typeof j.nextCursor === "string" && j.nextCursor.length
+              ? j.nextCursor
+              : more && last
+                ? `${last.inclusionHeight ?? -1}:${last.index ?? -1}:${last.id}`
+                : null;
+          setItems((prev) => {
+            enter.mark(enteringIds(prev, next));
+            return next;
+          });
+          setHasMore(more);
+          setNextCursor(more ? nxt : null);
+          setErr(null);
+          setReady(true);
+          markSynced(j.updatedAt);
+        })
+        .catch((e) => {
+          if (!silent) setErr(String(e));
+          setReady(true);
+        })
+        .finally(() => {
+          if (!silent) setPending(false);
+        });
+    },
+    [enter.mark, markSynced]
+  );
+
+  const painted = useRef(false);
+  useEffect(() => {
+    if (painted.current) return;
+    painted.current = true;
+    if (initialItems.length) {
+      markSynced(initialUpdatedAt);
+      return;
+    }
+    load();
+  }, [initialItems, initialUpdatedAt, load, markSynced]);
+
+  useEffect(() => {
+    if (opened.current) return;
+    if (!ready && !items.length) return;
+    opened.current = true;
+    const ids = items.map((row) => row.id);
+    enter.mark(ids);
+    if (ids.length) packEnter.mark(["pack"]);
+    setListReady(true);
+  }, [ready, items, enter.mark, packEnter.mark]);
+
+  useEffect(() => {
+    if (initialStats) return;
+    void fetchChainStats().then((s) => {
+      if (s) setStats(s);
+    });
+  }, [initialStats]);
+
+  const loadRef = useRef(load);
+  loadRef.current = load;
+  const pageSeen = useRef(page);
+  useEffect(() => {
+    if (pageSeen.current === page) return;
+    pageSeen.current = page;
+    loadRef.current();
+  }, [page]);
+
+  useChainTipRefresh(true, () => {
+    if (cursorRef.current !== null) return;
+    load(true);
+    void fetchChainStats().then((s) => {
+      if (s) setStats(s);
+    });
+  });
+
+  useEffect(() => {
+    const el = pinRef.current;
+    if (!el) return;
+    const chrome = document.querySelector(".stage-frame header.sticky");
+    const pin =
+      (chrome instanceof HTMLElement ? chrome.getBoundingClientRect().height : 64) + 8;
+    const obs = new IntersectionObserver(
+      ([entry]) => setStuck(!entry.isIntersecting),
+      { threshold: 1, rootMargin: `-${pin}px 0px 0px 0px` }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [items.length]);
+
+  const s24 = stats?.stats24h;
+  const miss = t("home.unavailable");
+  const txs24 = s24?.txs ?? stats?.txPerDay ?? null;
+  /**
+   * Txs per block instead of "per epoch": the epoch figure was txs24 times a
+   * constant 1.4222 (ERGO_EPOCH_LEN x 120s target / a day), so it restated the
+   * first card in another unit. This divides by the blocks actually found.
+   */
+  const perBlock =
+    txs24 != null && s24?.blocks != null && s24.blocks > 0
+      ? Math.round((txs24 / s24.blocks) * 10) / 10
+      : null;
+  const txTotal = stats?.txTotal ?? null;
+
+  const kpis = [
+    {
+      label: t("txs.kpiTxs24h"),
+      value: txs24 != null ? txs24.toLocaleString(loc(locale)) : miss,
+      unavailable: txs24 == null,
+      sub: t("blocks.kpiLast24h"),
+      mark: <KpiMarkWorkflow tone={INK.cyan} />,
+      ink: INK.cyan,
+      enter: 0,
+    },
+    {
+      label: t("txs.kpiTotal"),
+      value: txTotal != null ? txTotal.toLocaleString(loc(locale)) : miss,
+      unavailable: txTotal == null,
+      sub: t("txs.kpiTotalSub"),
+      mark: <KpiMarkLayers tone={INK.violet} />,
+      ink: INK.violet,
+      enter: 1,
+    },
+    {
+      label: t("txs.kpiPerBlock"),
+      value: perBlock != null ? perBlock.toLocaleString(loc(locale)) : miss,
+      unavailable: perBlock == null,
+      sub: t("txs.kpiPerBlockSub"),
+      mark: <KpiMarkDice5 tone={INK.teal} />,
+      ink: INK.teal,
+      enter: 2,
+    },
+    {
+      label: t("txs.kpiFees24h"),
+      value: s24?.feesErg != null ? `${formatCompact(s24.feesErg)} ERG` : miss,
+      unavailable: s24?.feesErg == null,
+      sub: t("blocks.kpiLast24h"),
+      mark: <KpiMarkReceipt tone={INK.gold} />,
+      ink: INK.gold,
+      enter: 3,
+    },
+  ];
+
+  return (
+    <Shell>
+      <KpiGrid items={kpis} dense className="mb-3 sm:grid-cols-4" />
+
+      {err && (
+        <p className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-200">
+          {err}
+        </p>
+      )}
+
+      {!listReady && !err ? null : !items.length && !err ? (
+        <p className="text-[var(--muted)]">{t("txs.empty")}</p>
+      ) : null}
+
+      {listReady && items.length > 0 && (
+        <div className="addr-sheet">
+          <div ref={pinRef} className="h-px w-full" aria-hidden />
+          <div className={packEnter.enterClass("pack")}>
+            <div
+              className={clsx(
+                "addr-pan kpi-tape transition-opacity duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+                pending && "opacity-60"
+              )}
+            >
+              <div
+                className={clsx(
+                  "addr-head addr-lane addr-lane-x block-tx-pairs text-[12px] font-medium",
+                  stuck && "is-stuck"
+                )}
+              >
+                <div className="block-lane-pair">
+                  <div className="min-w-0">{t("detail.tx")}</div>
+                  <div className="min-w-0 justify-end">{t("blocks.txIo")}</div>
+                </div>
+                <div className="block-lane-pair">
+                  <div className="min-w-0">{t("block.col.tokens")}</div>
+                  <div className="min-w-0 justify-end">{t("blocks.time")}</div>
+                </div>
+                <div className="block-lane-pair">
+                  <div className="min-w-0">{t("tx.fee")}</div>
+                  <div className="min-w-0 justify-end">{t("txs.outputSum")}</div>
+                </div>
+                <div className="block-lane-pair is-triple">
+                  <div className="min-w-0 tabular-nums">{t("blocks.txIndex")}</div>
+                  <div className="min-w-0 justify-center text-center">{t("blocks.size")}</div>
+                  <div className="min-w-0 justify-end">{t("blocks.height")}</div>
+                </div>
+              </div>
+              {items.map((row) => (
+                <TxLaneRow
+                  key={row.id}
+                  row={row}
+                  index={row.index ?? 0}
+                  locale={locale}
+                  t={t}
+                  showHeight
+                  enterClass={enter.enterClass(row.id)}
+                />
+              ))}
+            </div>
+          </div>
+          <RankWindow
+            offset={page * TX_PACK}
+            pageSize={TX_PACK}
+            shown={items.length}
+            total={null}
+            hasMore={hasMore}
+            loc={loc(locale)}
+            ofLabel={t("addresses.packOf")}
+            prevLabel={t("addresses.packPrev")}
+            nextLabel={t("addresses.packNext")}
+            tapeLabel={t("txs.packTape")}
+            hint={t("txs.packHint")}
+            disabled={pending}
+            onOffset={(next) => {
+              const cur = page * TX_PACK;
+              if (next > cur) {
+                const nxt = nextCursorRef.current;
+                if (!hasMore || !nxt) return;
+                cursorStack.current.push(cursorRef.current);
+                cursorRef.current = nxt;
+                setPage(cursorStack.current.length);
+              } else if (next < cur) {
+                if (!cursorStack.current.length) return;
+                const prev = cursorStack.current.pop() ?? null;
+                cursorRef.current = prev;
+                setPage(cursorStack.current.length);
+              }
+            }}
+          />
+        </div>
+      )}
+    </Shell>
+  );
+}

@@ -1,0 +1,332 @@
+{
+  "note": "Stage-owned CEX mains. Deposit clustering is indexer work, not this file. Spectrum / DEX is not a CEX main.",
+  "seed": {
+    "ergowatchSchema": "https://github.com/abchrisxyz/ergowatch/blob/master/ew/src/workers/exchanges/store/schema.sql",
+    "seededAt": "2026-08-22"
+  },
+  "venues": [
+    {
+      "id": "coinex",
+      "name": "Coinex",
+      "url": "https://www.coinex.com",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9fowPvQ2GXdmhD2bN54EL9dRnio3kBQGyrD3fkbHwuTXD6z1wBU",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9fPiW45mZwoTxSwTLLXaZcdekqi72emebENmScyTGsjryzrntUe",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9i51m3reWk99iw8WF6PgxbUT6ZFKhzJ1PmD11vEuGu125hRaKAH",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch",
+          "note": "Appeared after Coinex→Gate move during a security incident"
+        },
+        {
+          "address": "9fNqgokdacnYykMZmtqjTnCbBJG9mhkifghV6Pmn6taBihUoG33",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9f3iGnXcebxzv4avYCUTt6dekgPMV1t5hpHdcJ4mAfX94yAiGFv",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9gPwnhhzc2tEkZHpcUeQ9J9wQWKzoLjCRbNx4qAsm2dK2RvVvib",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9gLxihuwAPkkgTpctawTRz82XVm46z6o8q3vMXVeZtyq6qtruWk",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9f65ghY8F5k7uKMACX7o2GfaV4EzWpsNW3gBTc23pAqTon8n7pE",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9iL1tEz6ENBLtaiMaEppnsrj9HjvnRaLdRyqiBPeCW6SyUtEaxM",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9h4WD9zRk7efQYM9jUYy3hrReJmYMYGen4yVeEw1SWGTuM6XNXv",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9fTyfkM1NWdBJvpM3rAq2SNdJ9yfvUqjM3MBStNS2Aq5fGE9Jgg",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9haE48wKvgYzc3WdBXRU9ERw2ZWWkGzJT8jGHcXvzQggftiQQdC",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9gD9khJaxi3SvcX9VVPQ3vnV3xUTonVQe3Fvg5X7cGGbXMRgd8i",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "name": "Gate.io",
+      "url": "https://www.gate.io",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9iKFBBrryPhBYVGDKHuZQW7SuLfuTdUJtTPzecbQ5pQQzD4VykC",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9gQYrh6yubA4z55u4TtsacKnaEteBEdnY4W2r5BLcFZXcQoQDcq",
+          "role": "main",
+          "confidence": "inferred",
+          "source": "ergowatch",
+          "note": "Sends only to 9iKFBB; EW unconfirmed"
+        },
+        {
+          "address": "9enQZco9hPuqaHvR7EpPRWvYbkDYoWu3NK7pQk8VFwgVnv5taQE",
+          "role": "main",
+          "confidence": "inferred",
+          "source": "ergowatch",
+          "note": "Sends only to 9iKFBB; EW unconfirmed"
+        }
+      ]
+    },
+    {
+      "id": "kucoin",
+      "name": "KuCoin",
+      "url": "https://www.kucoin.com",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9hU5VUSUAmhEsTehBKDGFaFQSJx574UPoCquKBq59Ushv5XYgAu",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9i8Mci4ufn8iBQhzohh4V3XM3PjiJbxuDG1hctouwV4fjW5vBi3",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9guZaxPoe4jecHi6ZxtMotKUL4AzpomFf3xqXsFSuTyZoLbmUBr",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9iNt6wfxSc3DSaBVp22E7g993dwKUCvbGdHoEjxF8SRqj35oXvT",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9fs7HkPGY9fhN6WsHd7V7LMcuMqsgseXzNahyToxJKwHCc1zc1c",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9how9k2dp67jXDnCM6TeRPKtQrToCs5MYL2JoSgyGHLXm1eHxWs",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9fpUtN7d22jS3cMWeZxBbzkdnHCB46YRJ8qiiaVo2wRCkaBar1Z",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        }
+      ]
+    },
+    {
+      "id": "huobi",
+      "name": "Huobi",
+      "url": "https://www.htx.com",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9feMGM1qwNG8NnNuk3pz4yeCGm59s2RbjFnS7DxwUxCbzUrNnJw",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        }
+      ]
+    },
+    {
+      "id": "nonkyc",
+      "name": "NonKYC",
+      "url": "https://nonkyc.io",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9hmS5u1Khhc4PFERTA2dGzSkDuwUrrENQEUAveF6gHj8xCi9qy3",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        }
+      ]
+    },
+    {
+      "id": "probit",
+      "name": "ProBit",
+      "url": "https://www.probit.com",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9eg2Rz3tGogzLaVZhG1ycPj1dJtN4Jn8ySa2mnVLJyVJryb13QB",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        }
+      ]
+    },
+    {
+      "id": "sevenseas",
+      "name": "Seven Seas",
+      "url": "https://www.sevenseas.exchange",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9hYpa8qu3GihemMA1c4RVZuRGqcmBQKChgokFm6a81R3mFafqgi",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        }
+      ]
+    },
+    {
+      "id": "tradeogre",
+      "name": "TradeOgre",
+      "url": "https://www.tradeogre.com",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9fs99SejQxDjnjwrZ13YMZZ3fwMEVXFewpWWj63nMhZ6zDf2gif",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        },
+        {
+          "address": "9gFodGGQUTnxm6o6StrRnXafNFHEajxzYSJKEQMegyZz72dswwM",
+          "role": "main",
+          "confidence": "inferred",
+          "source": "stage",
+          "note": "Second TradeOgre P2PK; not in EW mains"
+        }
+      ]
+    },
+    {
+      "id": "xeggex",
+      "name": "Xeggex",
+      "url": "https://xeggex.com",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9hphYTmicjazd45pz2ovoHVPz5LTq9EvXoEK9JMGsfWuMtX6eDu",
+          "role": "main",
+          "confidence": "confirmed",
+          "source": "ergowatch"
+        }
+      ]
+    },
+    {
+      "id": "mexc",
+      "name": "MEXC",
+      "url": "https://www.mexc.com",
+      "status": "live",
+      "entries": [
+        {
+          "address": "9heCed7HKoDwUXAnKU6P4mZZq1emzX7s4wLgaKziaEtxnVQEod2",
+          "role": "main",
+          "confidence": "inferred",
+          "source": "stage",
+          "note": "Not tracked by ergo.watch"
+        }
+      ]
+    },
+    {
+      "id": "tidex",
+      "name": "Tidex",
+      "url": "https://tidex.com",
+      "status": "dead",
+      "entries": [
+        {
+          "address": "9fnmngbD5dHoKjAPYhX9FZcUVM8yxnNNM4JuYW3AHzcTZRyPUgo",
+          "role": "main",
+          "confidence": "inferred",
+          "source": "stage",
+          "note": "Venue closed. Name on the card only; not in the Exchange kind count."
+        }
+      ]
+    }
+  ],
+  "rejected": [
+    {
+      "address": "9exS2B892HTiDkqhcWnj1nzsbYmVn7ameVb1d2jagUWTqaLxfTX",
+      "name": "Not a CEX main",
+      "kind": "wallet",
+      "source": "ergowatch",
+      "reason": "EW excluded as Gate (OG mining path). Not a verified hot wallet."
+    },
+    {
+      "address": "9gNYeyfRFUipiWZ3JR1ayDMoeh28E6J7aDQosb7yrzsuGSDqzCC",
+      "name": "Not a CEX main",
+      "kind": "wallet",
+      "source": "ergowatch",
+      "reason": "EW deposit_ignored: Gate listing false positive. Not a verified hot wallet."
+    },
+    {
+      "address": "9hxFS2RkmL5Fv5DRZGwZCbsbjTU1R75Luc2t5hkUcR1x3jWzre4",
+      "name": "Not a CEX main",
+      "kind": "wallet",
+      "source": "ergowatch",
+      "reason": "EW deposit_ignored: active since 2019, treasury-funded, one 50k tx to Gate at listing."
+    },
+    {
+      "address": "9i2oKu3bbHDksfiZjbhAgSAWW7iZecUS78SDaB46Fpt2DpUNe6M",
+      "name": "Not a CEX main",
+      "kind": "wallet",
+      "source": "ergowatch",
+      "reason": "EW deposit_ignored: involved in the same Gate listing 50k path."
+    },
+    {
+      "address": "9iHCMtd2gAPoYGhWadjruygKwNKRoeQGq1xjS2Fkm5bT197YFdR",
+      "name": "Not a CEX main",
+      "kind": "wallet",
+      "source": "ergowatch",
+      "reason": "EW deposit_ignored: first-ever tx to Gate 9iKFBB, not a deposit funnel."
+    }
+  ]
+}

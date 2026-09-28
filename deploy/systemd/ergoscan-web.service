@@ -1,0 +1,18 @@
+[Unit]
+Description=ErgoScan web
+After=network-online.target ergoscan-gateway.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ergoscan
+SyslogIdentifier=ergoscan-web
+Environment=NODE_ENV=production
+Environment=PORT=4410
+Environment=HOSTNAME=0.0.0.0
+ExecStart=/usr/bin/npm run start -w @ergoscan/web
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

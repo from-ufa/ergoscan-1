@@ -1,0 +1,23 @@
+{
+  "name": "@ergoscan/oracle-projector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test src/policy.test.ts src/persist.test.ts src/detect.test.ts"
+  },
+  "dependencies": {
+    "@ergoscan/shared": "*",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.11.11",
+    "tsx": "^4.19.4",
+    "typescript": "~5.8.3"
+  }
+}

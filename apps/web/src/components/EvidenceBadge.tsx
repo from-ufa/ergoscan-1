@@ -1,0 +1,45 @@
+"use client";
+
+import clsx from "clsx";
+import { useT } from "@/lib/i18n/I18nProvider";
+import type { EvidenceKind } from "@/lib/trust-board";
+
+const TONE: Record<EvidenceKind, string> = {
+  chain: "var(--accent)",
+  decoded: "#9b87f5",
+  telemetry: "#59b7c7",
+  live: "var(--up)",
+  heuristic: "#d99b2b",
+  external: "var(--muted)",
+};
+
+export function EvidenceBadge({
+  kind,
+  className,
+  compact = false,
+}: {
+  kind: EvidenceKind;
+  className?: string;
+  compact?: boolean;
+}) {
+  const t = useT();
+  return (
+    <span
+      className={clsx(
+        "inline-flex items-center rounded-full bg-[var(--wash)] font-mono text-[var(--muted)]",
+        compact
+          ? "gap-1 px-1.5 py-0.5 text-[9px]"
+          : "gap-1.5 px-2 py-1 text-[10px]",
+        className
+      )}
+      title={t(`trust.evidence.${kind}.hint`)}
+    >
+      <span
+        className="h-1.5 w-1.5 shrink-0 rounded-full"
+        style={{ backgroundColor: TONE[kind] }}
+        aria-hidden
+      />
+      {t(`trust.evidence.${kind}${compact ? ".short" : ""}`)}
+    </span>
+  );
+}

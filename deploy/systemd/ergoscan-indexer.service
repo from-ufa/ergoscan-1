@@ -1,0 +1,37 @@
+[Unit]
+Description=ErgoScan indexer
+After=network-online.target docker.service ergonode.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ergoscan
+SyslogIdentifier=ergoscan-indexer
+Environment=INDEXER_ENABLED=1
+Environment=DATABASE_URL=postgres://ergoscan:changeme@127.0.0.1:5432/ergoscan
+Environment=ERGO_NODE_URL=http://127.0.0.1:9053
+Environment=BACKFILL_DEPTH=5000
+# Historical backfill toward genesis (0). Floor also limited by DEEPEN_DEPTH from tip.
+Environment=BACKFILL_TARGET=0
+Environment=DEEPEN_DEPTH=2000000
+Environment=MAX_PER_TICK=30
+Environment=DEEPEN_PER_TICK=12
+Environment=PREFETCH_BLOCKS=3
+# Multi-row SQL per tx. BATCH_SQL=0 restores per-row writes without a revert.
+Environment=BATCH_SQL=1
+# Backfill post-tick: skip often. 0+0 token stats / summary N=0 CAP=0 = old every tick.
+Environment=TOKEN_STATS_EVERY_N=5
+Environment=TOKEN_STATS_MS=60000
+Environment=BACKFILL_SUMMARY_CAP=40
+Environment=BACKFILL_SUMMARY_EVERY_N=5
+Environment=MIN_DISK_FREE_GB=40
+Environment=MAX_LAG_FOR_BACKFILL=20
+Environment=ENRICH_TOKENS=0
+Environment=POLL_MS=8000
+Nice=10
+ExecStart=/usr/bin/npx tsx apps/indexer/src/index.ts
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

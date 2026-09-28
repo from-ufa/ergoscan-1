@@ -1,0 +1,24 @@
+{
+  "name": "@ergoscan/indexer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "migrate": "tsx src/migrate.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npx tsx --test src/tokenNamesFromRegs.test.ts src/tokenIssuance.test.ts src/addressTxLong.test.ts src/addressSummary.test.ts src/gix.test.ts src/tokenStats.test.ts src/packed/packed.test.ts src/rentClaim.test.ts"
+  },
+  "dependencies": {
+    "@ergoscan/shared": "*",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.11.11",
+    "tsx": "^4.19.4",
+    "typescript": "~5.8.3"
+  }
+}

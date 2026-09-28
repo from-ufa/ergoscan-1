@@ -1,0 +1,35 @@
+[Unit]
+Description=ErgoScan gateway
+After=network-online.target ergonode.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ergoscan
+SyslogIdentifier=ergoscan-gateway
+Environment=PORT=4400
+Environment=MOCK=0
+Environment=MOCK_FALLBACK=0
+Environment=ERGO_NODE_URL=http://127.0.0.1:9053
+Environment=NETWORK=mainnet
+Environment=DATABASE_URL=postgres://ergoscan:changeme@127.0.0.1:5432/ergoscan
+# Read replica when it exists. Unset = primary (same URL). Gateway never writes chain tables.
+# Environment=DATABASE_READ_URL=postgres://ergoscan:changeme@127.0.0.1:5432/ergoscan
+# Soft load on shared ergonode REST (co-hosted with explorer/oracles)
+Environment=POLL_MS=6000
+Environment=MEMPOOL_TIMEOUT_MS=20000
+Environment=ENRICH_ADDRESSES=0
+Environment=RATE_LIMIT_PER_MIN=120
+Environment=SUBMIT_PER_MIN=10
+Environment=SUBMIT_INFLIGHT=2
+Environment=BLOCKS_LIMIT=16
+Nice=5
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=15
+ExecStart=/usr/bin/npm run start -w @ergoscan/gateway
+Restart=on-failure
+RestartSec=8
+
+[Install]
+WantedBy=multi-user.target
