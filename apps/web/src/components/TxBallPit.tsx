@@ -71,6 +71,19 @@ type MixBody = {
 const MIX_MAX = 48;
 const MIX_REST = 0.35;
 
+/** Viewport point → canvas pixels. The opening flight scales the painted box; the well stays in layout size. */
+function canvasPoint(canvas: HTMLCanvasElement, clientX: number, clientY: number): { x: number; y: number } {
+  const rect = canvas.getBoundingClientRect();
+  const w = canvas.clientWidth || rect.width || 1;
+  const h = canvas.clientHeight || rect.height || 1;
+  const rw = rect.width || w;
+  const rh = rect.height || h;
+  return {
+    x: ((clientX - rect.left) * w) / rw,
+    y: ((clientY - rect.top) * h) / rh,
+  };
+}
+
 function unit(id: string, salt: number): number {
   let h = salt >>> 0;
   for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619);
@@ -511,10 +524,17 @@ export function TxBallPit({
     const canvas = canvasRef.current;
     if (!el || !canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const top = rect.top + b.y - b.r - 10;
+    const w = canvas.clientWidth || rect.width || 1;
+    const h = canvas.clientHeight || rect.height || 1;
+    const sx = (rect.width || w) / w;
+    const sy = (rect.height || h) / h;
+    const x = rect.left + b.x * sx;
+    const y = rect.top + b.y * sy;
+    const rr = b.r * sy;
+    const top = y - rr - 10;
     const flip = top < 56;
-    el.style.left = `${rect.left + b.x}px`;
-    el.style.top = `${flip ? rect.top + b.y + b.r + 10 : top}px`;
+    el.style.left = `${x}px`;
+    el.style.top = `${flip ? y + rr + 10 : top}px`;
     const anchor = el.firstElementChild as HTMLElement | null;
     if (anchor) {
       anchor.style.transform = flip ? "translate(-50%, 0)" : "translate(-50%, -100%)";
@@ -577,9 +597,7 @@ export function TxBallPit({
     };
 
     const hitMix = (cx: number, cy: number): MixBody | null => {
-      const rect = canvas.getBoundingClientRect();
-      const x = cx - rect.left;
-      const y = cy - rect.top;
+      const { x, y } = canvasPoint(canvas, cx, cy);
       let best: MixBody | null = null;
       let bestD = Infinity;
       for (const b of mixRef.current) {
@@ -593,9 +611,7 @@ export function TxBallPit({
     };
 
     const hitWell = (cx: number, cy: number): WellBody | null => {
-      const rect = canvas.getBoundingClientRect();
-      const x = cx - rect.left;
-      const y = cy - rect.top;
+      const { x, y } = canvasPoint(canvas, cx, cy);
       let best: WellBody | null = null;
       let bestD = Infinity;
       for (const b of wellRef.current) {
@@ -764,10 +780,9 @@ export function TxBallPit({
     };
 
     const layout = () => {
-      const rect = host.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const w = Math.max(1, Math.floor(rect.width));
-      const h = Math.max(1, Math.floor(rect.height));
+      const w = Math.max(1, host.clientWidth);
+      const h = Math.max(1, host.clientHeight);
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       canvas.style.width = `${w}px`;
@@ -957,8 +972,8 @@ export function TxBallPit({
       if (!wellOn.current || reduce || e.button !== 0) return;
       const b = hitWell(e.clientX, e.clientY);
       if (!b || b.more) return;
-      const rect = canvas.getBoundingClientRect();
-      pokeWell(b, e.clientX - rect.left, e.clientY - rect.top, performance.now(), wellRef.current);
+      const at = canvasPoint(canvas, e.clientX, e.clientY);
+      pokeWell(b, at.x, at.y, performance.now(), wellRef.current);
     };
     const onClick = (e: MouseEvent) => {
       if (wellOn.current) {
