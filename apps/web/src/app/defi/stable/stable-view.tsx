@@ -13,7 +13,7 @@ import { RankWindow } from "@/components/RankWindow";
 import { INK } from "@/lib/palette";
 import { snapshotAgeUsd } from "@ergoscan/shared";
 import { formatGroupedNumber, formatRelAge, nanoErgToNumber, shortId } from "@/lib/format";
-import { SIGRSV_ID, SIGRSV_INK, resolveTokenMeta, tokenTickerInk } from "@/lib/token-meta";
+import { SIGRSV_ID, resolveTokenMeta, tokenTickerInk } from "@/lib/token-meta";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { useKeepFresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, enteringIds, useEnterIds } from "@/lib/keyed-enter";
@@ -189,7 +189,7 @@ export function StableView({ initial }: { initial: AgeUsdBank | null }) {
       unavailable: bank?.sigRsvInBank == null,
       sub: t("stable.sigrsvBankSub"),
       mark: <TokenAvatar tokenId={SIGRSV_ID} symbol="SigRSV" size={36} />,
-      ink: SIGRSV_INK,
+      ink: INK.coral,
       enter: 2,
     },
     {

@@ -33,6 +33,8 @@ const EXTRA_NAMES: Readonly<Record<string, string>> = {
   "0779ec04f2fae64e87418a1ad917639d4668f78484f45df962b0dec14a2591d2": "MiGoreng",
   "ae399fcb751e8e247d0da8179a2bcca2aa5119fff9c85721ffab9cdc9a3cb2dd": "DORT",
   "c1980d829988229516430a47a5eca376060b6ce859616db0936e78ab25cb6de7": "LIT",
+  "e8b20745ee9d18817305f32eb21015831a48f02d40980de6e849f886dca7f807": "Flux",
+  "f0cac602d618081f46db086726d3c4da53006b646b50e382989054dcf3c93bd8": "Faku",
 };
 
 export function ergoTokenDecimals(
