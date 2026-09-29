@@ -76,6 +76,19 @@ test("mark centers are wrap-relative", () => {
   assert.deepEqual(pts, [{ x: 10, y: 10 }]);
 });
 
+test("opening perspective does not stretch the threads", () => {
+  const scale = 640 / 480;
+  const layout = { w: 300, h: 120 };
+  const { box, pts } = sceneFromRects(
+    { left: 0, top: 0, width: layout.w * scale, height: layout.h * scale },
+    [{ left: 40 * scale, top: 16 * scale, width: 36 * scale, height: 36 * scale }],
+    layout
+  );
+  assert.deepEqual(box, layout);
+  assert.ok(Math.abs((pts[0]?.x ?? 0) - 58) < 0.001);
+  assert.ok(Math.abs((pts[0]?.y ?? 0) - 34) < 0.001);
+});
+
 test("lens split is live vs everyone else", () => {
   const { live, silent } = splitOracleLens([
     { live: true },

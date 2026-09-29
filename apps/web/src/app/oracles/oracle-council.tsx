@@ -58,7 +58,11 @@ function readMarks(wrap: HTMLElement | null): { box: { w: number; h: number }; p
   if (!wrap) return { box: { w: 0, h: 0 }, pts: [] };
   const wr = wrap.getBoundingClientRect();
   const marks = [...wrap.querySelectorAll<HTMLElement>("[data-oracle-mark]")];
-  return sceneFromRects(wr, marks.map((el) => el.getBoundingClientRect()));
+  return sceneFromRects(
+    wr,
+    marks.map((el) => el.getBoundingClientRect()),
+    { w: wrap.clientWidth, h: wrap.clientHeight }
+  );
 }
 
 type Actor = {

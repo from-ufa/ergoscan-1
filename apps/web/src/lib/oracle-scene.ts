@@ -96,15 +96,25 @@ export function sceneGridSlots(
   });
 }
 
+/** Mark centers in the wrap's layout box.
+ *  Painted rects include the opening flight: translateZ(160px) under a
+ *  640px perspective is 4/3. Pass `layout` (clientWidth/clientHeight) so
+ *  the threads stay in the size the card lands at.
+ */
 export function sceneFromRects(
   wrap: { left: number; top: number; width: number; height: number },
-  marks: { left: number; top: number; width: number; height: number }[]
+  marks: { left: number; top: number; width: number; height: number }[],
+  layout?: { w: number; h: number }
 ): { box: { w: number; h: number }; pts: ScenePt[] } {
+  const w = layout && layout.w > 0 ? layout.w : wrap.width;
+  const h = layout && layout.h > 0 ? layout.h : wrap.height;
+  const sx = w > 0 && wrap.width > 0 ? wrap.width / w : 1;
+  const sy = h > 0 && wrap.height > 0 ? wrap.height / h : 1;
   return {
-    box: { w: wrap.width, h: wrap.height },
+    box: { w, h },
     pts: marks.map((r) => ({
-      x: r.left + r.width / 2 - wrap.left,
-      y: r.top + r.height / 2 - wrap.top,
+      x: (r.left + r.width / 2 - wrap.left) / sx,
+      y: (r.top + r.height / 2 - wrap.top) / sy,
     })),
   };
 }
