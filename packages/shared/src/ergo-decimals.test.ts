@@ -26,6 +26,11 @@ test("Rosen + extra Ergo decimals", () => {
   assert.equal(ergoTokenDecimals(EXLE), 4);
   assert.equal(ergoTokenDecimals(LIT), 9);
   assert.equal(knownErgoTokenName(LIT), "LIT");
+  assert.equal(knownErgoTokenName(FLUX), "Flux");
+  assert.equal(
+    knownErgoTokenName("f0cac602d618081f46db086726d3c4da53006b646b50e382989054dcf3c93bd8"),
+    "Faku"
+  );
   assert.equal(ergoTokenDecimals("f".repeat(64)), null);
   assert.equal(ergoTokenDecimals(null), null);
 });

@@ -71,6 +71,18 @@ test("at-risk tokens are priced or protocol, not a bare NFT", () => {
   assert.equal(tokenAtRisk("ab".repeat(32), 0), false);
 });
 
+test("Flux and Faku keep their names instead of a short hash", () => {
+  const flux = "e8b20745ee9d18817305f32eb21015831a48f02d40980de6e849f886dca7f807";
+  const faku = "f0cac602d618081f46db086726d3c4da53006b646b50e382989054dcf3c93bd8";
+  assert.equal(resolveTokenMeta(flux, null, "Flux").symbol, "Flux");
+  assert.equal(resolveTokenMeta(flux).name, "Flux");
+  assert.equal(tokenDecimals(flux), 8);
+  assert.equal(resolveTokenMeta(faku, null, "Faku").symbol, "Faku");
+  assert.equal(resolveTokenMeta(faku).name, "Faku");
+  assert.doesNotMatch(resolveTokenMeta(flux).symbol, /e8b2/);
+  assert.doesNotMatch(resolveTokenMeta(faku).symbol, /f0ca/);
+});
+
 test("SigRSV ticker ink matches the logo purple", () => {
   assert.equal(tokenTickerInk(SIGRSV_ID), SIGRSV_INK);
   assert.equal(tokenTickerInk(SIGUSD), INK.coral);
