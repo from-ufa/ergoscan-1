@@ -2256,13 +2256,78 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 }
 
 .home-tile-enter {
-  animation: home-tile-enter 400ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
-  animation-delay: calc(75ms + (var(--enter, 0) * 25ms));
+  animation:
+    addr-tile-drop 400ms linear both,
+    addr-tile-in 400ms linear both;
+  animation-delay: 0ms, 0ms;
+  transform-origin: center center;
+}
+
+/*
+ * /addresses tiles. They come from the viewer onto the screen plane.
+ * perspective 640px, start translateZ(160px) ≈ 1.33× (640 / 480).
+ * Flight keeps scale 1 and only loses the near-camera size.
+ * Same finish as the list row enter: 400ms, delay 0.
+ * Land at 58% (232ms). Expand peaks at 74% (296ms).
+ * Opacity fades on its own so it does not split the motion.
+ */
+.addr-drop {
+  perspective: 640px;
+  perspective-origin: center center;
+}
+
+.addr-drop,
+.addr-drop > * {
+  transform-style: preserve-3d;
+}
+
+@keyframes addr-tile-drop {
+  0% {
+    transform: translateZ(160px) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.22, 0.15, 0.28, 1);
+  }
+  58% {
+    transform: translateZ(0) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.16, 0.7, 0.3, 1);
+  }
+  74% {
+    transform: translateZ(0) scale(1.045, 1.045);
+    animation-timing-function: cubic-bezier(0.2, 0.55, 0.2, 1);
+  }
+  100% {
+    transform: translateZ(0) scale(1, 1);
+  }
+}
+
+@keyframes addr-tile-in {
+  0% { opacity: 0; }
+  18% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.plane-stage {
+  perspective: 640px;
+  perspective-origin: center center;
+}
+
+.plane-stage,
+.plane-stage * {
+  transform-style: preserve-3d;
+}
+
+.plane-drop,
+.addr-drop .home-tile-enter {
+  animation:
+    addr-tile-drop 400ms linear both,
+    addr-tile-in 400ms linear both;
+  animation-delay: 0ms, 0ms;
   transform-origin: center center;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-tile-enter {
+  .home-tile-enter,
+  .addr-drop .home-tile-enter,
+  .plane-drop {
     animation: none;
     opacity: 1;
     transform: none;

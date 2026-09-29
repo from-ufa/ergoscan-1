@@ -483,7 +483,7 @@ export function AddressesView({ initial }: { initial: AddressesPageData }) {
 
   return (
     <Shell>
-      <div className="mb-3 flex flex-col gap-2">
+      <div className="addr-drop mb-3 flex flex-col gap-2">
         <div className="grid grid-cols-2 items-stretch gap-2 sm:grid-cols-5">
           <HolderBandStrip
             raw={bands?.all}

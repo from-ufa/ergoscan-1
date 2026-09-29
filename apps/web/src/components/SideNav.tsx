@@ -246,7 +246,7 @@ function NavRow({
       }}
       aria-current={active ? "page" : undefined}
       className={clsx(
-        "nav-row nav-row--press relative flex items-center overflow-hidden rounded-[10px]",
+        "nav-row nav-row--press plane-drop relative flex items-center overflow-hidden rounded-[10px]",
         "transition-[padding,gap,justify-content] duration-[420ms] ease-[var(--ease)]",
         rowPad(depth, collapsed),
         armed && "is-armed",
@@ -323,7 +323,7 @@ function NavBranch({
     </svg>
   );
   const rowClass = clsx(
-    "nav-row nav-row--press relative flex w-full items-center overflow-hidden rounded-[10px]",
+    "nav-row nav-row--press plane-drop relative flex w-full items-center overflow-hidden rounded-[10px]",
     "transition-[padding,gap,justify-content] duration-[420ms] ease-[var(--ease)]",
     rowPad(depth, collapsed),
     armed && "is-armed",
@@ -491,7 +491,7 @@ function NavList({
   };
 
   return (
-    <>
+    <div className="plane-stage">
       <div className="flex flex-col gap-px">{NAV_MAIN.map(renderItem)}</div>
       <div
         className={clsx(
@@ -500,7 +500,7 @@ function NavList({
         )}
       />
       <div className="flex flex-col gap-px">{NAV_FOOT.map(renderItem)}</div>
-    </>
+    </div>
   );
 }
 
