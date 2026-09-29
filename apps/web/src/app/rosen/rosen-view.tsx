@@ -16,7 +16,15 @@ import {
 } from "@/components/kpi-marks";
 import { RankWindow } from "@/components/RankWindow";
 import { getGateway } from "@/lib/config";
-import { formatClockTime, shortId } from "@/lib/format";
+import {
+  formatClockTime,
+  formatDottedDate,
+  formatH24,
+  formatRelTime,
+  relAgeTone,
+  relAgeToneClass,
+  shortId,
+} from "@/lib/format";
 import { rosenExplorer } from "@/lib/rosen-explorers";
 import { INK } from "@/lib/palette";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
@@ -310,13 +318,13 @@ export function RosenView({
         >
               <div
                 className={clsx(
-                  "addr-head addr-lane addr-lane-x block-lane text-[12px] font-medium",
+                  "addr-head addr-lane addr-lane-x block-lane rosen-tape text-[12px] font-medium",
                   stuck && "is-stuck"
                 )}
               >
                 <div className="block-lane-pair">
                   <div className="min-w-0">{t("rosen.col.route")}</div>
-                  <div className="min-w-0 justify-end">{t("rosen.col.amount")}</div>
+                  <div className="min-w-0 justify-end">{t("rosen.col.time")}</div>
                 </div>
                 <div className="block-lane-pair">
                   <div className="min-w-0">{t("rosen.col.from")}</div>
@@ -425,17 +433,23 @@ function RosenRef({
   kind,
   raw,
   block,
+  chars = 6,
+  nowrap = false,
 }: {
   chain?: string | null;
   kind: "address" | "tx";
   raw: string | null | undefined;
   block?: boolean;
+  /** Visible chars on each side of the ellipsis. */
+  chars?: number;
+  nowrap?: boolean;
 }) {
   if (!raw) return <span className="text-[var(--muted)]">—</span>;
   const hit = rosenExplorer(chain, kind, raw);
-  const label = shortId(hit?.label || raw, 6);
+  const label = shortId(hit?.label || raw, chars);
   const cls = clsx(
-    "truncate font-mono text-[12px]",
+    nowrap ? "whitespace-nowrap" : "truncate",
+    "font-mono text-[12px]",
     block && "block",
     hit && "text-accent hover:underline"
   );
@@ -451,6 +465,24 @@ function RosenRef({
     <Link href={hit.href} className={cls}>
       {label}
     </Link>
+  );
+}
+
+function RosenWhen({ ts }: { ts: number | null | undefined }) {
+  const clock = formatH24(ts, undefined, true);
+  const date = formatDottedDate(ts);
+  if (clock === "—" || date === "—") {
+    return <span className="text-[var(--muted)]">—</span>;
+  }
+  return (
+    <div>
+      <p className={clsx("whitespace-nowrap tabular-nums", relAgeToneClass(relAgeTone(ts)))}>
+        {formatRelTime(ts)}
+      </p>
+      <p className="mt-0.5 whitespace-nowrap text-[11px] tabular-nums text-[var(--muted)]">
+        {clock} · {date}
+      </p>
+    </div>
   );
 }
 
@@ -475,24 +507,24 @@ function RosenTapeRow({
   return (
     <div
       className={clsx(
-        "addr-lane addr-lane-x block-lane border-t border-[var(--border-soft)] py-2.5 text-[13px]",
+        "addr-lane addr-lane-x block-lane rosen-tape border-t border-[var(--border-soft)] py-2.5 text-[13px]",
         enterClass
       )}
     >
       <div className="block-lane-pair">
-        <div className="min-w-0 px-3">
+        <div className="px-3">
           <span className="truncate font-medium">
             {row.fromChainLabel} → {row.toChainLabel}
           </span>
-          <p className="mt-0.5 truncate text-[11px] text-[var(--muted)]">{token}</p>
+          <p className="mt-0.5 whitespace-nowrap text-[11px] leading-[1.15]">
+            <span className="tabular-nums text-[var(--up)]">
+              <PrettyAmt raw={row.amount} decimals={dec} locale={locale} />
+            </span>
+            <span className="text-[var(--muted)]"> {token}</span>
+          </p>
         </div>
-        <div className="min-w-0 px-3 text-right tabular-nums">
-          <p className="whitespace-nowrap">
-            <PrettyAmt raw={row.amount} decimals={dec} locale={locale} /> {token}
-          </p>
-          <p className="mt-0.5 text-[11px] text-[var(--muted)]">
-            {formatClockTime(row.time, locale)}
-          </p>
+        <div className="min-w-0 px-3 text-right">
+          <RosenWhen ts={row.time} />
         </div>
       </div>
       <div className="block-lane-pair">
@@ -531,13 +563,19 @@ function RosenTapeRow({
         </div>
       </div>
       <div className="block-lane-pair">
-        <div className="min-w-0 px-3">
+        <div className="px-3">
           <RosenRef chain={row.fromChain} kind="tx" raw={row.sourceTxId} block />
-          <p className="mt-0.5 truncate text-[11px] text-[var(--muted)]">
+          <p className="mt-0.5 whitespace-nowrap text-[11px] text-[var(--muted)]">
             {row.paymentTxId ? (
               <>
                 {t("rosen.col.payment")}{" "}
-                <RosenRef chain={row.toChain} kind="tx" raw={row.paymentTxId} />
+                <RosenRef
+                  chain={row.toChain}
+                  kind="tx"
+                  raw={row.paymentTxId}
+                  chars={5}
+                  nowrap
+                />
               </>
             ) : (
               "—"
