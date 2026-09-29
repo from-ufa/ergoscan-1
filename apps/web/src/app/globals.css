@@ -2800,6 +2800,26 @@ html[data-ink="day"] .mcap-vol {
   }
 }
 
+@keyframes oracle-kpi-short {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.oracle-kpi-short {
+  animation: oracle-kpi-short 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oracle-kpi-short {
+    animation: none;
+  }
+}
+
 .cadence-breathe {
   transform-origin: bottom center;
   animation: cadence-breathe 4s var(--ease) infinite;

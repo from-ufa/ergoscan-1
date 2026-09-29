@@ -19,3 +19,8 @@ export const ABOUT_KUSHTI = {
   handle: "kushti_ru",
   href: "https://t.me/kushti_ru",
 } as const;
+
+export const ABOUT_LINKS = [
+  { id: "github", href: "https://github.com/kayolo-ergoscan/ergoscan", labelKey: "about.github" },
+  { id: "x", href: "https://x.com/ergoscan_me", labelKey: "about.x" },
+] as const;

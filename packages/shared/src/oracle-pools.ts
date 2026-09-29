@@ -150,6 +150,61 @@ export function oracleOperatorFromRegisters(regs: unknown): OracleOperatorId {
   };
 }
 
+/**
+ * R5 is either a numeric epoch (`n:`) or USD v1's 32-byte round id (`h:`).
+ * A Coll[Byte] round id is not a Sigma long, so the height window must not decide it.
+ */
+export function oracleRoundKey(r5: unknown): string | null {
+  const hex =
+    typeof r5 === "string"
+      ? r5.trim().toLowerCase()
+      : r5 && typeof r5 === "object" && !Array.isArray(r5) &&
+          typeof (r5 as { serializedValue?: unknown }).serializedValue === "string"
+        ? (r5 as { serializedValue: string }).serializedValue.trim().toLowerCase()
+        : "";
+  if (/^0e20[0-9a-f]{64}$/.test(hex)) return `h:${hex.slice(4)}`;
+  const n = longFromRegister(r5);
+  if (n != null && n >= 0n && n <= 10_000_000n) return `n:${n.toString()}`;
+  return null;
+}
+
+/** Hash rounds follow the newest seated box. Numeric rounds follow the pool epoch. */
+export function oracleCurrentRound(
+  seats: readonly { round: string | null; height: number | null }[],
+  poolEpoch: number | null
+): string | null {
+  let best: { round: string; height: number } | null = null;
+  for (const seat of seats) {
+    if (!seat.round?.startsWith("h:")) continue;
+    const height = seat.height ?? -1;
+    if (!best || height > best.height) best = { round: seat.round, height };
+  }
+  if (best) return best.round;
+  if (poolEpoch != null && Number.isFinite(poolEpoch) && poolEpoch >= 0) {
+    return `n:${Math.floor(poolEpoch)}`;
+  }
+  return null;
+}
+
+/**
+ * A known round id must match the current round.
+ * A box with no round id falls back to the heartbeat height window.
+ */
+export function oracleSeatLive(
+  round: string | null,
+  current: string | null,
+  fallback: {
+    opEpoch: number | null;
+    poolEpoch: number | null;
+    opHeight: number | null;
+    poolHeight: number | null;
+    epochLength: number;
+  }
+): boolean | null {
+  if (round) return current != null && round === current;
+  return oracleOperatorLive(fallback);
+}
+
 /** Epoch match when both sides have it. Else: posted inside the pool's heartbeat window. */
 export function oracleOperatorLive(input: {
   opEpoch: number | null;

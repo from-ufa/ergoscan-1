@@ -31,6 +31,8 @@ export type KpiItem = {
   ink?: string;
   /** Home-style sheet enter. Omit on list pages that already animate rows. */
   enter?: number;
+  /** Slow breath on the figure when the pool is short of posters. */
+  pulse?: boolean;
   /** @deprecated Corner stamp is the default; kept so call sites compile. */
   markTop?: boolean;
 };
@@ -82,7 +84,8 @@ export function KpiGrid({
                   dense
                     ? "mt-0.5 text-[17px] leading-[1.15]"
                     : "mt-1 truncate text-[22px]",
-                  k.unavailable && "text-[var(--muted)]"
+                  k.unavailable && "text-[var(--muted)]",
+                  k.pulse && "oracle-kpi-short"
                 )}
               >
                 <KpiNum>{k.value}</KpiNum>

@@ -171,12 +171,23 @@ export function registerOracleRoutes(app: Express): void {
       fee_nano: string | null;
       live: boolean | null;
     }>(
-      `SELECT box_id, address, creation_height, ts_ms, quote, epoch,
-              address_erg_nano, fee_nano, live
-         FROM oracle.operator_snap
-        WHERE slug = $1
-        ORDER BY creation_height DESC NULLS LAST, box_id`,
+      `SELECT s.box_id, s.address, s.creation_height, s.ts_ms, s.quote, s.epoch,
+              s.address_erg_nano, s.fee_nano, s.live
+         FROM oracle.operator_snap s
+         JOIN packed.boxes b
+           ON b.box_id = packed.hex32(s.box_id) AND b.spent_tx_id IS NULL
+         JOIN packed.addr ad
+           ON ad.id = b.addr_id AND ad.address NOT LIKE '9%'
+        WHERE s.slug = $1
+        ORDER BY s.creation_height DESC NULLS LAST, s.box_id`,
       [slug]
+    );
+    const def = ORACLE_FEEDS[slug];
+    const idleRow = await q<{ idle: string }>(
+      `SELECT COALESCE(SUM(amount), 0)::text AS idle
+         FROM token_balances
+        WHERE token_id = $1 AND amount > 0 AND address LIKE '9%'`,
+      [def.oracleToken]
     );
     const ticks = await q<{
       ts_ms: string | number | null;
@@ -205,7 +216,7 @@ export function registerOracleRoutes(app: Express): void {
       feeNano: o.fee_nano,
     }));
     const liveKnown = operators.some((o) => o.live != null);
-    const def = ORACLE_FEEDS[slug];
+    const idle = Number(idleRow?.[0]?.idle ?? 0);
 
     res.json({
       ready: true,
@@ -222,6 +233,7 @@ export function registerOracleRoutes(app: Express): void {
         : Number(row.live_operators) || 0,
       liveKnown,
       issued: Number(row.issued) || def.issued,
+      idle: Number.isFinite(idle) ? idle : 0,
       operators,
       total: operators.length,
       ticks: (ticks ?? []).map((t) => ({

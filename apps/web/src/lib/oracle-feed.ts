@@ -40,6 +40,8 @@ export type OracleFeedPack = {
   live: number;
   liveKnown: boolean;
   issued: number;
+  /** Oracle tokens sitting in wallets, not in the pool script. */
+  idle: number;
   operators: OracleOperator[];
   total: number;
   ticks: OracleTick[];
@@ -109,6 +111,7 @@ export function emptyOracleFeed(slug: OracleFeedSlug): OracleFeedPack {
     live: 0,
     liveKnown: false,
     issued: def.issued,
+    idle: 0,
     operators: [],
     total: 0,
     ticks: [],

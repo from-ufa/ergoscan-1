@@ -1,4 +1,4 @@
-import { ORACLE_FEEDS, oracleOperatorLive, type OracleFeedSlug } from "@ergoscan/shared";
+import { ORACLE_FEEDS, oracleCurrentRound, oracleSeatLive, type OracleFeedSlug } from "@ergoscan/shared";
 import type { Queryable } from "./db.js";
 import { setState } from "./db.js";
 import type { DetectedBox, DetectedFeed, MarketSnap, OracleCensus } from "./detect.js";
@@ -64,8 +64,9 @@ export async function persistFeed(
       }
     }
   }
+  const currentRound = oracleCurrentRound(found.operators, poolEpoch);
   const liveOf = (op: DetectedBox) =>
-    oracleOperatorLive({
+    oracleSeatLive(op.round, currentRound, {
       opEpoch: op.epoch,
       poolEpoch,
       opHeight: op.height,
@@ -211,10 +212,12 @@ export async function persistFeed(
   }
   await db.query(
     `DELETE FROM oracle.operator_snap s
-      USING packed.boxes b
      WHERE s.slug = $1
-       AND b.box_id = packed.hex32(s.box_id)
-       AND b.spent_tx_id IS NOT NULL`,
+       AND NOT EXISTS (
+         SELECT 1 FROM packed.boxes b
+          WHERE b.box_id = packed.hex32(s.box_id)
+            AND b.spent_tx_id IS NULL
+       )`,
     [found.slug]
   );
   if (ids.length) {

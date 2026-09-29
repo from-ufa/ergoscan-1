@@ -7,7 +7,10 @@ import {
   oracleAgeBlocks,
   oracleEpochFromRegisters,
   oracleOperatorFromRegisters,
+  oracleCurrentRound,
   oracleOperatorLive,
+  oracleRoundKey,
+  oracleSeatLive,
   oracleQuoteFromR4,
   oracleQuoteFromRegisters,
   oracleWindowLeft,
@@ -76,6 +79,92 @@ test("datapoint R4 is the operator P2PK, not the pool script", () => {
   );
   assert.ok(op.quote != null && op.quote > 0);
   assert.equal(oracleOperatorFromRegisters({ R4: "05c6a9c4e221" }).address, null);
+});
+
+test("USD v1 round id is the shared 32 bytes, not a 6-block height window", () => {
+  const round = "0e20" + "55".repeat(32);
+  const older = "0e20" + "aa".repeat(32);
+  assert.equal(oracleRoundKey(round), `h:${"55".repeat(32)}`);
+  assert.equal(oracleRoundKey("049ed803")?.startsWith("n:"), true);
+  const seats = [
+    { round: oracleRoundKey(round), height: 1883450 },
+    { round: oracleRoundKey(round), height: 1883457 },
+    { round: oracleRoundKey(older), height: 849146 },
+  ];
+  const current = oracleCurrentRound(seats, 1_883_462);
+  assert.equal(current, `h:${"55".repeat(32)}`);
+  assert.equal(
+    oracleSeatLive(seats[0]!.round, current, {
+      opEpoch: null,
+      poolEpoch: 1_883_462,
+      opHeight: 1883450,
+      poolHeight: 1883457,
+      epochLength: 6,
+    }),
+    true
+  );
+  assert.equal(
+    oracleSeatLive(seats[2]!.round, current, {
+      opEpoch: null,
+      poolEpoch: 1_883_462,
+      opHeight: 849146,
+      poolHeight: 1883457,
+      epochLength: 6,
+    }),
+    false
+  );
+});
+
+test("numeric pool epoch still marks only that epoch live", () => {
+  const current = oracleCurrentRound(
+    [
+      { round: "n:30223", height: 1883457 },
+      { round: "n:29409", height: 1875230 },
+      { round: null, height: 1705795 },
+    ],
+    30223
+  );
+  assert.equal(current, "n:30223");
+  assert.equal(
+    oracleSeatLive("n:30223", current, {
+      opEpoch: 30223,
+      poolEpoch: 30223,
+      opHeight: 1,
+      poolHeight: 100,
+      epochLength: 6,
+    }),
+    true
+  );
+  assert.equal(
+    oracleSeatLive("n:29409", current, {
+      opEpoch: 29409,
+      poolEpoch: 30223,
+      opHeight: 100,
+      poolHeight: 100,
+      epochLength: 6,
+    }),
+    false
+  );
+  assert.equal(
+    oracleSeatLive(null, current, {
+      opEpoch: null,
+      poolEpoch: 30223,
+      opHeight: 1883457,
+      poolHeight: 1883457,
+      epochLength: 6,
+    }),
+    true
+  );
+  assert.equal(
+    oracleSeatLive(null, current, {
+      opEpoch: null,
+      poolEpoch: 30223,
+      opHeight: 1705795,
+      poolHeight: 1883457,
+      epochLength: 6,
+    }),
+    false
+  );
 });
 
 test("live follows epoch, then the heartbeat height window", () => {

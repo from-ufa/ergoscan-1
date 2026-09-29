@@ -194,9 +194,20 @@ export function OracleFeedView({
   }, [pack.operators.length, listReady]);
 
   const answer = fmtQuote(slug, pack.quote, locale);
-  const liveLabel = pack.operators.length
-    ? `${pack.live.toLocaleString(loc(locale))} / ${pack.issued.toLocaleString(loc(locale))}`
-    : `— / ${pack.issued.toLocaleString(loc(locale))}`;
+  const seated = pack.operators.length;
+  const posting = liveOps.length;
+  const quiet = silentOps.length;
+  const idle = Number.isFinite(pack.idle) ? pack.idle : 0;
+  const liveLabel = seated
+    ? `${posting.toLocaleString(loc(locale))} / ${seated.toLocaleString(loc(locale))}`
+    : "—";
+  const oracleSub = [
+    quiet > 0 ? t("oracles.kpiQuiet").replace("{n}", quiet.toLocaleString(loc(locale))) : "",
+    idle > 0 ? t("oracles.kpiIdle").replace("{n}", idle.toLocaleString(loc(locale))) : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const oracleShort = seated > 0 && posting < def.minDataPoints;
   const tipH = tip?.height ?? pack.tipHeight;
   const ageBlocks = oracleAgeBlocks(tipH, pack.height);
   const updated =
@@ -262,7 +273,8 @@ export function OracleFeedView({
                 label: t("oracles.kpiOracles"),
                 value: liveLabel,
                 unavailable: !pack.operators.length,
-                sub: t("oracles.kpiOraclesSub").replace("{n}", String(def.minDataPoints)),
+                sub: oracleSub,
+                pulse: oracleShort,
                 mark: <KpiMarkUserGroup tone={INK.teal} />,
                 ink: INK.teal,
                 enter: 4,

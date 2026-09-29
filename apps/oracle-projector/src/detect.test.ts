@@ -11,7 +11,7 @@ test("oracle token amount=1 is a seat, stacks are stock", () => {
   assert.equal(classifyOracleTokenAmount(null), "skip");
 });
 
-test("a seat needs R4 P2PK address — amount=1 alone is not an operator", () => {
+test("a seat needs R4 P2PK and the box in the script — a wallet lot is not an operator", () => {
   assert.equal(
     isOracleSeatBox({
       boxId: "ab".repeat(32),
@@ -21,6 +21,8 @@ test("a seat needs R4 P2PK address — amount=1 alone is not an operator", () =>
       quote: 1,
       r4Nano: null,
       epoch: null,
+      round: null,
+      onScript: true,
       valueNano: "1",
       creationTxId: null,
     }),
@@ -29,12 +31,30 @@ test("a seat needs R4 P2PK address — amount=1 alone is not an operator", () =>
   assert.equal(
     isOracleSeatBox({
       boxId: "cd".repeat(32),
+      address: "9op",
+      height: 1,
+      tsMs: null,
+      quote: 1,
+      r4Nano: null,
+      epoch: null,
+      round: null,
+      onScript: false,
+      valueNano: "1",
+      creationTxId: null,
+    }),
+    false
+  );
+  assert.equal(
+    isOracleSeatBox({
+      boxId: "ef".repeat(32),
       address: null,
       height: 1,
       tsMs: null,
       quote: 1,
       r4Nano: null,
       epoch: null,
+      round: null,
+      onScript: true,
       valueNano: "1",
       creationTxId: null,
     }),

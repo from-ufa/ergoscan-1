@@ -118,7 +118,8 @@ export const ru: Record<string, string> = {
   "oracles.kpiBeatVal": "{n} блоков",
   "oracles.kpiBeatSub": "≈ {m} мин",
   "oracles.kpiOracles": "Оракулы",
-  "oracles.kpiOraclesSub": "В эфире за эпоху / выпущено · нужно {n}",
+  "oracles.kpiQuiet": "{n} молчат",
+  "oracles.kpiIdle": "{n} не сели",
   "oracles.chartTitle": "Оракул и рынок",
   "oracles.chartHint7d": "7 дней",
   "oracles.chartHint30d": "30 дней",
@@ -1234,6 +1235,8 @@ export const ru: Record<string, string> = {
   "about.eyebrow": "Независимый проводник",
   "about.title": "О ErgoScan",
   "about.lead": "Кто делает проводник, что в индексе, и что ещё в планах.",
+  "about.github": "GitHub",
+  "about.x": "X",
   "about.p1":
     "ErgoScan — полноценный проводник блокчейна Ergo (ERG), независимая альтернатива проводникам от самой сети. Здесь можно найти блоки, транзакции, боксы, адреса, токены и NFT — и в том же окне то, что обычно разъехалось по другим сайтам: storage rent, мемпул, ErgoDex, LithosDex, Rosen и пулы оракулов.",
   "about.p2":

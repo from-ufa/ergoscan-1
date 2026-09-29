@@ -117,7 +117,8 @@ export const en: Record<string, string> = {
   "oracles.kpiBeatVal": "{n} blocks",
   "oracles.kpiBeatSub": "≈ {m} min",
   "oracles.kpiOracles": "Oracles",
-  "oracles.kpiOraclesSub": "Live this epoch / minted · min {n}",
+  "oracles.kpiQuiet": "{n} quiet",
+  "oracles.kpiIdle": "{n} unseated",
   "oracles.chartTitle": "Oracle vs market",
   "oracles.chartHint7d": "7 days",
   "oracles.chartHint30d": "30 days",
@@ -1232,6 +1233,8 @@ export const en: Record<string, string> = {
   "about.eyebrow": "Independent explorer",
   "about.title": "About ErgoScan",
   "about.lead": "Who builds it, what it indexes, and what still sits on the map.",
+  "about.github": "GitHub",
+  "about.x": "X",
   "about.p1":
     "ErgoScan is a full Ergo (ERG) blockchain explorer, built as an independent alternative to the explorers that come from the network itself. You can look up blocks, transactions, boxes, addresses, tokens, and NFTs — and, in the same place, the parts of Ergo that usually live in other tools: storage rent, the mempool, ErgoDex, LithosDex, Rosen, and the oracle pools.",
   "about.p2":

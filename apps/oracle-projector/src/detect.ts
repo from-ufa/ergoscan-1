@@ -5,6 +5,7 @@ import {
   oracleEpochFromRegisters,
   oracleOperatorFromRegisters,
   oracleQuoteFromRegisters,
+  oracleRoundKey,
   parseMarketSnap,
   type OracleFeedSlug,
 } from "@ergoscan/shared";
@@ -22,6 +23,10 @@ export type DetectedBox = {
   quote: number | null;
   r4Nano: string | null;
   epoch: number | null;
+  /** `n:` numeric epoch or `h:` 32-byte round id. */
+  round: string | null;
+  /** Unspent box sits in the oracle script, not a wallet. */
+  onScript: boolean;
   valueNano: string;
   creationTxId: string | null;
 };
@@ -107,6 +112,11 @@ function decodeBox(row: BoxRow): DetectedBox | null {
       : null
   );
   const datapoint = op.pubKey ? op.r6Nano : poolR4 != null ? String(poolR4) : null;
+  const chain = row.address ?? "";
+  const r5 =
+    regs && typeof regs === "object" && !Array.isArray(regs)
+      ? (regs as Record<string, unknown>).R5
+      : null;
   return {
     boxId: id,
     address: op.address,
@@ -115,6 +125,8 @@ function decodeBox(row: BoxRow): DetectedBox | null {
     quote: op.pubKey ? op.quote : oracleQuoteFromRegisters(regs),
     r4Nano: datapoint,
     epoch: oracleEpochFromRegisters(regs),
+    round: oracleRoundKey(r5),
+    onScript: chain.length > 0 && !chain.startsWith("9"),
     valueNano: String(row.value_nano ?? "0"),
     creationTxId: row.creation_tx_id ? String(row.creation_tx_id) : null,
   };
@@ -215,9 +227,9 @@ async function unspentOracleBoxesAtAddresses(
   return r.rows;
 }
 
-/** Seat needs amount=1 and R4 → P2PK. Stray warehouse leftovers stay out. */
+/** Seat needs amount=1, R4 → P2PK, and the box itself in the oracle script. */
 export function isOracleSeatBox(box: DetectedBox): boolean {
-  return Boolean(box.address);
+  return Boolean(box.address) && box.onScript;
 }
 
 function seatsFromRows(rows: BoxRow[]): DetectedBox[] {
