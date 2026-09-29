@@ -160,13 +160,12 @@ export function tokenAtRisk(
   return knownErgoTokenName(id) != null;
 }
 
-/** Spectrum SigRSV mark fill. Every other ticker uses the ERGO word orange. */
 export const SIGRSV_ID =
   "003bd19d0187117f130b62e1bcab0939929ff5c7709f843c5c4dd158949285d0";
-export const SIGRSV_INK = "#6100FB";
 
-export function tokenTickerInk(tokenId?: string | null): string {
-  return String(tokenId || "").toLowerCase() === SIGRSV_ID ? SIGRSV_INK : INK.coral;
+/** Every ticker, including SigRSV, uses the ERGO word orange. */
+export function tokenTickerInk(_tokenId?: string | null): string {
+  return INK.coral;
 }
 
 export function isErgId(id: string | null | undefined): boolean {

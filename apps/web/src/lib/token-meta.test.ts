@@ -3,7 +3,6 @@ import { test } from "node:test";
 import {
   LOCAL_TOKEN_LOGOS,
   SIGRSV_ID,
-  SIGRSV_INK,
   resolveTokenMeta,
   tokenDecimals,
   tokenLogoSrc,
@@ -83,7 +82,7 @@ test("Flux and Faku keep their names instead of a short hash", () => {
   assert.doesNotMatch(resolveTokenMeta(faku).symbol, /f0ca/);
 });
 
-test("SigRSV ticker ink matches the logo purple", () => {
-  assert.equal(tokenTickerInk(SIGRSV_ID), SIGRSV_INK);
+test("SigRSV uses the same ticker ink as every other token", () => {
+  assert.equal(tokenTickerInk(SIGRSV_ID), INK.coral);
   assert.equal(tokenTickerInk(SIGUSD), INK.coral);
 });
