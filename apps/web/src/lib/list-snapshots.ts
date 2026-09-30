@@ -787,6 +787,20 @@ export async function fetchBlocksList(): Promise<BlockListItem[]> {
   return (j as { blocks?: BlockListItem[] }).blocks ?? [];
 }
 
+function ioCount(raw: unknown, named: unknown): number {
+  const n = finiteNum(raw);
+  if (n != null) return n;
+  const namedN = finiteNum(named);
+  if (namedN != null) return namedN;
+  return Array.isArray(raw) ? raw.length : 0;
+}
+
+function tokenCountOf(r: Record<string, unknown>): number | null {
+  const n = finiteNum(r.tokenCount);
+  if (n != null) return n;
+  return Array.isArray(r.tokenMeta) ? r.tokenMeta.length : null;
+}
+
 function asTxListItem(row: unknown, i: number): TxListItem | null {
   if (!row || typeof row !== "object") return null;
   const r = row as Record<string, unknown>;
@@ -795,7 +809,7 @@ function asTxListItem(row: unknown, i: number): TxListItem | null {
   const sizeN = finiteNum(r.size) ?? 0;
   return {
     id: r.id,
-    index: finiteNum(r.index) ?? i,
+    index: finiteNum(r.index) ?? finiteNum(r.indexInBlock) ?? i,
     inclusionHeight: finiteNum(r.inclusionHeight),
     timestamp: finiteNum(r.timestamp),
     size: sizeN,
@@ -804,14 +818,14 @@ function asTxListItem(row: unknown, i: number): TxListItem | null {
     category: typeof r.category === "string" && r.category.length ? r.category : "unknown",
     color: typeof r.color === "string" && r.color.length ? r.color : "#64748B",
     platform: typeof r.platform === "string" && r.platform.length ? r.platform : null,
-    inputs: finiteNum(r.inputs) ?? 0,
-    outputs: finiteNum(r.outputs) ?? 0,
+    inputs: ioCount(r.inputs, r.inputCount),
+    outputs: ioCount(r.outputs, r.outputCount),
     value:
       r.value == null && r.valueNano == null
         ? null
         : finiteNum(r.value) ?? finiteNum(r.valueNano) ?? 0,
     confirmed: r.confirmed !== false,
-    tokenCount: finiteNum(r.tokenCount),
+    tokenCount: tokenCountOf(r),
   };
 }
 

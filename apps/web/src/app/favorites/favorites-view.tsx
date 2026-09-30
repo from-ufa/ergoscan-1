@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import { AddressTapeHead, AddressTapeRow } from "@/components/AddressTapeRow";
 import { KpiNum, KpiTileRail } from "@/components/KpiGrid";
@@ -12,6 +13,7 @@ import {
   KpiMarkWorkflow,
 } from "@/components/kpi-marks";
 import { Shell } from "@/components/Shell";
+import { FavKayolo } from "@/components/FavKayolo";
 import { BlockTapeRow } from "@/app/blocks/blocks-view";
 import { PoolTapeRow } from "@/app/defi/pool/pool-view";
 import { TokenTapeRow } from "@/app/tokens/tokens-view";
@@ -173,6 +175,13 @@ function blockItem(card: NonNullable<ReturnType<typeof parseBlockCard>>): BlockL
   };
 }
 
+/** Gap to the previous block. The blocks tape shows this in Time. */
+function blockInterval(card: NonNullable<ReturnType<typeof parseBlockCard>>): number | null {
+  if (card.prevTimestamp == null || !Number.isFinite(card.timestamp) || card.timestamp <= 0) return null;
+  const gap = card.timestamp - card.prevTimestamp;
+  return gap > 0 ? gap : null;
+}
+
 async function getJson(path: string): Promise<unknown | null> {
   try {
     const r = await fetch(`${getGateway()}${path}`, SNAPSHOT_FETCH);
@@ -232,13 +241,29 @@ function KindTile({
   );
 }
 
-function col(label: string, align: "left" | "right" = "left") {
+function col(label: string, align: "left" | "right" | "center" = "left") {
   return (
-    <div className={clsx("min-w-0 text-[12px] font-medium text-[var(--muted)]", align === "right" && "text-right")}>
-      {label}
+    <div
+      className={clsx(
+        "flex h-full min-w-0 items-center",
+        align === "right" && "justify-end",
+        align === "center" && "justify-center"
+      )}
+    >
+      <span
+        className={clsx(
+          "inline-flex shrink-0 items-center whitespace-nowrap px-2 py-1.5 text-[12px] font-medium leading-none text-[var(--muted)]",
+          align === "right" && "w-full justify-end text-right",
+          align === "center" && "w-full justify-center text-center"
+        )}
+      >
+        {label}
+      </span>
     </div>
   );
 }
+
+const SHEET_EASE = [0.4, 0, 0.2, 1] as const;
 
 export function FavoritesView() {
   const t = useT();
@@ -251,6 +276,7 @@ export function FavoritesView() {
   const [addresses, setAddresses] = useState<Record<string, Header>>({});
   const [tokens, setTokens] = useState<Record<string, TokenListItem>>({});
   const [blocks, setBlocks] = useState<Record<string, BlockListItem>>({});
+  const [blockGaps, setBlockGaps] = useState<Record<string, number | null>>({});
   const [txs, setTxs] = useState<Record<string, TxListItem>>({});
   const [pools, setPools] = useState<Record<string, PoolBoardRow>>({});
   const fetched = useRef<Record<FavoriteKind, Set<string>>>({
@@ -261,7 +287,6 @@ export function FavoritesView() {
     pools: new Set(),
   });
   const enter = useEnterIds();
-  const packEnter = useEnterIds();
   const [listReady, setListReady] = useState(false);
   const seenKind = useRef<FavoriteKind | null>(null);
   const markEnter = enter.mark;
@@ -282,10 +307,9 @@ export function FavoritesView() {
     if (seenKind.current !== kind) {
       seenKind.current = kind;
       markEnter(rows);
-      if (rows.length) packEnter.mark([kind]);
     }
     setListReady(true);
-  }, [store, kind, markEnter, packEnter.mark]);
+  }, [store, kind, markEnter]);
 
   useEffect(() => {
     if (!ids?.length) return;
@@ -302,7 +326,11 @@ export function FavoritesView() {
         const snap = j as PoolBoardSnap | null;
         const byId: Record<string, PoolBoardRow> = {};
         for (const row of snap?.pools ?? []) byId[row.poolId] = row;
-        setPools(byId);
+        setPools(() => {
+          const next: Record<string, PoolBoardRow> = {};
+          for (const id of ids) next[id] = byId[id] ?? blankPool(id);
+          return next;
+        });
       });
       return () => {
         gone = true;
@@ -324,7 +352,10 @@ export function FavoritesView() {
         }
         if (kind === "blocks") {
           const card = parseBlockCard(await getJson(`/v1/blocks/${encodeURIComponent(id)}?limit=1&offset=0`));
-          return card ? blockItem(card) : blankBlock(id);
+          return {
+            item: card ? blockItem(card) : blankBlock(id),
+            gap: card ? blockInterval(card) : null,
+          };
         }
         const parsed = parseTxListItems([await getJson(`/v1/transactions/${encodeURIComponent(id)}`)]);
         return parsed[0] ?? blankTx(id);
@@ -351,7 +382,16 @@ export function FavoritesView() {
         setBlocks((prev) => {
           const next = { ...prev };
           missing.forEach((id, i) => {
-            next[id] = (rows[i] as BlockListItem) ?? blankBlock(id);
+            const packed = rows[i] as { item: BlockListItem; gap: number | null } | undefined;
+            next[id] = packed?.item ?? blankBlock(id);
+          });
+          return next;
+        });
+        setBlockGaps((prev) => {
+          const next = { ...prev };
+          missing.forEach((id, i) => {
+            const packed = rows[i] as { item: BlockListItem; gap: number | null } | undefined;
+            next[id] = packed?.gap ?? null;
           });
           return next;
         });
@@ -399,6 +439,15 @@ export function FavoritesView() {
     onToggleFav: () => remove(id),
   });
 
+  const rowReady = (id: string) => {
+    if (kind === "addresses") return addresses[id] != null;
+    if (kind === "tokens") return tokens[id] != null;
+    if (kind === "blocks") return blocks[id] != null;
+    if (kind === "transactions") return txs[id] != null;
+    return pools[id] != null;
+  };
+  const tapeReady = !!ids?.length && ids.every(rowReady);
+
   return (
     <Shell>
       {store == null || !listReady ? null : (
@@ -419,12 +468,27 @@ export function FavoritesView() {
               />
             ))}
           </div>
-          {!ids?.length ? (
-            <p className="text-[var(--muted)]">{t(EMPTY_KEY[kind])}</p>
-          ) : (
-            <div className="addr-sheet">
-              <div ref={pinRef} className="h-px w-full" aria-hidden />
-              <div className={packEnter.enterClass(kind)}>
+          <AnimatePresence mode="wait" initial={false}>
+            {!ids?.length ? (
+              <motion.div
+                key={`empty-${kind}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22, ease: SHEET_EASE }}
+              >
+                <FavKayolo line={t(EMPTY_KEY[kind])} />
+              </motion.div>
+            ) : tapeReady ? (
+              <motion.div
+                key={kind}
+                className="addr-sheet"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.28, ease: SHEET_EASE }}
+              >
+                <div ref={pinRef} className="h-px w-full" aria-hidden />
                 {kind === "addresses" ? (
                   <div className="addr-pan kpi-tape">
                     <AddressTapeHead
@@ -455,7 +519,7 @@ export function FavoritesView() {
                   <div className={clsx("addr-pan", stuck && "is-stuck")}>
                     <div className="addr-head addr-lane addr-lane-x token-lane text-[12px] font-medium">
                       <div className="token-lane-name">
-                        <div aria-hidden />
+                        <div className="justify-center !px-2" aria-hidden />
                         {col(t("tokens.colName"))}
                       </div>
                       <div className="token-lane-id min-w-0 grid">
@@ -515,7 +579,7 @@ export function FavoritesView() {
                         miss={t("home.unavailable")}
                         t={t}
                         now={Date.now()}
-                        intervalMs={null}
+                        intervalMs={blockGaps[id] ?? null}
                         enterClass={enter.enterClass(id)}
                         {...heart(id, true)}
                       />
@@ -602,9 +666,9 @@ export function FavoritesView() {
                     ))}
                   </div>
                 ) : null}
-              </div>
-            </div>
-          )}
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </>
       )}
     </Shell>
