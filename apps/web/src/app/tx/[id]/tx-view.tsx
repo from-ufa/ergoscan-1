@@ -5,6 +5,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { CATEGORY_COLORS } from "@ergoscan/shared";
 import { Shell } from "@/components/Shell";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { AddrFactCard } from "@/components/AddrFactCard";
 import {
   KpiMarkAmount,
@@ -43,6 +44,7 @@ import {
 } from "@/lib/tx-flow";
 import { INK, DONUT_SLICES } from "@/lib/palette";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
+import { useFavoriteOf } from "@/lib/favorites";
 import { readHashTab, setHashTab } from "@/lib/hash-tab";
 import { useKeepFresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, enteringIds, useEnterIds } from "@/lib/keyed-enter";
@@ -178,6 +180,7 @@ export function TxView({
   initial: TxPageSnapshot | null;
 }) {
   const t = useT();
+  const txFav = useFavoriteOf("transactions", id);
   const { locale } = useI18n();
   const { markSynced } = usePageSync();
   const enter = useEnterIds();
@@ -394,6 +397,12 @@ export function TxView({
                     {shortId(id, 7)}
                   </code>
                   <CopyChip text={id} copyLabel={t("tx.copy")} copiedLabel={t("tx.copied")} />
+                  <FavoriteHeart
+                    on={txFav.on}
+                    ready={txFav.ready}
+                    title={txFav.on ? t("favorites.remove") : t("favorites.add")}
+                    onToggle={txFav.toggle}
+                  />
                 </h1>
                 <p
                   className="mt-1 flex min-w-0 items-start gap-1.5 text-[12px] leading-snug text-[var(--muted)]"

@@ -13,6 +13,7 @@ import {
 } from "@/components/kpi-marks";
 import { AddressActivityWhen } from "@/components/AddressTapeRow";
 import { TokenAvatar } from "@/components/TokenBadge";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { RankWindow } from "@/components/RankWindow";
 import { INK } from "@/lib/palette";
 import { formatGroupedNumber, shortId } from "@/lib/format";
@@ -21,6 +22,7 @@ import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { useChainTipRefresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, snapshotPath, useEnterIds } from "@/lib/keyed-enter";
 import { getGateway } from "@/lib/config";
+import { useFavoriteList } from "@/lib/favorites";
 import { noteRouteNavigation } from "@/lib/route-nav";
 import {
   defiVenueCaption,
@@ -114,6 +116,8 @@ function SortCol({
 
 export function PoolView({ initial }: { initial: PoolBoardSnap | null }) {
   const t = useT();
+  const { ids: favIds, toggle: toggleFav } = useFavoriteList("pools");
+  const favReady = favIds != null;
   const { locale } = useI18n();
   const { markSynced, tip } = usePageSync();
   const tipRef = useRef(tip);
@@ -352,6 +356,10 @@ export function PoolView({ initial }: { initial: PoolBoardSnap | null }) {
                   miss={miss}
                   t={t}
                   enterClass={enter.enterClass(row.poolId)}
+                  fav={favIds?.includes(row.poolId) ?? false}
+                  favReady={favReady}
+                  favTitle={favIds?.includes(row.poolId) ? t("favorites.remove") : t("favorites.add")}
+                  onToggleFav={() => toggleFav(row.poolId)}
                 />
               ))}
             </div>
@@ -384,18 +392,26 @@ export function PoolView({ initial }: { initial: PoolBoardSnap | null }) {
   );
 }
 
-function PoolTapeRow({
+export function PoolTapeRow({
   row,
   locale,
   miss,
   t,
   enterClass,
+  fav = false,
+  favReady = true,
+  favTitle,
+  onToggleFav,
 }: {
   row: PoolBoardRow;
   locale: string;
   miss: string;
   t: (k: string) => string;
   enterClass?: string;
+  fav?: boolean;
+  favReady?: boolean;
+  favTitle?: string;
+  onToggleFav?: () => void;
 }) {
   const venue = defiVenueCaption(row.venue, t);
   const href = `/defi/pool/${row.poolId}`;
@@ -413,7 +429,7 @@ function PoolTapeRow({
       )}
     >
       <div className="block-lane-pair">
-        <div className="min-w-0 px-3">
+        <div className="flex min-w-0 items-center gap-1 px-3">
           <Link
             href={href}
             onClick={() => noteRouteNavigation(href)}
@@ -434,6 +450,15 @@ function PoolTapeRow({
               ) : null}
             </span>
           </Link>
+          {onToggleFav ? (
+            <FavoriteHeart
+              size="sm"
+              on={fav}
+              ready={favReady}
+              title={favTitle ?? ""}
+              onToggle={onToggleFav}
+            />
+          ) : null}
         </div>
         <div className="px-3 text-right">
           <span className="tabular-nums font-semibold" style={{ color: INK.gold }}>

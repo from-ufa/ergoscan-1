@@ -12,6 +12,7 @@ import {
 import { INK } from "@/lib/palette";
 import { RankWindow } from "@/components/RankWindow";
 import { TxLaneRow } from "@/components/TxLaneRow";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { getGateway } from "@/lib/config";
 import { fetchChainStats, type ChainStats } from "@/lib/chain-stats";
 import { formatCompact } from "@/lib/format";
@@ -20,6 +21,7 @@ import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { useChainTipRefresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, enteringIds, snapshotPath, useEnterIds } from "@/lib/keyed-enter";
 import { TX_PACK, parseTxListItems, type TxListItem } from "@/lib/list-snapshots";
+import { useFavoriteList } from "@/lib/favorites";
 
 function loc(locale: string): string {
   return locale === "ru" ? "ru-RU" : "en-US";
@@ -39,6 +41,8 @@ export function TransactionsView({
   initialStats?: ChainStats | null;
 }) {
   const t = useT();
+  const { ids: favIds, toggle: toggleFav } = useFavoriteList("transactions");
+  const favReady = favIds != null;
   const { locale } = useI18n();
   const { markSynced, tip } = usePageSync();
   const tipRef = useRef(tip);
@@ -300,6 +304,10 @@ export function TransactionsView({
                   t={t}
                   showHeight
                   enterClass={enter.enterClass(row.id)}
+                  fav={favIds?.includes(row.id) ?? false}
+                  favReady={favReady}
+                  favTitle={favIds?.includes(row.id) ? t("favorites.remove") : t("favorites.add")}
+                  onToggleFav={() => toggleFav(row.id)}
                 />
               ))}
             </div>

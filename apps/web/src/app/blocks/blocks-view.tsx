@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Shell } from "@/components/Shell";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { KpiGrid } from "@/components/KpiGrid";
 import { INK } from "@/lib/palette";
 import {
@@ -36,6 +37,7 @@ import {
   type BlockListItem,
 } from "@/lib/list-snapshots";
 import { prefetchBlockCard, putBlockWindow } from "@/lib/block-list-cache";
+import { useFavoriteList } from "@/lib/favorites";
 
 const EXPECTED_BLOCKS_24H = 720;
 
@@ -57,6 +59,8 @@ export function BlocksView({
   initialStats?: ChainStats | null;
 }) {
   const t = useT();
+  const { ids: favIds, toggle: toggleFav } = useFavoriteList("blocks");
+  const favReady = favIds != null;
   const { locale } = useI18n();
   const { markSynced, tip } = usePageSync();
   const tipRef = useRef(tip);
@@ -326,6 +330,10 @@ export function BlocksView({
                   now={now}
                   intervalMs={delta != null && delta > 0 ? delta : null}
                   enterClass={enter.enterClass(row.id)}
+                  fav={favIds?.includes(row.id) ?? false}
+                  favReady={favReady}
+                  favTitle={favIds?.includes(row.id) ? t("favorites.remove") : t("favorites.add")}
+                  onToggleFav={() => toggleFav(row.id)}
                 />
               );
             })}
@@ -379,7 +387,7 @@ function minerLabel(address: string | null | undefined, snapName: string | null 
   return `${address.slice(0, 2)}…${address.slice(-8)}`;
 }
 
-function BlockTapeRow({
+export function BlockTapeRow({
   row,
   locale,
   miss,
@@ -387,6 +395,10 @@ function BlockTapeRow({
   now,
   intervalMs,
   enterClass,
+  fav = false,
+  favReady = true,
+  favTitle,
+  onToggleFav,
 }: {
   row: BlockListItem;
   locale: string;
@@ -395,6 +407,10 @@ function BlockTapeRow({
   now: number;
   intervalMs: number | null;
   enterClass?: string;
+  fav?: boolean;
+  favReady?: boolean;
+  favTitle?: string;
+  onToggleFav?: () => void;
 }) {
   const epoch = Math.floor(row.height / ERGO_EPOCH_LEN);
   const slot = row.height % ERGO_EPOCH_LEN;
@@ -416,13 +432,24 @@ function BlockTapeRow({
     >
       <div className="block-lane-pair">
         <div className="min-w-0 px-3">
-          <Link
-            href={`/block/${row.id}`}
-            onFocus={() => prefetchBlockCard(row.id)}
-            className="min-w-0 truncate font-mono tabular-nums text-accent hover:underline"
-          >
-            {row.height.toLocaleString(loc(locale))}
-          </Link>
+          <div className="flex min-w-0 items-center gap-2">
+            <Link
+              href={`/block/${row.id}`}
+              onFocus={() => prefetchBlockCard(row.id)}
+              className="min-w-0 truncate font-mono tabular-nums text-accent hover:underline"
+            >
+              {row.height.toLocaleString(loc(locale))}
+            </Link>
+            {onToggleFav ? (
+              <FavoriteHeart
+                size="sm"
+                on={fav}
+                ready={favReady}
+                title={favTitle ?? ""}
+                onToggle={onToggleFav}
+              />
+            ) : null}
+          </div>
           <p className="mt-0.5 truncate tabular-nums text-[11px] text-[var(--muted)]">{epochSlot}</p>
         </div>
         <div className="px-3 text-right">
