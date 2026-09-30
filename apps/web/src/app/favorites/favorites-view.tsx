@@ -286,6 +286,7 @@ export function FavoritesView() {
     transactions: new Set(),
     pools: new Set(),
   });
+  const poolBoard = useRef<Record<string, PoolBoardRow> | null>(null);
   const enter = useEnterIds();
   const [listReady, setListReady] = useState(false);
   const seenKind = useRef<FavoriteKind | null>(null);
@@ -318,26 +319,32 @@ export function FavoritesView() {
     if (!missing.length && kind !== "pools") return;
     let gone = false;
 
+    const paintPools = (board: Record<string, PoolBoardRow>) => {
+      setPools(() => {
+        const next: Record<string, PoolBoardRow> = {};
+        for (const id of ids) next[id] = board[id] ?? blankPool(id);
+        return next;
+      });
+    };
+
     if (kind === "pools") {
-      if (bag.size) return;
-      bag.add("*");
+      const board = poolBoard.current;
+      if (board) {
+        paintPools(board);
+        return;
+      }
       void getJson(snapshotPath("/v1/defi/pool-board")).then((j) => {
         if (gone) return;
-        const snap = j as PoolBoardSnap | null;
         const byId: Record<string, PoolBoardRow> = {};
-        for (const row of snap?.pools ?? []) byId[row.poolId] = row;
-        setPools(() => {
-          const next: Record<string, PoolBoardRow> = {};
-          for (const id of ids) next[id] = byId[id] ?? blankPool(id);
-          return next;
-        });
+        for (const row of (j as PoolBoardSnap | null)?.pools ?? []) byId[row.poolId] = row;
+        poolBoard.current = byId;
+        paintPools(byId);
       });
       return () => {
         gone = true;
       };
     }
 
-    for (const id of missing) bag.add(id);
     void Promise.all(
       missing.map(async (id) => {
         if (kind === "addresses") {
@@ -362,6 +369,7 @@ export function FavoritesView() {
       })
     ).then((rows) => {
       if (gone) return;
+      for (const id of missing) bag.add(id);
       if (kind === "addresses") {
         setAddresses((prev) => {
           const next = { ...prev };
