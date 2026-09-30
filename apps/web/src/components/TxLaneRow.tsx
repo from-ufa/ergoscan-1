@@ -3,6 +3,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 import { TxIoMark } from "@/components/TxIoMark";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { ListWhen } from "@/components/ListWhen";
 import { formatBytes, formatErgPrecise, formatFeeRate, shortId, toBigIntAmt } from "@/lib/format";
 import { lockCaption } from "@/lib/tx-lock";
@@ -16,6 +17,10 @@ export function TxLaneRow({
   enterClass,
   showHeight,
   hidePending,
+  fav = false,
+  favReady = true,
+  favTitle,
+  onToggleFav,
 }: {
   row: TxListItem;
   index: number;
@@ -26,6 +31,10 @@ export function TxLaneRow({
   showHeight?: boolean;
   /** Mempool tape: status is the last column, not a chip on the hash. */
   hidePending?: boolean;
+  fav?: boolean;
+  favReady?: boolean;
+  favTitle?: string;
+  onToggleFav?: () => void;
 }) {
   const catKey = `tx.cat.${row.category}`;
   const cat = t(catKey) !== catKey ? t(catKey) : row.category;
@@ -51,6 +60,15 @@ export function TxLaneRow({
             </Link>
             {unconfirmed && !hidePending ? (
               <span className="addr-pending-mark shrink-0">{t("txs.pending")}</span>
+            ) : null}
+            {onToggleFav ? (
+              <FavoriteHeart
+                size="sm"
+                on={fav}
+                ready={favReady}
+                title={favTitle ?? ""}
+                onToggle={onToggleFav}
+              />
             ) : null}
           </div>
           <p className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] text-[var(--muted)]">

@@ -100,6 +100,8 @@ let returnedToHeader = false;
 let addressPassed = false;
 /** This card already got the rent scratch. A remount does not replay it. */
 let rentTold = "";
+/** Last place he was drawn, in viewport pixels. The next errand starts there. */
+let scoutPose: { x: number; y: number; face: 1 | -1; roll: number } | null = null;
 
 type AddressDoor = { x: number; y: number; pebbleX: number; pebbleY: number };
 
@@ -711,6 +713,7 @@ function runAddressPerch(
     }
 
     const seek = phase === "nest";
+    scoutPose = { x, y: floor, face: faceN > 0 ? 1 : -1, roll };
     drawWallE(ctx, {
       x: clamp(x, 12, w - 12),
       y: floor,
@@ -1197,6 +1200,8 @@ function runHeaderPass(
     }
 
     const spriteY = floor - lift;
+    const box = root.getBoundingClientRect();
+    scoutPose = { x: box.left + x, y: box.top + spriteY, face, roll };
     draw(ctx, root, g, x, spriteY, floor, lift, face, roll, apart, head, look, pick, eye, pupil, orbit, lineA, lineTo);
     follow(spriteY);
     raf = requestAnimationFrame(paint);
@@ -1208,6 +1213,314 @@ function runHeaderPass(
     cancelAnimationFrame(raf);
     window.removeEventListener("pointermove", onMove);
     placeHit(hit, false, 0, 0);
+  };
+}
+
+/**
+ * Favorites empty slot. The same scout leaves whatever point he is on,
+ * drops to the line, and scratches it out with the pick.
+ */
+function runFavoritesErrand(canvas: HTMLCanvasElement, header: HTMLElement) {
+  const prev = canvas.getAttribute("style");
+  canvas.style.position = "fixed";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+  canvas.style.right = "auto";
+  canvas.style.bottom = "auto";
+  canvas.style.zIndex = "30";
+
+  let raf = 0;
+  let dead = false;
+  let last = 0;
+  let beatAt = 0;
+  let ready = false;
+  let x = scoutPose?.x ?? 80;
+  let y = scoutPose?.y ?? 36;
+  let roll = scoutPose?.roll ?? 0;
+  let face: 1 | -1 = scoutPose?.face ?? 1;
+  let apart = 0;
+  let fromX = x;
+  let fromY = y;
+  let written = "";
+  let aim: { x: number; y: number } | null = null;
+  type Phase = "home" | "rail" | "drop" | "rollin" | "write" | "live" | "retreat" | "rise";
+  let phase: Phase = "home";
+
+  const onMove = (e: PointerEvent) => {
+    aim = { x: e.clientX, y: e.clientY };
+  };
+  window.addEventListener("pointermove", onMove, { passive: true });
+
+  const noteEl = () => document.querySelector<HTMLElement>("[data-fav-note]");
+
+  const headerHome = () => {
+    const slip = searchSlip(header);
+    const title = header.querySelector<HTMLElement>('[data-scout="title"]');
+    const titleBox = title?.getBoundingClientRect();
+    const x0 = titleBox ? titleBox.left - 40 : slip?.parkX ?? x;
+    const y0 = slip?.floorY ?? header.getBoundingClientRect().bottom - 6;
+    return { x: x0, y: y0 };
+  };
+
+  const standAt = (note: HTMLElement) => {
+    const r = note.getBoundingClientRect();
+    return { x: r.left - 34, y: r.bottom - 2, rect: r };
+  };
+
+  const barLeft = () => header.getBoundingClientRect().left + 28;
+
+  /** Words in the bar. The body rolls under them; the eyes lift off, same as the toolbar pass. */
+  const underBar = (px: number) => {
+    const nodes = header.querySelectorAll<HTMLElement>("[data-scout]");
+    for (const el of nodes) {
+      const r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+      if (px > r.left - 16 && px < r.right + 16) return true;
+    }
+    return false;
+  };
+
+  const beginTrip = (now: number) => {
+    phase = "rail";
+    beatAt = now;
+    written = "";
+  };
+
+  const paint = (now: number) => {
+    if (dead) return;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    if (!ready) {
+      const home = headerHome();
+      if (!scoutPose) {
+        x = home.x;
+        y = home.y;
+      }
+      beatAt = now;
+      last = now;
+      ready = true;
+      const waiting = noteEl();
+      if (waiting) beginTrip(now);
+    }
+    const dt = Math.min(34, now - last);
+    last = now;
+    const note = noteEl();
+    const line = note?.getAttribute("data-fav-note") ?? "";
+
+    let head = 0;
+    let look = 0.4;
+    let pick = 0.12;
+    let eye = 0.12;
+    let eyeScale = 1;
+    let pupil = now * 0.0014;
+    let orbit = 0.3;
+
+    if (phase === "home") {
+      const home = headerHome();
+      x += (home.x - x) * 0.12;
+      y += (home.y - y) * 0.12;
+      roll += Math.abs(home.x - x) * 0.02;
+      const blink = now % 2700;
+      eyeScale = blink < 80 ? 1 - Math.sin((blink / 80) * Math.PI) * 0.85 : 1;
+      look = Math.sin(now / 1400) * 0.7;
+      head = look * 0.16;
+      pick = 0.1 + Math.sin(now / 1600) * 0.04;
+      if (aim && Math.hypot(aim.x - x, aim.y - y) < 140) {
+        look = clamp((aim.x - x) / 22, -1.3, 1.3);
+        eye = 0.35;
+      }
+      if (note) beginTrip(now);
+    } else if (phase === "rail") {
+      if (!note) {
+        phase = "home";
+      } else {
+        const floorY = headerHome().y;
+        const leftX = barLeft();
+        y += (floorY - y) * 0.4;
+        const d = leftX - x;
+        face = -1;
+        const step = Math.sign(d) * Math.min(Math.abs(d), (260 * dt) / 1000);
+        x += step;
+        roll += Math.abs(step) * 0.55;
+        const under = underBar(x);
+        apart += ((under ? 1 : 0) - apart) * 0.22;
+        look = under ? 0.12 : 0.35;
+        head = under ? 0.04 : 0;
+        pick = 0.08;
+        if (Math.abs(d) < 1.5 && Math.abs(floorY - y) < 2) {
+          x = leftX;
+          y = floorY;
+          apart = 0;
+          phase = "drop";
+          beatAt = now;
+          fromY = y;
+        }
+      }
+    } else if (phase === "drop" && note) {
+      const stand = standAt(note);
+      const u = Math.min(1, (now - beatAt) / 460);
+      const k = smooth(u);
+      x = barLeft();
+      y = fromY + (stand.y - fromY) * k;
+      apart += (0 - apart) * 0.2;
+      look = 0.2;
+      pupil = Math.PI / 2;
+      orbit = 0.9;
+      roll += (dt / 16) * (1 - k) * 1.4;
+      face = 1;
+      if (u >= 1) {
+        y = stand.y;
+        phase = "rollin";
+        beatAt = now;
+      }
+    } else if (phase === "rollin" && note) {
+      const stand = standAt(note);
+      const d = stand.x - x;
+      face = d >= 0 ? 1 : -1;
+      const step = Math.sign(d) * Math.min(Math.abs(d), (220 * dt) / 1000);
+      x += step;
+      y += (stand.y - y) * 0.45;
+      roll += Math.abs(step) * 0.55;
+      apart = 0;
+      look = 0.55;
+      pick = 0.1;
+      if (Math.abs(d) < 1.5) {
+        x = stand.x;
+        y = stand.y;
+        phase = "write";
+        beatAt = now;
+        written = line;
+        note.style.setProperty("--scratch", "0");
+      }
+    } else if (phase === "write" && note) {
+      const stand = standAt(note);
+      const elapsed = now - beatAt;
+      const WRITE = 760;
+      const u = Math.min(1, elapsed / WRITE);
+      const scratch = smooth(u);
+      note.style.setProperty("--scratch", scratch.toFixed(3));
+      const tip = stand.rect.left - 34 + stand.rect.width * scratch * 0.18;
+      const nx = x + (tip - x) * 0.2;
+      roll += Math.abs(nx - x) * 0.5;
+      x = nx;
+      y += (stand.y - y) * 0.25;
+      face = 1;
+      const stroke = Math.sin(Math.min(1, u) * Math.PI * 2);
+      pick = 0.14 + Math.abs(stroke) * 0.9;
+      look = 1.05;
+      head = 0.12 + Math.abs(stroke) * 0.08;
+      eye = 0.55 + Math.abs(stroke) * 0.35;
+      apart = 0;
+      if (u >= 1) {
+        note.style.setProperty("--scratch", "1");
+        phase = "live";
+        beatAt = now;
+        pick = 0.16;
+      }
+    } else if (phase === "live" && note) {
+      const stand = standAt(note);
+      x += (stand.x - x) * 0.08;
+      y += (stand.y + Math.sin(now / 900) * 0.7 - y) * 0.2;
+      face = 1;
+      const blink = (now - beatAt) % 2600;
+      eyeScale = blink < 90 ? 1 - Math.sin((blink / 90) * Math.PI) * 0.86 : 1;
+      look = 0.85 + Math.sin(now / 1700) * 0.28;
+      head = 0.1 + Math.sin(now / 1700) * 0.05;
+      pick = 0.14 + Math.sin(now / 1100) * 0.05;
+      eye = 0.22;
+      if (aim && Math.hypot(aim.x - x, aim.y - (y - 18)) < 160) {
+        const pull = 1 - Math.hypot(aim.x - x, aim.y - y) / 160;
+        look = clamp((aim.x - x) / 20, -1.2, 1.4);
+        eye = 0.22 + pull * 0.4;
+        pick = 0.14 + pull * 0.12;
+      }
+      if (line !== written) {
+        written = line;
+        note.style.setProperty("--scratch", "0");
+        phase = "write";
+        beatAt = now;
+        eyeScale = 1.2;
+      }
+    } else if (phase === "retreat") {
+      const leftX = barLeft();
+      const d = leftX - x;
+      face = d >= 0 ? 1 : -1;
+      const step = Math.sign(d) * Math.min(Math.abs(d), (240 * dt) / 1000);
+      x += step;
+      roll += Math.abs(step) * 0.5;
+      apart = 0;
+      if (Math.abs(d) < 1.5) {
+        x = leftX;
+        phase = "rise";
+        beatAt = now;
+        fromY = y;
+      }
+    } else if (phase === "rise") {
+      const homeY = headerHome().y;
+      const u = Math.min(1, (now - beatAt) / 480);
+      const k = smooth(u);
+      x = barLeft();
+      y = fromY + (homeY - fromY) * k;
+      apart += (0 - apart) * 0.2;
+      look = -0.15;
+      pupil = -Math.PI / 2;
+      orbit = 0.7;
+      roll += (dt / 16) * k;
+      if (u >= 1) {
+        y = homeY;
+        phase = "home";
+        beatAt = now;
+      }
+    } else if (!note) {
+      phase = "retreat";
+      beatAt = now;
+    }
+
+    const floor = y;
+    const air = phase === "drop" || phase === "rise" ? 0.45 : 0;
+    ctx.save();
+    ctx.fillStyle = `rgba(0,0,0,${0.18 * (1 - air)})`;
+    ctx.beginPath();
+    ctx.ellipse(x, floor + 1, 12, 2.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    scoutPose = { x, y: floor, face, roll };
+    drawWallE(ctx, {
+      x: clamp(x, 16, w - 16),
+      y: floor,
+      head,
+      look: clamp(look, -2.1, 2.1),
+      pick,
+      roll,
+      face,
+      scale: SCALE,
+      eyesApart: apart,
+      eyeLift: eye * 2.2,
+      eyeScale,
+      pupil,
+      pupilOrbit: orbit,
+    });
+    raf = requestAnimationFrame(paint);
+  };
+
+  raf = requestAnimationFrame(paint);
+  return () => {
+    dead = true;
+    cancelAnimationFrame(raf);
+    window.removeEventListener("pointermove", onMove);
+    if (prev == null) canvas.removeAttribute("style");
+    else canvas.setAttribute("style", prev);
   };
 }
 
@@ -1278,6 +1591,7 @@ export function HeaderScout() {
       rentTold = "";
     }
     placeHit(hitRef.current, false, 0, 0);
+    if (path === "/favorites") return runFavoritesErrand(canvas, root);
     return runHeaderPass(canvas, root, hitRef.current, leaveRef, askLabel, {
       from: isAddressHome(path) && wide && addressPassed ? "seek" : isAddressHome(path) && wide ? "after-fall" : "start",
       markDone: isAddressHome(path) && wide,

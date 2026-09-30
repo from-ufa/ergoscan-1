@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import Link from "next/link";
 import clsx from "clsx";
 import { Shell } from "@/components/Shell";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { AddressPageSkeleton } from "@/components/AddressPageSkeleton";
 import { AddrFactCard } from "@/components/AddrFactCard";
 import { TokenHolderTapeHead, TokenHolderTapeRow } from "@/components/AddressTapeRow";
@@ -42,7 +43,7 @@ import { useKeepFresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, enteringIds, useEnterIds } from "@/lib/keyed-enter";
 import type { TokenHoldersPage, TokenListItem } from "@/lib/list-snapshots";
 import { peekTokenHolders, putTokenHolders } from "@/lib/token-page-cache";
-import { useFavoriteAddresses } from "@/lib/favorites";
+import { useFavoriteAddresses, useFavoriteOf } from "@/lib/favorites";
 
 const HOLDERS_PACK = 25;
 const TX_PACK = 25;
@@ -367,6 +368,7 @@ export function TokenView({
   const t = useT();
   const { locale } = useI18n();
   const { ids: favIds, toggle: toggleFav } = useFavoriteAddresses();
+  const tokenFav = useFavoriteOf("tokens", tokenId);
   const favReady = favIds != null;
   const favSet = useMemo(() => new Set(favIds ?? []), [favIds]);
   const { markSynced } = usePageSync();
@@ -847,6 +849,12 @@ export function TokenView({
                     {shortId(tokenId, 8)}
                   </code>
                   <CopyChip text={tokenId} copyLabel={t("tx.copy")} copiedLabel={t("tx.copied")} />
+                  <FavoriteHeart
+                    on={tokenFav.on}
+                    ready={tokenFav.ready}
+                    title={tokenFav.on ? t("favorites.remove") : t("favorites.add")}
+                    onToggle={tokenFav.toggle}
+                  />
                   {decimals ? (
                     <span className="ml-auto shrink-0 text-[12px] leading-[1.15] text-[var(--muted-2)]">
                       {decimals} {t("token.cap.decimals")}

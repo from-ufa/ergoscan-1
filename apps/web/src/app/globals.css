@@ -2437,6 +2437,34 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   }
 }
 
+.fav-kayolo {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1.25rem 1rem 1.5rem;
+  text-align: center;
+}
+
+.fav-kayolo-line {
+  --scratch: 0;
+  margin: 0;
+  max-width: 26rem;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: var(--text);
+  clip-path: inset(0 calc((1 - var(--scratch)) * 100%) 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fav-kayolo-line {
+    --scratch: 1;
+    clip-path: none;
+  }
+}
+
 .oracle-bond {
   stroke: var(--border);
   stroke-width: 1;

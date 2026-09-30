@@ -11,6 +11,7 @@ import {
   KpiMarkWorkflow,
 } from "@/components/kpi-marks";
 import { CatalogSearchTile } from "@/components/CatalogSearchTile";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { INK } from "@/lib/palette";
 import { RankWindow } from "@/components/RankWindow";
 import { TokenLogo } from "@/components/TokenBadge";
@@ -27,6 +28,7 @@ import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { useChainTipRefresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, enteringIds, snapshotPath, useEnterIds } from "@/lib/keyed-enter";
 import { prefetchTokenHolders } from "@/lib/token-page-cache";
+import { useFavoriteList } from "@/lib/favorites";
 import {
   TOKEN_PACK,
   type TokenListDir,
@@ -222,6 +224,8 @@ async function pinExactName(q: string, items: TokenListItem[]): Promise<TokenLis
 
 export function TokensView({ initial }: { initial: TokensPageData }) {
   const t = useT();
+  const { ids: favIds, toggle: toggleFav } = useFavoriteList("tokens");
+  const favReady = favIds != null;
   const { locale } = useI18n();
   const { markSynced, tip } = usePageSync();
   const tipRef = useRef(tip);
@@ -535,6 +539,12 @@ export function TokensView({ initial }: { initial: TokensPageData }) {
                 row={row}
                 locale={locale}
                 enterClass={enter.enterClass(row.tokenId)}
+                fav={favIds?.includes(row.tokenId) ?? false}
+                favReady={favReady}
+                favTitle={
+                  favIds?.includes(row.tokenId) ? t("favorites.remove") : t("favorites.add")
+                }
+                onToggleFav={() => toggleFav(row.tokenId)}
               />
             ))}
           </div>
@@ -559,14 +569,22 @@ export function TokensView({ initial }: { initial: TokensPageData }) {
   );
 }
 
-function TokenTapeRow({
+export function TokenTapeRow({
   row,
   locale,
   enterClass,
+  fav = false,
+  favReady = true,
+  favTitle,
+  onToggleFav,
 }: {
   row: TokenListItem;
   locale: string;
   enterClass?: string;
+  fav?: boolean;
+  favReady?: boolean;
+  favTitle?: string;
+  onToggleFav?: () => void;
 }) {
   const name = tokenName(row);
   const firstTs = row.firstTs;
@@ -585,16 +603,27 @@ function TokenTapeRow({
           <TokenLogo tokenId={row.tokenId} artworkUrl={row.artworkUrl} size={28} />
         </div>
         <div className="min-w-0 px-2">
-          {name ? (
-            <Link
-              href={href}
-              className="block truncate font-semibold hover:underline"
-              style={{ color: tokenTickerInk(row.tokenId) }}
-              onFocus={() => prefetchTokenHolders(row.tokenId)}
-            >
-              {name}
-            </Link>
-          ) : null}
+          <div className="flex min-w-0 items-center gap-1.5">
+            {name ? (
+              <Link
+                href={href}
+                className="min-w-0 truncate font-semibold hover:underline"
+                style={{ color: tokenTickerInk(row.tokenId) }}
+                onFocus={() => prefetchTokenHolders(row.tokenId)}
+              >
+                {name}
+              </Link>
+            ) : null}
+            {onToggleFav ? (
+              <FavoriteHeart
+                size="sm"
+                on={fav}
+                ready={favReady}
+                title={favTitle ?? ""}
+                onToggle={onToggleFav}
+              />
+            ) : null}
+          </div>
         </div>
       </div>
       <div className="token-lane-id min-w-0 grid">

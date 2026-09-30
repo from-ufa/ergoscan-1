@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { Shell } from "@/components/Shell";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { AddrFactCard } from "@/components/AddrFactCard";
 import { KpiNum } from "@/components/KpiGrid";
 import { SegBar, segItem } from "@/components/SegBar";
@@ -30,6 +31,7 @@ import {
 } from "@/lib/format";
 import { resolveTokenMeta, tokenTickerInk } from "@/lib/token-meta";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
+import { useFavoriteOf } from "@/lib/favorites";
 import { SNAPSHOT_FETCH, snapshotPath, useEnterIds } from "@/lib/keyed-enter";
 import { getGateway } from "@/lib/config";
 import { noteRouteNavigation } from "@/lib/route-nav";
@@ -120,6 +122,7 @@ export function PoolCardView({
   initial: Card | null;
 }) {
   const t = useT();
+  const poolFav = useFavoriteOf("pools", poolId);
   const { locale } = useI18n();
   const miss = t("home.unavailable");
   const [view, setView] = useState<ViewId>("trades");
@@ -240,6 +243,12 @@ export function PoolCardView({
               >
                 {shortId(poolId, 8)}
               </Link>
+              <FavoriteHeart
+                on={poolFav.on}
+                ready={poolFav.ready}
+                title={poolFav.on ? t("favorites.remove") : t("favorites.add")}
+                onToggle={poolFav.toggle}
+              />
             </p>
             <p className="mt-0.5 truncate text-[12px] leading-[1.15] text-[var(--muted-2)]">
               {pool?.venue || "\u00a0"}

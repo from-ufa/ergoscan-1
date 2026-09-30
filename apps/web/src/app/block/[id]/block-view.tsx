@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import Link from "next/link";
 import clsx from "clsx";
 import { Shell } from "@/components/Shell";
+import { FavoriteHeart } from "@/components/FavoriteHeart";
 import { AddrFactCard } from "@/components/AddrFactCard";
 import { AddrFactMark } from "@/components/AddrFactMark";
 import { HopNav } from "@/components/HopNav";
@@ -15,6 +16,7 @@ import { KpiMarkFees, KpiMarkPayload } from "@/components/kpi-marks";
 import { KpiNum } from "@/components/KpiGrid";
 import { RankWindow } from "@/components/RankWindow";
 import { getGateway } from "@/lib/config";
+import { useFavoriteOf } from "@/lib/favorites";
 import {
   formatBlockTime,
   formatBytes,
@@ -186,6 +188,7 @@ export function BlockView({
   newerRow: BlockListItem | null;
 }) {
   const t = useT();
+  const blockFav = useFavoriteOf("blocks", id);
   const { locale } = useI18n();
   const { markSynced, tip } = usePageSync();
   const cached = peekBlockRow(id);
@@ -442,6 +445,12 @@ export function BlockView({
                   {shortId(head.id, 8)}
                 </code>
                 <CopyChip text={head.id} copyLabel={t("tx.copy")} copiedLabel={t("tx.copied")} />
+                <FavoriteHeart
+                  on={blockFav.on}
+                  ready={blockFav.ready}
+                  title={blockFav.on ? t("favorites.remove") : t("favorites.add")}
+                  onToggle={blockFav.toggle}
+                />
               </p>
             </AddrFactCard>
             <SegBar cols={3} className="shrink-0">
