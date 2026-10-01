@@ -3,12 +3,13 @@ export function shortId(id: string, n = 6): string {
   return `${id.slice(0, n)}…${id.slice(-n)}`;
 }
 
-/** Same visible width as a standard P2PK (`9…`, 51 chars). Longer P2S is cropped. */
+/** Same visible width as a standard P2PK (`9…`, 51 chars). Longer P2S is cropped in the middle. */
 export const P2PK_VISIBLE_LEN = 51;
 
 export function visibleAddress(address: string): string {
   if (address.length <= P2PK_VISIBLE_LEN) return address;
-  return `${address.slice(0, P2PK_VISIBLE_LEN)}…`;
+  const n = Math.floor((P2PK_VISIBLE_LEN - 1) / 2);
+  return `${address.slice(0, n)}…${address.slice(-n)}`;
 }
 
 function numberLocale(locale?: string): string {

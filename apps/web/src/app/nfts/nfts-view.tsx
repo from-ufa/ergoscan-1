@@ -384,21 +384,21 @@ export function NftsView({ initial }: { initial: NftHomeSnap }) {
           ink={INK.violet}
           mark={<KpiMarkCaseSensitive className="h-9 w-9" />}
         />
-        <NftMini
+        <CatalogSearchTile
           enter={2}
+          q={searchQ}
+          onQ={onSearchQ}
+          searchLabel={t("nfts.tab.search")}
+          placeholder={t("nfts.search.placeholder")}
+        />
+        <NftMini
+          enter={3}
           label={t("nfts.kpiArt")}
           value={kpiValue(withArt)}
           miss={previewing}
           sub={t("nfts.kpiArtSub")}
           ink={INK.cyan}
           mark={<KpiMarkPalette className="h-9 w-9" />}
-        />
-        <CatalogSearchTile
-          enter={3}
-          q={searchQ}
-          onQ={onSearchQ}
-          searchLabel={t("nfts.tab.search")}
-          placeholder={t("nfts.search.placeholder")}
         />
         <NftMini
           enter={4}

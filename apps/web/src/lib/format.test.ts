@@ -18,11 +18,21 @@ import {
   laterEpochMs,
   relAgeTone,
   relAgeToneClass,
+  visibleAddress,
 } from "./format.js";
 
 function vis(s: string): string {
   return s.replace(/[\u00a0\u202f]/g, " ");
 }
+
+test("long contract addresses keep P2PK width with a middle ellipsis", () => {
+  const p2pk = "9".repeat(51);
+  assert.equal(visibleAddress(p2pk), p2pk);
+  const p2s = "2" + "a".repeat(80) + "Z";
+  const shown = visibleAddress(p2s);
+  assert.equal(shown.length, 51);
+  assert.equal(shown, `${p2s.slice(0, 25)}…${p2s.slice(-25)}`);
+});
 
 test("rent columns keep 4 decimals and fold a run of zeros", () => {
   assert.equal(describeRentErg("1403000000").text, "1.4030 ERG");

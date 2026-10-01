@@ -49,9 +49,33 @@ function jsonObjectSlice(raw: string): string | null {
 
 function asObjectLines(parsed: unknown): TokenDescLine[] | null {
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-  const entries = Object.entries(parsed as Record<string, unknown>);
-  if (!entries.length) return null;
-  return entries.map(([key, value]) => ({ key, value: formatDescValue(value) }));
+  let cur = parsed as Record<string, unknown>;
+  for (let i = 0; i < 4; i++) {
+    const keys = Object.keys(cur);
+    if (keys.length !== 1) break;
+    const only = cur[keys[0]!];
+    if (!only || typeof only !== "object" || Array.isArray(only)) break;
+    cur = only as Record<string, unknown>;
+  }
+  const lines = flattenDesc(cur);
+  return lines.length ? lines : null;
+}
+
+function flattenDesc(obj: Record<string, unknown>, prefix?: string): TokenDescLine[] {
+  const lines: TokenDescLine[] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    const label = prefix ? `${prefix} / ${key}` : key;
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      lines.push(...flattenDesc(value as Record<string, unknown>, label));
+      continue;
+    }
+    if (Array.isArray(value)) {
+      lines.push({ key: label, value: value.map(formatDescValue).join(", ") });
+      continue;
+    }
+    lines.push({ key: label, value: formatDescValue(value) });
+  }
+  return lines;
 }
 
 /** EIP-4 JSON blobs → `key: value` lines. Plain text, including emoji, stays as written. */

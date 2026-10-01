@@ -2,6 +2,25 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { tokenDescLines } from "./token-desc.js";
 
+test("tokenDescLines unwraps CIP-25 721 blobs into trait rows", () => {
+  const raw = JSON.stringify({
+    "721": {
+      "gnomekins-2064": {
+        filename: "2064_Gnomekins",
+        index: 2064,
+        description: "GNOMEKIN created by Dr McKush",
+        facecolor: "Fairy candy",
+      },
+    },
+  });
+  assert.deepEqual(tokenDescLines(raw), [
+    { key: "filename", value: "2064_Gnomekins" },
+    { key: "index", value: "2064" },
+    { key: "description", value: "GNOMEKIN created by Dr McKush" },
+    { key: "facecolor", value: "Fairy candy" },
+  ]);
+});
+
 test("tokenDescLines paints EIP-4 JSON as key: value rows", () => {
   const raw =
     '{"title":"rosen bridge wrapped BTC","originNetwork":"Bitcoin","originToken":"BTC","isNativeToken":true}';

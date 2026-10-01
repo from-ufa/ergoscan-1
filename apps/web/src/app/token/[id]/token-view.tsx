@@ -16,6 +16,7 @@ import {
   KpiMarkScrollText,
   KpiMarkUsers,
 } from "@/components/kpi-marks";
+import { NameMarquee } from "@/components/NameMarquee";
 import { NftThumb } from "@/components/NftCard";
 import { describeParty, isFeeAddress } from "@/lib/address-labels";
 import { safeMediaUrl } from "@/lib/nft-art";
@@ -265,12 +266,12 @@ function DescPaint({ lines }: { lines: { key?: string; value: string }[] }) {
     <>
       {lines.map((line, i) =>
         line.key != null ? (
-          <span key={line.key} className="block break-words">
-            <span className="text-[var(--text)]">{descLabel(line.key)}:</span>{" "}
-            {descValue(line.value)}
-          </span>
+          <div key={line.key} className="contents">
+            <span className="whitespace-nowrap text-[var(--muted-2)]">{descLabel(line.key)}</span>
+            <span className="min-w-0 break-words text-[var(--text)]">{descValue(line.value)}</span>
+          </div>
         ) : (
-          <span key={i} className="block whitespace-pre-wrap break-words">
+          <span key={i} className="col-span-2 block whitespace-pre-wrap break-words">
             {line.value}
           </span>
         )
@@ -294,30 +295,15 @@ function DescCard({
   empty: string;
   enter?: number;
 }) {
-  const t = useT();
-  const [open, setOpen] = useState(false);
-  const [canOpen, setCanOpen] = useState(false);
-  const copyRef = useRef<HTMLButtonElement>(null);
   const lines = useMemo(
     () => (description ? tokenDescLines(description) : []),
     [description]
   );
 
-  useLayoutEffect(() => {
-    if (open) return;
-    const el = copyRef.current;
-    if (!el || !description) {
-      setCanOpen(false);
-      return;
-    }
-    setCanOpen(el.scrollHeight > el.clientHeight + 2);
-  }, [description, open]);
-
   return (
     <article
       className={clsx(
-        "kpi-tile supply-card relative col-span-2 flex h-full min-h-0 min-w-0 items-stretch gap-2 overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-3 py-1.5 lg:col-span-1 lg:row-span-2",
-        open && "is-open",
+        "kpi-tile supply-card token-desc-card relative col-span-2 flex h-full min-h-0 min-w-0 items-stretch gap-2 overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-3 py-1.5 lg:col-span-1 lg:row-span-2",
         enter != null && "home-tile-enter"
       )}
       style={{
@@ -326,30 +312,21 @@ function DescCard({
       }}
     >
       <KpiTileRail />
-      <div className="kpi-tile-body flex min-h-0 min-w-0 flex-1 flex-col">
-        <p className="truncate text-[13px] leading-[1.15] text-[var(--muted)]">{label}</p>
+      <div className="kpi-tile-body flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <p className="relative z-[1] shrink-0 bg-[var(--module)] pb-1 pr-10 truncate text-[13px] leading-[1.15] text-[var(--muted)]">
+          {label}
+        </p>
         {description ? (
-          <button
-            ref={copyRef}
-            type="button"
-            className={clsx("supply-tile-copy chip-press", (canOpen || open) && "is-more")}
-            disabled={!canOpen && !open}
-            aria-expanded={open}
-            aria-label={
-              open ? t("token.descCollapse") : canOpen ? t("token.descExpand") : undefined
-            }
-            onClick={() => {
-              if (!canOpen && !open) return;
-              setOpen((v) => !v);
-            }}
-          >
-            <DescPaint lines={lines} />
-          </button>
+          <div className="token-desc-body scrollbar-none">
+            <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1">
+              <DescPaint lines={lines} />
+            </div>
+          </div>
         ) : (
           <p className="supply-tile-copy is-empty">{empty}</p>
         )}
       </div>
-      <div className="kpi-tile-mark" style={{ color: ink }} aria-hidden>
+      <div className="kpi-tile-mark relative z-[1] self-start" style={{ color: ink }} aria-hidden>
         {mark}
       </div>
     </article>
@@ -839,10 +816,10 @@ export function TokenView({
                 }
               >
                 <h1
-                  className="mt-0.5 min-w-0 truncate text-[17px] font-semibold leading-[1.15] tracking-tight"
+                  className="mt-0.5 min-w-0 text-[17px] font-semibold leading-[1.15] tracking-tight"
                   style={{ color: tokenTickerInk(tokenId) }}
                 >
-                  {sym}
+                  <NameMarquee text={sym} fade pxPerSec={16} />
                 </h1>
                 <p className="mt-0.5 flex min-w-0 items-center gap-1">
                   <code className="min-w-0 truncate font-mono text-[12px] leading-[1.15] text-accent">
@@ -1158,23 +1135,13 @@ export function TokenView({
                   ))}
                 </div>
                 </div>
-                {(txs.length > 0 || txOff > 0 || (txTotal > 0 && !txFailed)) && (
+                {(txs.length > 0 || txOff > 0) && (
                   <RankWindow
                     offset={txOff}
                     pageSize={TX_PACK}
                     shown={txs.length}
-                    total={
-                      txTotal > 0
-                        ? txTotal
-                        : tab === "txs" && txN != null && txN > 0
-                          ? txN
-                          : null
-                    }
-                    hasMore={addrTapeHasMore(
-                      txs.length,
-                      txTotal || (tab === "txs" ? txN || 0 : 0),
-                      txHasMore
-                    )}
+                    total={txHasMore ? (txTotal > TX_PACK ? txTotal : null) : txOff + txs.length}
+                    hasMore={txHasMore}
                     scrub={false}
                     loc={loc(locale)}
                     ofLabel={t("addresses.packOf")}
@@ -1210,14 +1177,7 @@ export function TokenView({
                       }
                       if (next <= cur) return;
                       const nxt = moreTxCursor(txs, txNextCursorRef.current);
-                      if (
-                        !addrTapeHasMore(
-                          txs.length,
-                          txTotal || (tab === "txs" ? txN || 0 : 0),
-                          txHasMore
-                        ) ||
-                        !nxt
-                      ) {
+                      if (!txHasMore || !nxt) {
                         return;
                       }
                       txCursorStack.current.push(txCursorRef.current);
@@ -1241,6 +1201,10 @@ export function TokenView({
   );
 }
 
+function clipNftFact(value: string): string {
+  return value.length <= 48 ? value : value.slice(0, 48);
+}
+
 function NftInfoPanel({
   nft,
   locale,
@@ -1259,8 +1223,11 @@ function NftInfoPanel({
       : null;
   const mintParty = nft.mintAddress ? describeParty(nft.mintAddress) : null;
   const rows: { label: string; node: ReactNode }[] = [];
-  if (nft.kind) {
-    rows.push({ label: t("token.nft.type"), node: t(`token.nft.kind.${nft.kind}`) });
+  if (nft.mintHeight != null) {
+    rows.push({
+      label: t("token.nft.mintHeight"),
+      node: <span className="tabular-nums">#{nft.mintHeight.toLocaleString(loc(locale))}</span>,
+    });
   }
   if (nft.mintAddress) {
     rows.push({
@@ -1277,15 +1244,9 @@ function NftInfoPanel({
       label: t("token.nft.mintTx"),
       node: (
         <Link href={`/tx/${encodeURIComponent(nft.mintTxId)}`} className="truncate font-mono text-accent hover:underline">
-          {shortId(nft.mintTxId, 10)}
+          {clipNftFact(nft.mintTxId)}
         </Link>
       ),
-    });
-  }
-  if (nft.mintHeight != null) {
-    rows.push({
-      label: t("token.nft.mintHeight"),
-      node: <span className="tabular-nums">#{nft.mintHeight.toLocaleString(loc(locale))}</span>,
     });
   }
   if (nft.royaltyPercent != null && nft.royaltyPercent > 0) {
@@ -1307,22 +1268,16 @@ function NftInfoPanel({
       ),
     });
   }
-  if (nft.sha256) {
-    rows.push({
-      label: t("token.nft.sha256"),
-      node: <span className="truncate font-mono text-[12px] text-accent">{shortId(nft.sha256, 10)}</span>,
-    });
-  }
   if (nft.url) {
     const href = safeMediaUrl(nft.url, "any");
     rows.push({
       label: t("token.nft.url"),
       node: href ? (
         <a href={href} target="_blank" rel="noreferrer" className="truncate text-accent hover:underline">
-          {href.replace(/^https?:\/\//i, "").slice(0, 48)}
+          {clipNftFact(href.replace(/^https?:\/\//i, ""))}
         </a>
       ) : (
-        <span className="truncate">{nft.url.slice(0, 48)}</span>
+        <span className="truncate">{clipNftFact(nft.url)}</span>
       ),
     });
   }
@@ -1332,14 +1287,26 @@ function NftInfoPanel({
       node: <span className="truncate font-mono text-[12px]">{nft.ipfsCid}</span>,
     });
   }
+  if (nft.sha256) {
+    rows.push({
+      label: t("token.nft.sha256"),
+      node: (
+        <span className="flex min-w-0 items-center gap-1">
+          <span className="min-w-0 truncate font-mono text-[12px] text-accent">{clipNftFact(nft.sha256)}</span>
+          <CopyChip text={nft.sha256} copyLabel={t("tx.copy")} copiedLabel={t("tx.copied")} />
+        </span>
+      ),
+    });
+  }
+  const artUrl = nft.coverUrl || nft.url;
+  const showArt = Boolean(artUrl) && nft.kind !== "audio" && nft.kind !== "video";
   return (
-    <section className="addr-sheet mt-6 px-3 py-3">
-      <p className="mb-3 text-[13px] text-[var(--muted)]">{t("token.nft.section")}</p>
+    <section className="mt-2 flex flex-col gap-2">
       {audio.src ? (
         <audio
           controls
           preload="metadata"
-          className="mb-3 w-full"
+          className="w-full"
           src={audio.src}
           onError={audio.onError}
         />
@@ -1348,41 +1315,42 @@ function NftInfoPanel({
         <video
           controls
           preload="metadata"
-          className="mb-3 max-h-[360px] w-full rounded-[16px] bg-black/40"
+          className="max-h-[360px] w-full rounded-[20px] bg-black/40"
           src={video.src}
           poster={poster.src ?? undefined}
           onError={video.onError}
         />
-      ) : null}
-      {nft.kind === "image" && nft.url && nft.url !== nft.coverUrl ? (
-        <div className="mb-3 overflow-hidden rounded-[16px]">
-          <NftThumb url={nft.url} className="max-h-[360px] w-full object-contain" />
-        </div>
       ) : null}
       {fileHref && nft.kind === "file" ? (
         <a
           href={fileHref}
           target="_blank"
           rel="noreferrer"
-          className="mb-3 inline-block text-[13px] text-accent hover:underline"
+          className="inline-block text-[13px] text-accent hover:underline"
         >
           {t("token.nft.openFile")}
         </a>
       ) : null}
-      <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {rows.map((row) => (
-          <div key={row.label} className="min-w-0">
-            <dt className="text-[12px] text-[var(--muted-2)]">{row.label}</dt>
-            <dd className="mt-0.5 min-w-0 truncate text-[13px]">{row.node}</dd>
+      <div className="addr-lane">
+        {showArt ? (
+          <div className="addr-nft-thumb col-span-2 overflow-hidden rounded-[20px] lg:col-span-1">
+            <NftThumb url={artUrl} />
           </div>
-        ))}
-      </dl>
-      {nft.sha256 ? (
-        <p className="mt-2 flex min-w-0 items-center gap-1">
-          <CopyChip text={nft.sha256} copyLabel={t("tx.copy")} copiedLabel={t("tx.copied")} />
-          <span className="truncate font-mono text-[11px] text-[var(--muted-2)]">{nft.sha256}</span>
-        </p>
-      ) : null}
+        ) : null}
+        <div className="col-span-2 flex min-h-0 min-w-0 lg:col-span-3">
+          <dl
+            className="grid min-h-0 w-full min-w-0 flex-1 grid-cols-[7.5rem_minmax(0,1fr)] gap-x-4"
+            style={{ gridTemplateRows: `repeat(${Math.max(rows.length, 1)}, minmax(0, 1fr))` }}
+          >
+            {rows.map((row) => (
+              <div key={row.label} className="contents">
+                <dt className="flex items-center text-[12px] leading-snug text-[var(--muted-2)]">{row.label}</dt>
+                <dd className="flex min-w-0 items-center text-[13px] leading-snug">{row.node}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
     </section>
   );
 }

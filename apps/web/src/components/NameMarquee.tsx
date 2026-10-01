@@ -9,11 +9,14 @@ export function NameMarquee({
   className,
   style,
   fade = false,
+  pxPerSec = 36,
 }: {
   text: string;
   className?: string;
   style?: CSSProperties;
   fade?: boolean;
+  /** Lower = slower. Default matches address names. */
+  pxPerSec?: number;
 }) {
   const wrapRef = useRef<HTMLSpanElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
@@ -29,14 +32,16 @@ export function NameMarquee({
       setOverflow(need);
       if (need) {
         const px = Math.max(measure.scrollWidth, 1);
-        setSec(Math.min(48, Math.max(8, px / 36)));
+        const floor = pxPerSec <= 20 ? 14 : 8;
+        const ceil = pxPerSec <= 20 ? 64 : 48;
+        setSec(Math.min(ceil, Math.max(floor, px / pxPerSec)));
       }
     };
     check();
     const ro = new ResizeObserver(check);
     ro.observe(wrap);
     return () => ro.disconnect();
-  }, [text]);
+  }, [text, pxPerSec]);
 
   return (
     <span
