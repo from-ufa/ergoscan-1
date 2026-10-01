@@ -104,13 +104,13 @@ export function claimerAddress(tx: NodeTx): string | null {
     if (outAddr && inp.address && outAddr === inp.address) selfRenew.add(idx);
   }
   let best: { addr: string; val: bigint } | null = null;
-  outs.forEach((out, i) => {
-    if (selfRenew.has(i) || isMinerSide(out)) return;
+  for (const [i, out] of outs.entries()) {
+    if (selfRenew.has(i) || isMinerSide(out)) continue;
     const addr = out.address ?? "";
-    if (!addr.startsWith("9")) return;
+    if (!addr.startsWith("9")) continue;
     const val = nano(out.value) ?? 0n;
     if (!best || val > best.val) best = { addr, val };
-  });
+  }
   return best?.addr ?? null;
 }
 

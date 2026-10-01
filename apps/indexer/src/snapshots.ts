@@ -1310,6 +1310,7 @@ async function readRentDanger(
       value_nano: string;
       creation_height: string;
       tree_bytes: string | null;
+      addr_id: string | null;
       token_id: string;
       amount: string;
     }>(
@@ -1317,6 +1318,7 @@ async function readRentDanger(
               b.value_nano::text AS value_nano,
               b.creation_height::text AS creation_height,
               COALESCE(b.tree_bytes, 0)::text AS tree_bytes,
+              b.addr_id::text AS addr_id,
               encode(a.token_id, 'hex') AS token_id,
               a.amount::text AS amount
          FROM packed.boxes b
@@ -1346,8 +1348,9 @@ async function readRentDanger(
         });
       }
     }
-    const priced: { usd: number; short: bigint; row: Record<string, unknown> }[] = [];
-    const plain: { usd: number; short: bigint; row: Record<string, unknown> }[] = [];
+    type Ranked = { usd: number; short: bigint; addrId: string | null; row: Record<string, unknown> };
+    const priced: Ranked[] = [];
+    const plain: Ranked[] = [];
     for (const row of r.rows) {
       const creationHeight = n(row.creation_height);
       const size = Math.max(40, n(row.tree_bytes) + 16);
@@ -1375,12 +1378,13 @@ async function readRentDanger(
           usd = 0;
         }
       }
-      const item = {
+      const item: Ranked = {
         usd,
         short: rent - value,
+        addrId: row.addr_id,
         row: {
           boxId: row.box_id,
-          address: row.address,
+          address: null,
           tokenId,
           name: known?.name ?? null,
           amount: row.amount,
@@ -1395,7 +1399,7 @@ async function readRentDanger(
       if (pricedOk && usd > 0) priced.push(item);
       else if (protocol.has(tokenId)) plain.push(item);
     }
-    const byRank = (a: { usd: number; short: bigint; row: Record<string, unknown> }, b: typeof a) => {
+    const byRank = (a: Ranked, b: Ranked) => {
       if (b.usd !== a.usd) return b.usd - a.usd;
       if (a.short !== b.short) return a.short > b.short ? -1 : 1;
       const ab = String(a.row.boxId);
@@ -1407,7 +1411,17 @@ async function readRentDanger(
     };
     priced.sort(byRank);
     plain.sort(byRank);
-    const rows = [...priced.slice(0, 30), ...plain.slice(0, 10)].map((item) => item.row);
+    const shown = [...priced.slice(0, 30), ...plain.slice(0, 10)];
+    const addrIds = [...new Set(shown.map((item) => item.addrId).filter((id): id is string => id != null))];
+    if (addrIds.length) {
+      const owners = await c.query<{ id: string; address: string }>(
+        `SELECT id::text AS id, address FROM packed.addr WHERE id = ANY($1::bigint[])`,
+        [addrIds]
+      );
+      const byId = new Map(owners.rows.map((o) => [o.id, o.address]));
+      for (const item of shown) item.row.address = byId.get(item.addrId ?? "") ?? null;
+    }
+    const rows = shown.map((item) => item.row);
     dangerCache = { at: Date.now(), rows };
     console.log(`[indexer] rent danger 7d priced=${priced.length} protocol=${plain.length} shown=${rows.length}`);
     return rows;

@@ -1687,8 +1687,13 @@ export async function getRentPage(opts?: {
           offset,
           limit,
         });
+  // The snapshot's stored first pages: items already carries the one asked for.
+  const { duePage: _duePage, aheadPage: _aheadPage, ...shown } = kpis as RentKpis & {
+    duePage?: unknown;
+    aheadPage?: unknown;
+  };
   return {
-    ...kpis,
+    ...shown,
     ...(tab === "upcoming" ? { danger } : {}),
     items: boxes?.items ?? [],
     pagination: {
