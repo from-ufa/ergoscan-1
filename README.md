@@ -70,7 +70,7 @@ Every claim painted on a page has a class: on-chain, rule-decoded, telemetry, li
 | [`/search`](https://ergoscan.me/search) | Resolve a hash, address, or token name from the index |
 | [`/docs`](https://ergoscan.me/docs) | API |
 | [`/status`](https://ergoscan.me/status) | Public health |
-| [`/learn`](https://ergoscan.me/learn) | How to read a claim |
+| [`/learn`](https://ergoscan.me/learn) | How to read a claim. [Network](https://ergoscan.me/learn/network) lists public explorers, APIs, and GraphQL endpoints |
 | [`/about`](https://ergoscan.me/about) | Who builds ErgoScan |
 
 Transaction shape is one of `fee-collect`, `coinbase`, `reward-unlock`, `transfer`, `token`, `contract`, `script-pay`. Contract means a script was spent. A payment into a script is `script-pay`.
