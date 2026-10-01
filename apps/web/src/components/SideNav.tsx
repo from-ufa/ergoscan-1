@@ -92,10 +92,19 @@ const NAV_MAIN: NavItem[] = [
     ],
   },
   { href: "/rosen", key: "nav.rosen", icon: "rosen", match: ["/rosen"] },
-  { href: "/learn", key: "nav.learn", icon: "learn", match: ["/learn"] },
 ];
 
 const NAV_FOOT: NavItem[] = [
+  {
+    href: "/learn",
+    key: "nav.guide",
+    icon: "learn",
+    match: ["/learn"],
+    children: [
+      { href: "/learn", key: "nav.learn", icon: "learn", exact: true },
+      { href: "/learn/network", key: "nav.network", icon: "globe", exact: true },
+    ],
+  },
   { href: "/settings", key: "nav.settings", icon: "settings", match: ["/settings"] },
   { href: "/about", key: "nav.about", icon: "about", match: ["/about"] },
   { href: "/docs", key: "nav.docs", icon: "api", match: ["/docs"] },

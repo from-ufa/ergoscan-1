@@ -36,6 +36,7 @@ export function chromeFor(path: string): { titleKey: string; heading: boolean } 
     "/defi": "nav.defiSpectrum",
     "/rosen": "nav.rosen",
     "/learn": "nav.learn",
+    "/learn/network": "nav.network",
     "/about": "nav.about",
     "/settings": "nav.settings",
     "/docs": "nav.docs",

@@ -151,9 +151,13 @@ export const LIST_PAGES: Record<
     description: "Ergo NFT gallery from the index: artwork and name series.",
   },
   "/learn": {
-    title: "Learn",
+    title: "How to read ErgoScan",
     description:
       "How to read Ergo eUTXO transactions and verify ErgoScan evidence, sources, freshness, and limits.",
+  },
+  "/learn/network": {
+    title: "Ergo network directory",
+    description: "Public Ergo explorers, explorer APIs, and GraphQL endpoints outside ErgoScan.",
   },
   "/about": {
     title: "About",
@@ -327,6 +331,7 @@ export const SITEMAP_STATIC = [
   "/rosen",
   "/nfts",
   "/learn",
+  "/learn/network",
   "/about",
   "/docs",
   "/rent",

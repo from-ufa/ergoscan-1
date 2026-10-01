@@ -301,6 +301,18 @@ export function IconLearn(props: IconProps) {
   );
 }
 
+/** Network directory — Lucide `globe`. */
+export function IconGlobe(props: IconProps) {
+  return glyph(
+    props,
+    <>
+      <circle cx="12" cy="12" r="10" {...cap} />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" {...cap} />
+      <path d="M2 12h20" {...cap} />
+    </>
+  );
+}
+
 /** Status — the pulse of the index, not a second pair of server racks. */
 export function IconStatus(props: IconProps) {
   return glyph(
@@ -452,6 +464,7 @@ export const NAV_ICONS = {
   mempool: IconMempool,
   rosen: IconRosen,
   learn: IconLearn,
+  globe: IconGlobe,
   about: IconAbout,
   settings: IconSettings,
   api: IconApi,

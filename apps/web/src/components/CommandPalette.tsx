@@ -536,6 +536,7 @@ export function CommandPalette() {
     { key: "nav.oraclesXau", href: "/oracles/xau-erg" },
     { key: "nav.rosen", href: "/rosen" },
     { key: "nav.learn", href: "/learn" },
+    { key: "nav.network", href: "/learn/network" },
     { key: "nav.about", href: "/about" },
     { key: "nav.docs", href: "/docs" },
     { key: "nav.status", href: "/status" },
