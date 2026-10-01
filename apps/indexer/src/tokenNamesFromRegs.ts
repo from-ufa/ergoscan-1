@@ -14,6 +14,7 @@ import {
   knownErgoTokenName,
   pickArtworkUrl,
 } from "@ergoscan/shared";
+import { capStatements, releaseCapped } from "./db.js";
 
 const BATCH = 40;
 const NAME_MAX = 64;
@@ -151,7 +152,7 @@ export async function maybeBackfillTokenNamesFromRegs(
   const client = await pool.connect();
   const t0 = Date.now();
   try {
-    await client.query("SET LOCAL statement_timeout = 8000");
+    await capStatements(client, 8000);
     const done = await getState(client, DONE_KEY);
     const cursor = (await getState(client, CURSOR_KEY)) || "";
     const fromH = Number((await getState(client, FROM_H_KEY)) || 0);
@@ -234,7 +235,7 @@ export async function maybeBackfillTokenNamesFromRegs(
   } catch (e) {
     console.warn("[indexer] token meta r4", String(e));
   } finally {
-    client.release();
+    await releaseCapped(client);
     running = false;
   }
 }
@@ -255,7 +256,7 @@ export async function maybeBackfillNftKindFromRegs(pool: pg.Pool): Promise<void>
   const client = await pool.connect();
   const t0 = Date.now();
   try {
-    await client.query("SET LOCAL statement_timeout = 8000");
+    await capStatements(client, 8000);
     const done = await getState(client, KIND_DONE);
     const cursor = (await getState(client, KIND_CURSOR)) || "";
     const fromH = Number((await getState(client, KIND_FROM)) || 0);
@@ -329,7 +330,7 @@ export async function maybeBackfillNftKindFromRegs(pool: pg.Pool): Promise<void>
       console.warn("[indexer] token nft_kind", msg);
     }
   } finally {
-    client.release();
+    await releaseCapped(client);
     kindRunning = false;
   }
 }
@@ -352,7 +353,7 @@ export async function maybeBackfillMintArtwork(pool: pg.Pool): Promise<void> {
   const client = await pool.connect();
   const t0 = Date.now();
   try {
-    await client.query("SET LOCAL statement_timeout = 8000");
+    await capStatements(client, 8000);
     const done = await getState(client, ART_DONE);
     const cursor = (await getState(client, ART_CURSOR)) || "";
     const fromH = Number((await getState(client, ART_FROM)) || 0);
@@ -423,7 +424,7 @@ export async function maybeBackfillMintArtwork(pool: pg.Pool): Promise<void> {
   } catch (e) {
     console.warn("[indexer] token art mint", String(e));
   } finally {
-    client.release();
+    await releaseCapped(client);
     artRunning = false;
   }
 }
@@ -459,7 +460,7 @@ async function retryEmptyNames(pool: pg.Pool): Promise<boolean> {
   const client = await pool.connect();
   const t0 = Date.now();
   try {
-    await client.query("SET LOCAL statement_timeout = 8000");
+    await capStatements(client, 8000);
     if (await getState(client, RETRY_NAME_DONE)) return false;
     const cursor = (await getState(client, RETRY_NAME_CURSOR)) || "";
     const ids = await pickTokenIds(
@@ -510,7 +511,7 @@ async function retryEmptyNames(pool: pg.Pool): Promise<boolean> {
     console.warn("[indexer] token meta r4 retry", String(e));
     return false;
   } finally {
-    client.release();
+    await releaseCapped(client);
     retryNameRunning = false;
   }
 }
@@ -521,7 +522,7 @@ async function retryHoleKinds(pool: pg.Pool): Promise<boolean> {
   const client = await pool.connect();
   const t0 = Date.now();
   try {
-    await client.query("SET LOCAL statement_timeout = 8000");
+    await capStatements(client, 8000);
     if (await getState(client, RETRY_KIND_DONE)) return false;
     const cursor = (await getState(client, RETRY_KIND_CURSOR)) || "";
     const ids = await pickTokenIds(
@@ -568,7 +569,7 @@ async function retryHoleKinds(pool: pg.Pool): Promise<boolean> {
     console.warn("[indexer] token nft_kind retry", String(e));
     return false;
   } finally {
-    client.release();
+    await releaseCapped(client);
     retryKindRunning = false;
   }
 }

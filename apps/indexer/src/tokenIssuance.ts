@@ -6,6 +6,7 @@
 import type pg from "pg";
 import { eip4DecimalsFromRegs, ergoTokenDecimals } from "@ergoscan/shared";
 import type { TokenUpsertRow } from "./batchSql.js";
+import { capStatements, releaseCapped } from "./db.js";
 
 const BATCH = 80;
 /** Several PK batches per tick; stop before the tip loop waits. */
@@ -141,7 +142,7 @@ export async function maybeBackfillTokenIssuance(pool: pg.Pool): Promise<void> {
   const client = await pool.connect();
   const t0 = Date.now();
   try {
-    await client.query("SET LOCAL statement_timeout = 8000");
+    await capStatements(client, 8000);
     const done = await getState(client, DONE_KEY);
     let cursor = (await getState(client, CURSOR_KEY)) || "";
     const fromH = Number((await getState(client, FROM_H_KEY)) || 0);
@@ -252,7 +253,7 @@ export async function maybeBackfillTokenIssuance(pool: pg.Pool): Promise<void> {
   } catch (e) {
     console.warn("[indexer] token issuance", String(e));
   } finally {
-    client.release();
+    await releaseCapped(client);
     running = false;
   }
 }
