@@ -1488,6 +1488,8 @@ export const en: Record<string, string> = {
     "Heights, global indexes, and sizes are JSON numbers. Timestamps are unix milliseconds (UTC).",
   "docs.spec.write":
     "User GET does not call the node. The only user write is POST /mempool/transactions/submit and GraphQL submitTx. Client errors: rejected or submit_failed.",
+  "docs.spec.address":
+    "An address that fails the Ergo checksum returns 400 { error: bad_address, reason: checksum }. A valid address with no history returns an empty result.",
   "docs.spec.stable":
     "Existing fields stay. New fields and paths may appear. GET /tokens catalog shape is frozen.",
   "docs.spec.gql":
@@ -1589,5 +1591,8 @@ export const en: Record<string, string> = {
   "buyback.linkPool": "Oracle pool",
   "buyback.packTape": "Move window",
   "buyback.packHint": "20 at a time.",
+  "address.bad.title": "Invalid address",
+  "address.bad.body":
+    "The checksum does not match, so this is most likely a typo. No wallet can have this address. Check it against your wallet before you send anything.",
 
 };

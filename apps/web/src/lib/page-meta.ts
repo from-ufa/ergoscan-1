@@ -8,6 +8,7 @@ import { lookupAddress } from "@/lib/address-book";
 import { formatErgFixed, shortId } from "@/lib/format";
 import {
   fetchAddressPage,
+  fetchAddressPageResult,
   fetchBlockCard,
   fetchBox,
   fetchHomeSnapshot,
@@ -22,6 +23,7 @@ import { tokenSymbol } from "@/lib/token-meta";
 export const cachedHome = cache(fetchHomeSnapshot);
 export const cachedTx = cache(fetchTransaction);
 export const cachedAddress = cache(fetchAddressPage);
+export const cachedAddressResult = cache(fetchAddressPageResult);
 export const cachedToken = cache(fetchTokenListItem);
 export const cachedBox = cache(fetchBox);
 export const cachedBlock = cache(fetchBlockCard);
@@ -245,6 +247,15 @@ export function txPageMeta(id: string, tx: Awaited<ReturnType<typeof fetchTransa
     title: `${tx.confirmed ? "Tx" : "Mempool tx"} ${shortId(tx.id, 8)}`,
     description: `Ergo transaction ${tx.id}. ${bits.join(" ")}`,
     path,
+  });
+}
+
+export function badAddressMeta(address: string): Metadata {
+  return pageMeta({
+    title: "Invalid address",
+    description: `${shortId(address, 8)} fails the Ergo address checksum. It is most likely a typo.`,
+    path: `/address/${address}`,
+    index: false,
   });
 }
 

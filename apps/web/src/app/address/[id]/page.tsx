@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
-import { addressPageMeta, cachedAddress, webpageJsonLd } from "@/lib/page-meta";
+import { addressPageMeta, badAddressMeta, cachedAddressResult, webpageJsonLd } from "@/lib/page-meta";
 import { AddressView } from "./address-view";
+import { BadAddressView } from "./bad-address";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const address = decodeURIComponent(id ?? "");
-  return addressPageMeta(address, address ? await cachedAddress(address) : null);
+  const got = address ? await cachedAddressResult(address) : null;
+  if (got?.bad) return badAddressMeta(address);
+  return addressPageMeta(address, got?.data ?? null);
 }
 
 export default async function AddressPage({
@@ -22,7 +25,9 @@ export default async function AddressPage({
 }) {
   const { id } = await params;
   const address = decodeURIComponent(id ?? "");
-  const initial = address ? await cachedAddress(address) : null;
+  const got = address ? await cachedAddressResult(address) : null;
+  if (got?.bad) return <BadAddressView address={address} />;
+  const initial = got?.data ?? null;
   const meta = addressPageMeta(address, initial);
   return (
     <>

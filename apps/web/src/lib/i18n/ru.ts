@@ -1490,6 +1490,8 @@ export const ru: Record<string, string> = {
     "Высоты, global index и размеры — JSON-числа. Время — unix-миллисекунды (UTC).",
   "docs.spec.write":
     "Пользовательский GET ноду не вызывает. Единственная пользовательская запись — POST /mempool/transactions/submit и GraphQL submitTx. Ошибки клиенту: rejected или submit_failed.",
+  "docs.spec.address":
+    "Адрес, у которого не сходится контрольная сумма Ergo, получает 400 { error: bad_address, reason: checksum }. Валидный адрес без истории получает пустой ответ.",
   "docs.spec.stable":
     "Существующие поля не переименовываем и не удаляем. Новые поля и пути можно добавлять. Форма GET /tokens фиксирована.",
   "docs.spec.gql":
@@ -1591,5 +1593,8 @@ export const ru: Record<string, string> = {
   "buyback.linkPool": "Пул оракула",
   "buyback.packTape": "Окно движений",
   "buyback.packHint": "По 20 за раз.",
+  "address.bad.title": "Адрес с ошибкой",
+  "address.bad.body":
+    "Контрольная сумма не сходится — скорее всего, это опечатка. У кошелька не может быть такого адреса. Сверьте его с кошельком, прежде чем что-то отправлять.",
 
 };

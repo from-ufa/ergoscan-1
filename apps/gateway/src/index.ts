@@ -40,6 +40,7 @@ import { peekChainTip, type ChainTip } from "./lib/snapshots.js";
 import { startOrbitPeerCache } from "./lib/orbit-peers.js";
 import { cacheList, cacheNoStore } from "./lib/httpCache.js";
 import { resolveFromIndex } from "./lib/resolve.js";
+import { isErgoAddressChecksumValid } from "./lib/ergoAddress.js";
 import { matrixConfigFromEnv } from "./lib/matrix.js";
 import { pushMempoolSample, pushBlockPoints } from "./lib/history.js";
 import { addressesFromTx } from "./lib/address.js";
@@ -141,6 +142,33 @@ app.use((req, res, next) => {
   res.setHeader("X-RateLimit-Remaining", String(Math.max(0, max - row.n)));
   if (row.n > max) {
     res.status(429).json({ error: "rate_limited", retryAfterSec: Math.ceil((row.reset - now) / 1000) });
+    return;
+  }
+  next();
+});
+
+/** Every route that takes an address in the path. A failed checksum is a typo, not an empty wallet. */
+const ADDRESS_PATHS = [
+  /^\/v1\/addresses\/([^/]+)(?:\/|$)/,
+  /^\/v1\/page\/address\/([^/]+)$/,
+  /^\/v1\/boxes\/(?:unspent\/(?:unconfirmed\/)?)?byAddress\/([^/]+)$/,
+  /^\/v1\/mempool\/transactions\/byAddress\/([^/]+)$/,
+];
+
+app.use((req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") return next();
+  for (const re of ADDRESS_PATHS) {
+    const m = re.exec(req.path);
+    if (!m) continue;
+    let address = m[1] ?? "";
+    try {
+      address = decodeURIComponent(address);
+    } catch {
+      /* keep raw */
+    }
+    if (isErgoAddressChecksumValid(address.trim())) return next();
+    cacheNoStore(res);
+    res.status(400).json({ error: "bad_address", reason: "checksum" });
     return;
   }
   next();

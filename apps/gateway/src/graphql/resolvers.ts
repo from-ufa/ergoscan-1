@@ -2,6 +2,7 @@ import { GraphQLError } from "graphql";
 import { ergoTokenDecimals } from "@ergoscan/shared";
 import type { RawTx } from "@ergoscan/shared";
 import { parseGixWindow } from "../lib/gix.js";
+import { isErgoAddressChecksumValid } from "../lib/ergoAddress.js";
 import {
   addressTokensConfirmed,
   addressTransactionsCursor,
@@ -123,6 +124,7 @@ export const graphqlRoot = {
     address: async (_: unknown, args: { id: string }) => {
       const address = String(args.id ?? "").trim();
       if (!address) return null;
+      if (!isErgoAddressChecksumValid(address)) throw new GraphQLError("bad_address: checksum");
       const summary = await getAddressSummary(address);
       return { address, summary };
     },

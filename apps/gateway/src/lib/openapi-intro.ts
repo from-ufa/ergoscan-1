@@ -26,6 +26,8 @@ export const OPENAPI_INFO_DESCRIPTION = [
   "",
   "User GET does not call the node. The only user write is `POST /mempool/transactions/submit` and GraphQL `submitTx`. Client errors are `rejected` or `submit_failed`.",
   "",
+  "An address that fails the Ergo checksum returns HTTP 400 `{ error: \"bad_address\", reason: \"checksum\" }`. A valid address with no history returns an empty result.",
+  "",
   "Existing fields stay. New fields and paths may appear. `GET /tokens` catalog shape is frozen.",
   "",
   "GraphQL reads the same index. Query depth ≤ 7. gix windows ≤ 10000 (4s timeout). `submitTx` shares the submit rate limit.",

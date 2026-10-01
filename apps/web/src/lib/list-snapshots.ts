@@ -1623,7 +1623,10 @@ export type AddressPageData = {
   };
 };
 
-export async function fetchAddressPage(address: string): Promise<AddressPageData | null> {
+/** `bad` is a failed address checksum from the gateway — a typo, not a missing row. */
+export type AddressPageResult = { data: AddressPageData | null; bad: boolean };
+
+export async function fetchAddressPageResult(address: string): Promise<AddressPageResult> {
   const gw = getGateway();
   try {
     const r = await fetch(
@@ -1634,13 +1637,21 @@ export async function fetchAddressPage(address: string): Promise<AddressPageData
         signal: AbortSignal.timeout(4000),
       }
     );
-    if (!r.ok) return null;
+    if (r.status === 400) {
+      const e = (await r.json().catch(() => null)) as { error?: string } | null;
+      return { data: null, bad: e?.error === "bad_address" };
+    }
+    if (!r.ok) return { data: null, bad: false };
     const j = (await r.json()) as AddressPageData;
-    if (!j || typeof j.address !== "string") return null;
-    return j;
+    if (!j || typeof j.address !== "string") return { data: null, bad: false };
+    return { data: j, bad: false };
   } catch {
-    return null;
+    return { data: null, bad: false };
   }
+}
+
+export async function fetchAddressPage(address: string): Promise<AddressPageData | null> {
+  return (await fetchAddressPageResult(address)).data;
 }
 
 export const NFT_PACK = 24;

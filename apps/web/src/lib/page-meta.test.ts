@@ -6,6 +6,7 @@ import {
   SITEMAP_STATIC,
   absUrl,
   addressPageMeta,
+  badAddressMeta,
   missMeta,
   pageMeta,
   tokenPageMeta,
@@ -26,6 +27,12 @@ test("pageMeta sets canonical + index by default", () => {
   });
   assert.equal(m.alternates?.canonical, `${SITE_URL}/blocks`);
   assert.deepEqual(m.robots, { index: true, follow: true });
+});
+
+test("an address with a bad checksum is noindex", () => {
+  const m = badAddressMeta("9efFUTmfpea6whc8iL8FNJN295Ddc2HDVeQpQjygqsbQS578Bya");
+  assert.deepEqual(m.robots, { index: false, follow: false });
+  assert.match(String(m.title), /invalid address/i);
 });
 
 test("missMeta is noindex", () => {

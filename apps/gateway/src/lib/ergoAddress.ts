@@ -7,7 +7,8 @@ import { blake2b } from "@noble/hashes/blake2.js";
 import type { RawTx } from "@ergoscan/shared";
 
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-const ADDR_MAX_LEN = 2000;
+/** Longest P2S in the index is 5260 chars. A 4 KB ErgoTree stays under this. */
+const ADDR_MAX_LEN = 8000;
 /** Mainnet P2PK 0x01, P2SH 0x02, P2S 0x03. Testnet +0x10. */
 const ADDR_PREFIXES = new Set([0x01, 0x02, 0x03, 0x11, 0x12, 0x13]);
 const P2PK_TREE = /^0008cd[0-9a-f]{66}$/;

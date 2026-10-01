@@ -57,6 +57,7 @@ export const DOCS_SPEC_PARAS = [
   "amounts",
   "times",
   "write",
+  "address",
   "stable",
   "gql",
 ] as const;

@@ -28,6 +28,18 @@ test("P2PK tree round-trips without the node", () => {
   assert.equal(addressFromErgoTree(tree), P2PK);
 });
 
+test("a one-letter typo fails the checksum", () => {
+  const typo = `${P2PK.slice(0, -1)}${P2PK.endsWith("a") ? "b" : "a"}`;
+  assert.equal(isErgoAddressChecksumValid(typo), false);
+});
+
+test("long contracts past 2000 chars still pass the checksum", () => {
+  const tree = `1004${"0e20".padEnd(8, "0")}${"ab".repeat(3000)}`;
+  const addr = addressFromErgoTree(tree);
+  assert.ok(addr && addr.length > 4000, `length ${addr?.length}`);
+  assert.equal(isErgoAddressChecksumValid(addr), true);
+});
+
 test("missing tree is null", () => {
   assert.equal(addressFromErgoTree(null), null);
   assert.equal(addressFromErgoTree(""), null);
