@@ -2397,6 +2397,7 @@ export async function ergoTreeForAddress(address: string): Promise<string | null
          JOIN packed.boxes b ON b.addr_id = ad.id
          JOIN packed.script sc ON sc.id = b.script_id
         WHERE ad.addr_md5 = md5($1) AND ad.address = $1
+          AND b.creation_height IS NOT NULL
           AND sc.ergo_tree IS NOT NULL
         LIMIT 1`,
       [address],
@@ -4641,12 +4642,17 @@ export async function listTokensCatalog(opts: {
            t.holders, t.unspent_boxes, t.tx_count,
            t.first_height, t.last_height,
            bf.timestamp_ms AS first_ts, bl.timestamp_ms AS last_ts
-    FROM tokens t
+    FROM (
+      SELECT t.token_id, t.name, t.decimals, t.emission, t.artwork_url,
+             t.holders, t.unspent_boxes, t.tx_count, t.first_height, t.last_height
+      FROM tokens t
+      ${whereSql}
+      ${orderSql}
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    ) t
     LEFT JOIN ${blockTable} bf ON bf.height = t.first_height
     LEFT JOIN ${blockTable} bl ON bl.height = COALESCE(t.last_height, t.first_height)
-    ${whereSql}
     ${orderSql}
-    LIMIT $${params.length + 1} OFFSET $${params.length + 2}
   `;
 
   try {

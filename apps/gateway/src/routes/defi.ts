@@ -339,6 +339,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
       params.push(limit);
       const lim = `$${params.length}`;
 
+      // Keep the LIMIT inside: the joins above it must run per page row, not per trade.
       const sql = `
         SELECT t.tx_id, t.box_id, t.token_id, t.base_id, t.side, t.token_amount, t.base_amount,
                t.price, t.trader, t.pool_id, t.height, t.ts_ms, t.source,
@@ -347,7 +348,12 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
                tok.name AS token_name,
                btok.name AS base_name,
                iss.additional_registers AS issuance_regs
-        FROM defi.trades t
+        FROM (
+          SELECT t.* FROM defi.trades t
+          WHERE ${where.join(" AND ")}
+          ORDER BY t.ts_ms DESC, t.tx_id DESC
+          LIMIT ${lim}
+        ) t
         LEFT JOIN defi.pool_registry r ON r.pool_id = t.pool_id
         LEFT JOIN LATERAL (
           SELECT symbol FROM defi.pool_snap s
@@ -358,9 +364,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
         LEFT JOIN tokens tok ON tok.token_id = t.token_id
         LEFT JOIN tokens btok ON btok.token_id = t.base_id
         LEFT JOIN packed.boxes iss ON iss.box_id = packed.hex32(t.token_id)
-        WHERE ${where.join(" AND ")}
-        ORDER BY t.ts_ms DESC NULLS LAST, t.tx_id DESC
-        LIMIT ${lim}
+        ORDER BY t.ts_ms DESC, t.tx_id DESC
       `;
 
       const rows = await q<Record<string, unknown>>(sql, params);

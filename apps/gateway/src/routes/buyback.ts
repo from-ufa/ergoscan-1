@@ -11,8 +11,8 @@ import {
   assembleBuyback,
   buybackBySlug,
   downsample,
-  epochPay,
   goldCover,
+  refreshPay,
   type BuybackDef,
   type BuybackKind,
   type RawBox,
@@ -158,6 +158,16 @@ async function build(def: BuybackDef) {
   const tipP = q<{ value: string }>(
     `SELECT value FROM oracle.worker_state WHERE key = 'scan_height'`
   );
+  const datapointsP = q<{ n: number }>(
+    `SELECT count(*)::int AS n
+       FROM oracle.pool_snap s
+       JOIN packed.boxes c ON c.box_id = packed.hex32(s.box_id)
+       JOIN packed.boxes i ON i.spent_tx_id = c.creation_tx_id
+       JOIN packed.box_assets oa
+         ON oa.box_id = i.box_id AND oa.token_id = decode(s.oracle_token, 'hex')
+      WHERE s.slug = $1`,
+    [def.slug]
+  );
   const bankP =
     def.bankNft && def.bankToken
       ? q<{ erg: string; token: string }>(LIVE, [def.bankNft, def.bankToken])
@@ -175,13 +185,14 @@ async function build(def: BuybackDef) {
       )
     : Promise.resolve([] as { height: string; amount: string }[] | null);
 
-  const [boxes, lpRows, poolRows, tipRows, bankRows, emRows] = await Promise.all([
+  const [boxes, lpRows, poolRows, tipRows, bankRows, emRows, datapointRows] = await Promise.all([
     boxesP,
     lpP,
     poolP,
     tipP,
     bankP,
     emP,
+    datapointsP,
   ]);
   if (!boxes) return null;
 
@@ -230,7 +241,7 @@ async function build(def: BuybackDef) {
   const lpToken = lp ? bi(lp.token) : 0n;
   const pool = poolRows?.[0] ?? null;
   const liveOps = pool?.live_operators ?? 0;
-  const pay = epochPay(liveOps);
+  const pay = refreshPay(n(datapointRows?.[0]?.n) ?? 0);
   const live = assembled.live;
   const script = def.scriptOracleToken.toLowerCase();
   const posted = (pool?.oracle_token ?? "").toLowerCase();

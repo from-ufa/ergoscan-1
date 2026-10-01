@@ -1533,7 +1533,7 @@ export const ru: Record<string, string> = {
   "buyback.titleGort": "Выкуп GORT",
   "buyback.titleDort": "Выкуп DORT",
   "buyback.kpiErg": "ERG в ящике",
-  "buyback.kpiErgSub": "С высоты #{h}",
+  "buyback.kpiErgSub": "Последнее движение #{h}",
   "buyback.kpiToken": "{sym} в ящике",
   "buyback.kpiTokenSub": "куплено {bought}",
   "buyback.kpiSwaps": "Покупки",

@@ -72,10 +72,10 @@ export function moveKind(derg: bigint, dtok: bigint): MoveKind {
   return "open";
 }
 
-/** Spec pay for one refresh: 2×(N−1) when at least two operators posted. */
-export function epochPay(live: number): number | null {
-  if (!Number.isFinite(live) || live < 2) return null;
-  return 2 * (live - 1);
+/** The pool contract emits 2 reward tokens per datapoint in a refresh tx. */
+export function refreshPay(datapoints: number): number | null {
+  if (!Number.isFinite(datapoints) || datapoints < 1) return null;
+  return 2 * Math.floor(datapoints);
 }
 
 /**

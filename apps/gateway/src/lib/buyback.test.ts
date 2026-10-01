@@ -3,9 +3,9 @@ import { test } from "node:test";
 import {
   assembleBuyback,
   buybackBySlug,
-  epochPay,
   goldCover,
   moveKind,
+  refreshPay,
   type RawBox,
 } from "./buyback.js";
 
@@ -81,10 +81,10 @@ test("assemble chains top-up, swap, and return", () => {
   assert.equal(got.moves[2]?.token, 1n);
 });
 
-test("epoch pay is 2×(N−1)", () => {
-  assert.equal(epochPay(9), 16);
-  assert.equal(epochPay(11), 20);
-  assert.equal(epochPay(1), null);
+test("refresh pay is 2 per datapoint", () => {
+  assert.equal(refreshPay(13), 26);
+  assert.equal(refreshPay(10), 20);
+  assert.equal(refreshPay(0), null);
 });
 
 test("gold cover stays shut below 800%", () => {

@@ -103,7 +103,21 @@ app.use((req, _res, next) => {
 // Simple in-memory rate limit (per IP): protect public API
 const RL_WINDOW_MS = 60_000;
 const RL_MAX = Number(process.env.RATE_LIMIT_PER_MIN ?? 180);
+/** Caddy always sets X-Forwarded-For, so a loopback request without it is internal (page SSR, ops scripts). */
+const RL_INTERNAL_MAX = Number(process.env.RATE_LIMIT_INTERNAL_PER_MIN ?? 3000);
 const rlHits = new Map<string, { n: number; reset: number }>();
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, row] of rlHits) {
+    if (now > row.reset) rlHits.delete(key);
+  }
+}, RL_WINDOW_MS).unref();
+
+function isLoopback(addr: string | undefined): boolean {
+  if (!addr) return false;
+  return addr === "::1" || addr.startsWith("127.") || addr.startsWith("::ffff:127.");
+}
+
 app.use((req, res, next) => {
   if (
     req.path === "/v1/stream" ||
@@ -112,10 +126,10 @@ app.use((req, res, next) => {
   ) {
     return next();
   }
-  const ip =
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
-    req.socket.remoteAddress ||
-    "unknown";
+  const forwarded = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim();
+  const internal = !forwarded && isLoopback(req.socket.remoteAddress);
+  const ip = internal ? "internal" : forwarded || req.socket.remoteAddress || "unknown";
+  const max = internal ? RL_INTERNAL_MAX : RL_MAX;
   const now = Date.now();
   let row = rlHits.get(ip);
   if (!row || now > row.reset) {
@@ -123,9 +137,9 @@ app.use((req, res, next) => {
     rlHits.set(ip, row);
   }
   row.n += 1;
-  res.setHeader("X-RateLimit-Limit", String(RL_MAX));
-  res.setHeader("X-RateLimit-Remaining", String(Math.max(0, RL_MAX - row.n)));
-  if (row.n > RL_MAX) {
+  res.setHeader("X-RateLimit-Limit", String(max));
+  res.setHeader("X-RateLimit-Remaining", String(Math.max(0, max - row.n)));
+  if (row.n > max) {
     res.status(429).json({ error: "rate_limited", retryAfterSec: Math.ceil((row.reset - now) / 1000) });
     return;
   }

@@ -1531,7 +1531,7 @@ export const en: Record<string, string> = {
   "buyback.titleGort": "GORT buyback",
   "buyback.titleDort": "DORT buyback",
   "buyback.kpiErg": "ERG in the box",
-  "buyback.kpiErgSub": "Since #{h}",
+  "buyback.kpiErgSub": "Last move #{h}",
   "buyback.kpiToken": "{sym} in the box",
   "buyback.kpiTokenSub": "{bought} bought",
   "buyback.kpiSwaps": "Swaps",

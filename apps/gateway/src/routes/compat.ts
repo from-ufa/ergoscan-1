@@ -24,6 +24,7 @@ import {
   type GixStreamBox,
 } from "../lib/indexDb.js";
 import { parseGixWindow } from "../lib/gix.js";
+import { ergoTreeFromAddress, normErgoTree } from "../lib/ergoAddress.js";
 import { logSubmitFail, publicSubmitFail, requestIp, takeSubmitSlot, validateSignedTx } from "../lib/submit-tx.js";
 import { getBlocksList, getHomePage } from "../lib/snapshots.js";
 import {
@@ -182,7 +183,7 @@ export function registerCompatRoutes(app: Express, deps: CompatDeps): void {
     const address = req.params.address;
     const limit = qInt(req.query.limit, 50, 1, 100);
     const offset = qInt(req.query.offset, 0, 0, 400);
-    const tree = await ergoTreeForAddress(address);
+    const tree = await addressTree(address);
     const all = mempoolUnspentForAddress(address, deps.getRawMempool().values(), tree);
     const items = all.slice(offset, offset + limit);
     res.json({
@@ -246,12 +247,13 @@ export function registerCompatRoutes(app: Express, deps: CompatDeps): void {
   app.get("/v1/addresses/:address/balance/total", async (req, res) => {
     cacheNoStore(res);
     const address = req.params.address;
-    const confirmed = await confirmedBalance(address);
-    if (!confirmed) {
+    const got = await confirmedBalance(address);
+    if (!got) {
       res.status(503).json({ error: "stale", stale: true });
       return;
     }
-    const tree = await ergoTreeForAddress(address);
+    const confirmed = got.balance;
+    const tree = await addressTree(address);
     const pending = mempoolBalanceDelta(address, deps.getRawMempool().values(), tree);
     const total = sumBalances(confirmed, pending);
     res.json({
@@ -259,6 +261,7 @@ export function registerCompatRoutes(app: Express, deps: CompatDeps): void {
       unconfirmed: pending,
       total,
       source: "indexer+mempool",
+      truncated: got.truncated,
     });
   });
 
@@ -584,23 +587,33 @@ export function registerCompatRoutes(app: Express, deps: CompatDeps): void {
   }
 }
 
-async function confirmedBalance(address: string): Promise<ExplorerBalance | null> {
+/** P2PK and P2S decode locally. Only P2SH needs a box from the index. */
+async function addressTree(address: string): Promise<string | null> {
+  return normErgoTree(ergoTreeFromAddress(address)) ?? normErgoTree(await ergoTreeForAddress(address));
+}
+
+async function confirmedBalance(
+  address: string
+): Promise<{ balance: ExplorerBalance; truncated: boolean } | null> {
   const bal = await addressBalanceConfirmed(address);
   if (!bal) return null;
   const meta = await tokenMetaMany(bal.tokens.slice(0, 80).map((t) => t.tokenId));
   return {
-    nanoErgs: bal.nanoErgs,
-    tokens: bal.tokens.slice(0, 80).map((tok) => {
-      const m = meta.get(tok.tokenId) ?? meta.get(tok.tokenId.toLowerCase());
-      return {
-        tokenId: tok.tokenId,
-        amount: tok.amount,
-        decimals: resolveDecimals(
-          tok.tokenId,
-          m?.decimals != null && Number.isFinite(m.decimals) ? m.decimals : 0
-        ),
-        name: m?.name ?? null,
-      };
-    }),
+    truncated: bal.tokens.length > 80,
+    balance: {
+      nanoErgs: bal.nanoErgs,
+      tokens: bal.tokens.slice(0, 80).map((tok) => {
+        const m = meta.get(tok.tokenId) ?? meta.get(tok.tokenId.toLowerCase());
+        return {
+          tokenId: tok.tokenId,
+          amount: tok.amount,
+          decimals: resolveDecimals(
+            tok.tokenId,
+            m?.decimals != null && Number.isFinite(m.decimals) ? m.decimals : 0
+          ),
+          name: m?.name ?? null,
+        };
+      }),
+    },
   };
 }

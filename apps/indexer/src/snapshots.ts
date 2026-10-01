@@ -1191,11 +1191,12 @@ async function readRentKpis(pool: Pool, tip: number, dueHeight: number): Promise
   }
 }
 
+/** null means the read failed, so the caller keeps the last forecast. */
 async function readRentForecast(
   pool: Pool,
   tip: number,
   dueHeight: number
-): Promise<{ t: number; boxes: number; rentNano: string }[]> {
+): Promise<{ t: number; boxes: number; rentNano: string }[] | null> {
   const c = await pool.connect();
   try {
     await c.query("BEGIN");
@@ -1207,7 +1208,7 @@ async function readRentForecast(
     const tipMs = Number(tipRow.rows[0]?.t);
     if (!Number.isFinite(tipMs) || tipMs <= 0) {
       await c.query("ROLLBACK");
-      return [];
+      return null;
     }
     const r = await c.query<{ t: string; boxes: number; rent_nano: string }>(
       `SELECT ((($1::bigint + (creation_height + $2 - $3) * 120000) / 86400000) * 86400000)::bigint::text AS t,
@@ -1241,7 +1242,7 @@ async function readRentForecast(
       /* */
     }
     console.warn("[indexer] rent forecast", String(e));
-    return [];
+    return null;
   } finally {
     c.release();
   }
@@ -1791,7 +1792,15 @@ async function writeRentSnapshot(pool: Pool, tip: number): Promise<void> {
   ]);
   const danger = await readRentDanger(pool, tip, dueHeight);
   if (addresses) payload.addresses = addresses;
-  if (forecast.length >= 2) payload.forecast = forecast;
+  if (forecast) {
+    if (forecast.length >= 2) payload.forecast = forecast;
+  } else {
+    const prev = await pool.query<{ forecast: unknown }>(
+      `SELECT payload->'forecast' AS forecast FROM snapshot_kv WHERE key = 'rent'`
+    );
+    const kept = prev.rows[0]?.forecast;
+    if (Array.isArray(kept)) payload.forecast = kept as typeof payload.forecast;
+  }
   if (danger) payload.danger = danger;
   else {
     const prev = await pool.query<{ danger: unknown }>(
