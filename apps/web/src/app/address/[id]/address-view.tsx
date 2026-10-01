@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import clsx from "clsx";
 import { Shell } from "@/components/Shell";
@@ -48,13 +49,14 @@ import { useFavorite } from "@/lib/favorites";
 import { NameMarquee } from "@/components/NameMarquee";
 import { tokenDecimals, tokenSymbol, tokenTickerInk } from "@/lib/token-meta";
 import { type AddrFlow, type AddrFlowKind } from "@/lib/tx-flow";
-import { asAddrFlowKind } from "@ergoscan/shared";
+import { asAddrFlowKind, rentTapeTone } from "@ergoscan/shared";
 import { INK } from "@/lib/palette";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { setHashTab } from "@/lib/hash-tab";
 import { useChainTipRefresh, useKeepFresh, usePageSync } from "@/lib/page-sync";
-import { enteringIds, useEnterIds } from "@/lib/keyed-enter";
+import { ENTER_MS, enteringIds, useEnterIds } from "@/lib/keyed-enter";
 import { addrTapeHasMore, txKeysetCursor } from "@/lib/rank-window";
+import { cachedScoutRent, lookupScoutRent } from "@/lib/scout-rent";
 
 interface TokenRow {
   tokenId: string;
@@ -326,6 +328,10 @@ export function AddressView({
   const [nftsLoading, setNftsLoading] = useState(false);
   const [nftsFailed, setNftsFailed] = useState(false);
   const [nftsPackKey, setNftsPackKey] = useState<string | null>(null);
+  const [rentBlocks, setRentBlocks] = useState<number | null | undefined>(() =>
+    cachedScoutRent(address)
+  );
+  const [tileLanded, setTileLanded] = useState(false);
   const nftIds = useMemo(() => new Set(nfts.map((row) => row.tokenId)), [nfts]);
   const txCursorRef = useRef<string | null>(null);
   txCursorRef.current = txCursor;
@@ -654,6 +660,27 @@ export function AddressView({
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
+
+  useEffect(() => {
+    let dead = false;
+    setRentBlocks(cachedScoutRent(address));
+    void lookupScoutRent(address).then((n) => {
+      if (!dead) setRentBlocks(n);
+    });
+    return () => {
+      dead = true;
+    };
+  }, [address]);
+
+  useEffect(() => {
+    setTileLanded(false);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTileLanded(true);
+      return;
+    }
+    const id = window.setTimeout(() => setTileLanded(true), ENTER_MS);
+    return () => window.clearTimeout(id);
+  }, [address]);
 
   useEffect(() => {
     let dead = false;
@@ -1037,6 +1064,7 @@ export function AddressView({
   }, [data?.balance.tokens, nftIds]);
   const tokenCount =
     (data?.tokenCount ?? 0) > 0 ? (data?.tokenCount ?? 0) : tokenRows.length;
+  const rentTone = rentBlocks == null ? null : rentTapeTone(rentBlocks);
   const tokenPage = tokenRows.slice(tokenOffset, tokenOffset + TOKEN_PAGE);
   const tokenUsd = useMemo(() => {
     let sum = 0;
@@ -1161,8 +1189,14 @@ export function AddressView({
             </div>
 
             <AddrFactCard
-              className="addr-fact-balance col-span-2 lg:col-span-1 lg:row-span-2"
+              className={clsx(
+                "addr-fact-balance col-span-2 lg:col-span-1 lg:row-span-2",
+                rentTone && "is-rent",
+                rentTone === "soon" && "is-rent-soon",
+                rentTone === "due" && "is-rent-due"
+              )}
               enter={1}
+              beacon={Boolean(rentTone) && tileLanded}
               label={t("address.card.balance")}
               ink={INK.cyan}
               mark={<KpiMarkWalletMinimal className="h-9 w-9" />}
@@ -1293,15 +1327,19 @@ export function AddressView({
                     <div
                       className={clsx("addr-head addr-lane addr-lane-x addr-history", stuck && "is-stuck")}
                     >
-                      <div className="block-lane-pair min-w-0 justify-between">
+                      <div className="block-lane-pair">
                         <span>{t("address.colKind")}</span>
                         <span className="justify-end tabular-nums">{t("address.colAmount")}</span>
                       </div>
                       <div className="min-w-0 justify-end">{t("tx.tab.tokens")}</div>
-                      <div className="min-w-0 justify-center">{t("address.colTx")}</div>
-                      <div className="min-w-0">{t("address.colFrom")}</div>
-                      <div className="min-w-0">{t("address.colTo")}</div>
-                      <div className="min-w-0">{t("address.colTime")}</div>
+                      <div className="block-lane-pair">
+                        <span>{t("address.colFrom")}</span>
+                        <span className="justify-end">{t("address.colTo")}</span>
+                      </div>
+                      <div className="block-lane-pair">
+                        <span>{t("address.colTx")}</span>
+                        <span className="justify-end">{t("address.colTime")}</span>
+                      </div>
                       <div className="min-w-0 justify-end tabular-nums">{t("address.colHeight")}</div>
                     </div>
                     {tapeRows.map((tx) => (
@@ -1610,85 +1648,168 @@ function TokenFlowPeek({
   signed?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [up, setUp] = useState(false);
+  const [box, setBox] = useState<{
+    left: number;
+    width: number;
+    height: number;
+    top?: number;
+    bottom?: number;
+    maxHeight: number;
+  } | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const head = lines.slice(0, 2);
   const rest = lines.slice(2);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPtr = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (rootRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    const onMove = (e: Event) => {
+      if (menuRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPtr);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onMove, true);
+    window.addEventListener("resize", onMove);
+    return () => {
+      document.removeEventListener("pointerdown", onPtr);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onMove, true);
+      window.removeEventListener("resize", onMove);
+    };
+  }, [open]);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setUp(false);
+      setBox(null);
+      return;
+    }
+    const menu = menuRef.current;
+    const cell = rootRef.current?.closest(".addr-token-cell");
+    if (!menu || !(cell instanceof HTMLElement)) return;
+    const cellBox = cell.getBoundingClientRect();
+    const sheet = rootRef.current?.closest(".addr-sheet");
+    const foot = sheet?.querySelector(".addr-foot");
+    const cols = sheet?.querySelector(".addr-head");
+    const floor =
+      Math.min(
+        foot instanceof HTMLElement ? foot.getBoundingClientRect().top : Infinity,
+        window.innerHeight
+      ) - 8;
+    const ceil =
+      (cols instanceof HTMLElement ? cols.getBoundingClientRect().bottom : 8) + 8;
+    const need = menu.scrollHeight;
+    const goUp = cellBox.bottom + need > floor;
+    const anchor = goUp ? Math.min(cellBox.top, floor) : cellBox.bottom;
+    const room = goUp ? anchor - ceil : floor - cellBox.bottom;
+    const height = Math.min(need, Math.max(48, room));
+    setUp(goUp);
+    setBox({
+      left: cellBox.left,
+      width: cellBox.width,
+      maxHeight: height,
+      height,
+      ...(goUp
+        ? { bottom: window.innerHeight - anchor }
+        : { top: cellBox.bottom }),
+    });
+  }, [open, rest.length]);
+
   if (!lines.length) return null;
 
+  const paint = (tid: string, amt: bigint, className: string) => {
+    const meta = tokenMeta.get(tid.toLowerCase());
+    const label = tokenSymbol(tid, meta?.name) || shortId(tid, 4);
+    return (
+      <TokenAmtText
+        key={tid}
+        amt={amt}
+        decimals={tokenDecimals(tid, meta?.decimals)}
+        locale={locale}
+        label={label}
+        tokenId={tid}
+        href={`/token/${tid}`}
+        signed={signed}
+        className={clsx(
+          "min-w-0 text-[12px] tabular-nums",
+          signed
+            ? amt > 0n
+              ? "text-[var(--up)]"
+              : "text-[var(--down)]"
+            : "text-[var(--text)]",
+          className
+        )}
+      />
+    );
+  };
+
   return (
-    <div className="flex w-full min-w-0 flex-col items-end justify-center">
-      <div className="flex w-full min-w-0 items-center justify-end gap-2 overflow-hidden whitespace-nowrap">
-        {head.map(([tid, amt]) => {
-          const meta = tokenMeta.get(tid.toLowerCase());
-          const label = tokenSymbol(tid, meta?.name) || shortId(tid, 4);
-          return (
-            <TokenAmtText
-              key={tid}
-              amt={amt}
-              decimals={tokenDecimals(tid, meta?.decimals)}
-              locale={locale}
-              label={label}
-              tokenId={tid}
-              href={`/token/${tid}`}
-              signed={signed}
-              className={clsx(
-                "min-w-0 max-w-[42%] text-[12px] tabular-nums",
-                signed
-                  ? amt > 0n
-                    ? "text-[var(--up)]"
-                    : "text-[var(--down)]"
-                  : "text-[var(--text)]"
-              )}
-            />
-          );
-        })}
-        {rest.length > 0 && (
-          <button
-            type="button"
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-            className={clsx(
-              "chip-press inline-flex shrink-0 items-center overflow-hidden rounded-[10px] px-2 py-1 text-[12px] font-medium transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
-              open
-                ? "is-pressed bg-[var(--wash-strong)] text-[var(--text)]"
-                : "text-[var(--muted)] hover:text-[var(--text)]"
-            )}
-          >
-            {moreLabel}
-          </button>
+    <div ref={rootRef} className="addr-token-peek">
+      <div className="addr-token-peek-line">
+        {head.map(([tid, amt], i) =>
+          paint(
+            tid,
+            amt,
+            i < head.length - 1
+              ? "flex-1 overflow-hidden"
+              : head.length > 1
+                ? "max-w-[58%]"
+                : "max-w-full"
+          )
         )}
       </div>
       {rest.length > 0 && (
-        <div className={clsx("addr-token-fold w-full", open && "is-open")}>
-          <div className="addr-token-fold-body">
-            <div className="flex flex-col items-end gap-0.5 pt-1">
-              {rest.map(([tid, amt]) => {
-                const meta = tokenMeta.get(tid.toLowerCase());
-                const label = tokenSymbol(tid, meta?.name) || shortId(tid, 4);
-                return (
-                  <TokenAmtText
-                    key={tid}
-                    amt={amt}
-                    decimals={tokenDecimals(tid, meta?.decimals)}
-                    locale={locale}
-                    label={label}
-                    tokenId={tid}
-                    href={`/token/${tid}`}
-                    signed={signed}
-                    className={clsx(
-                      "max-w-full text-[12px] tabular-nums",
-                      signed
-                        ? amt > 0n
-                          ? "text-[var(--up)]"
-                          : "text-[var(--down)]"
-                        : "text-[var(--muted)]"
-                    )}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          onClick={() => setOpen((v) => !v)}
+          className={clsx(
+            "chip-press mt-0.5 inline-flex shrink-0 items-center self-end overflow-hidden rounded-[10px] py-0.5 pl-2 pr-0 text-[12px] font-medium leading-none transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+            open
+              ? "is-pressed bg-[var(--wash-strong)] text-[var(--text)]"
+              : "text-[var(--muted)] hover:text-[var(--text)]"
+          )}
+        >
+          {moreLabel}
+        </button>
       )}
+      {rest.length > 0 &&
+        open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className={clsx("addr-token-menu is-open", up && "is-up")}
+            role="listbox"
+            onWheel={(e) => e.stopPropagation()}
+            onScroll={(e) => e.stopPropagation()}
+            style={
+              box
+                ? {
+                    left: box.left,
+                    width: box.width,
+                    height: box.height,
+                    maxHeight: box.maxHeight,
+                    top: box.top,
+                    bottom: box.bottom,
+                  }
+                : { left: 0, top: 0, visibility: "hidden" }
+            }
+          >
+            {rest.map(([tid, amt]) => paint(tid, amt, "max-w-full"))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
@@ -1801,13 +1922,13 @@ function HistoryRow({
         </div>
         <div className="whitespace-nowrap px-3 text-right">
           {flow ? (
-            <ErgFigure nano={flow.erg} locale={locale} signed tone={amountTone} />
+            <ErgFigure nano={flow.erg} locale={locale} signed tone={amountTone} size="sm" />
           ) : (
             "—"
           )}
         </div>
       </div>
-      <div className="flex min-w-0 items-center justify-end px-3">
+      <div className="addr-token-cell flex min-w-0 items-center justify-end px-3">
         <TokenFlowPeek
           lines={tokenLines}
           tokenMeta={tokenMeta}
@@ -1815,48 +1936,52 @@ function HistoryRow({
           moreLabel={t("address.more")}
         />
       </div>
-      <div className="flex min-w-0 items-center justify-center px-2">
-        <Link
-          href={`/tx/${tx.id}`}
-          className="addr-tx-mark"
-          title={String(tx.id)}
-          aria-label={String(tx.id)}
-        >
-          <IconTxSlip />
-        </Link>
-        {tx.mempool ? (
-          <span className="addr-pending-mark shrink-0">{t("address.pending")}</span>
-        ) : null}
+      <div className="block-lane-pair">
+        <div className="flex min-w-0 items-center px-3">
+          <AddrParty
+            side="from"
+            kind={flow?.kind ?? null}
+            addresses={flow?.from ?? []}
+            selfAddress={selfAddress}
+            thisLabel={t("address.thisAddress")}
+            multipleLabel={t("address.multiple")}
+            multipleHint={t("address.multipleHint")}
+          />
+        </div>
+        <div className="flex min-w-0 items-center justify-end px-3">
+          <AddrParty
+            side="to"
+            kind={flow?.kind ?? null}
+            addresses={flow?.to ?? []}
+            selfAddress={selfAddress}
+            thisLabel={t("address.thisAddress")}
+            multipleLabel={t("address.multiple")}
+            multipleHint={t("address.multipleHint")}
+          />
+        </div>
       </div>
-      <div className="flex min-w-0 items-center px-3">
-        <AddrParty
-          side="from"
-          kind={flow?.kind ?? null}
-          addresses={flow?.from ?? []}
-          selfAddress={selfAddress}
-          thisLabel={t("address.thisAddress")}
-          multipleLabel={t("address.multiple")}
-          multipleHint={t("address.multipleHint")}
-        />
-      </div>
-      <div className="flex min-w-0 items-center px-3">
-        <AddrParty
-          side="to"
-          kind={flow?.kind ?? null}
-          addresses={flow?.to ?? []}
-          selfAddress={selfAddress}
-          thisLabel={t("address.thisAddress")}
-          multipleLabel={t("address.multiple")}
-          multipleHint={t("address.multipleHint")}
-        />
-      </div>
-      <div className="min-w-0 px-3">
-        <p className="tabular-nums text-[var(--text)]">{formatRelTime(tx.timestamp)}</p>
-        {ms != null && (
-          <p className="mt-0.5 text-[12px] tabular-nums text-[var(--muted-2)]">
-            {formatFactWhen(ms, locale)}
-          </p>
-        )}
+      <div className="block-lane-pair">
+        <div className="flex min-w-0 items-center px-3">
+          <Link
+            href={`/tx/${tx.id}`}
+            className="addr-tx-mark"
+            title={String(tx.id)}
+            aria-label={String(tx.id)}
+          >
+            <IconTxSlip />
+          </Link>
+          {tx.mempool ? (
+            <span className="addr-pending-mark shrink-0">{t("address.pending")}</span>
+          ) : null}
+        </div>
+        <div className="min-w-0 px-3 text-right">
+          <p className="tabular-nums text-[var(--text)]">{formatRelTime(tx.timestamp)}</p>
+          {ms != null && (
+            <p className="mt-0.5 text-[12px] tabular-nums text-[var(--muted-2)]">
+              {formatFactWhen(ms, locale)}
+            </p>
+          )}
+        </div>
       </div>
       <div className="px-3 text-right">
         {tx.mempool ? (
@@ -1915,7 +2040,7 @@ function BoxHistoryRow({
       <div className="flex min-w-0 items-center justify-end px-3">
         <ErgFigure nano={toBigIntAmt(box.value)} locale={locale} tone="up" />
       </div>
-      <div className="flex min-w-0 items-center justify-end px-3">
+      <div className="addr-token-cell flex min-w-0 items-center justify-end px-3">
         <TokenFlowPeek
           lines={tokenLines}
           tokenMeta={tokenMeta}
@@ -2068,7 +2193,7 @@ function ErgFigure({
   nano: bigint;
   locale?: string;
   signed?: boolean;
-  size?: "md" | "lg";
+  size?: "sm" | "md" | "lg";
   tone?: "up" | "down";
 }) {
   const sign = signed ? (nano > 0n ? "+" : nano < 0n ? "−" : "") : "";
@@ -2088,13 +2213,13 @@ function ErgFigure({
       )}
     >
       {sign}
-      <span className={size === "lg" ? "text-[28px] font-semibold leading-none" : "text-[15px] font-medium"}>
+      <span className={size === "lg" ? "text-[28px] font-semibold leading-none" : size === "sm" ? "text-[13px] font-medium" : "text-[15px] font-medium"}>
         {intPart}
         {frac}
       </span>
       <span
         className={clsx(
-          "ml-1 font-medium",
+          "ml-1 shrink-0 font-medium",
           size === "lg" ? "text-[13px]" : "text-[12px]",
           tone ? "opacity-70" : "text-[var(--muted)]"
         )}

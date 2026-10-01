@@ -20,6 +20,7 @@ export function AddrFactCard({
   selected,
   onSelect,
   enter,
+  beacon,
 }: {
   label: string;
   ink: string;
@@ -31,8 +32,9 @@ export function AddrFactCard({
   className?: string;
   selected?: boolean;
   onSelect?: () => void;
-  /** Home-style sheet enter. Index is the row in the cascade. */
   enter?: number;
+  /** Radio rings from the top-right — storage rent on the balance tile. */
+  beacon?: boolean;
 }) {
   const pressable = Boolean(onSelect);
   const { armed, arm, disarm, bind } = usePaperPress(pressable);
@@ -79,6 +81,13 @@ export function AddrFactCard({
       }
       onKeyUp={pressable ? disarm : undefined}
     >
+      {beacon ? (
+        <span className="addr-rent-waves" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </span>
+      ) : null}
       {aside ? null : <KpiTileRail />}
       <div
         className={clsx(
@@ -88,7 +97,7 @@ export function AddrFactCard({
                 "relative z-10 shrink-0 pr-2",
                 asideLead === "block" ? "w-[min(42%,11.5rem)]" : "w-[min(68%,16.5rem)] min-w-[12.5rem]"
               )
-            : "flex min-h-0 flex-1 flex-col"
+            : "relative z-[1] flex min-h-0 flex-1 flex-col"
         )}
       >
         <p className="truncate text-[13px] leading-[1.15] text-[var(--muted)]">{label}</p>

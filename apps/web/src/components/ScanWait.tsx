@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import clsx from "clsx";
 
 /** Same delay as menu hops: bar at once, pulsing mark after this. */
@@ -9,6 +10,7 @@ export const SCAN_WAIT_SLOW_MS = 500;
 /**
  * AdaStat wait chrome: running top accent bar + delayed pulsing ErgoScan mark.
  * Menu hops (`RouteNavProgress`) and in-page first packs share this paint.
+ * Portaled to body so plane-stage perspective cannot trap `position: fixed`.
  */
 export function ScanWait({
   slow,
@@ -17,7 +19,12 @@ export function ScanWait({
   slow: boolean;
   label: string;
 }) {
-  return (
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setHost(document.body);
+  }, []);
+
+  const paint = (
     <>
       <div
         className="pointer-events-none fixed inset-x-0 top-0 z-[80] h-0.5 overflow-hidden"
@@ -51,6 +58,9 @@ export function ScanWait({
       ) : null}
     </>
   );
+
+  if (!host) return null;
+  return createPortal(paint, host);
 }
 
 export function useScanWait(active: boolean, slowMs = SCAN_WAIT_SLOW_MS) {

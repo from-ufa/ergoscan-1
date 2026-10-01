@@ -1102,6 +1102,91 @@ header button:hover {
   width: 100%;
   height: 100%;
 }
+
+/* Storage rent: radio rings from the top-right, dead by mid-tile. */
+.addr-rent-waves {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(
+    ellipse 92% 88% at 100% 0%,
+    #000 0%,
+    #000 20%,
+    rgba(0, 0, 0, 0.55) 36%,
+    transparent 56%
+  );
+  mask-image: radial-gradient(
+    ellipse 92% 88% at 100% 0%,
+    #000 0%,
+    #000 20%,
+    rgba(0, 0, 0, 0.55) 36%,
+    transparent 56%
+  );
+}
+.addr-rent-waves > span {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4.25rem;
+  height: 4.25rem;
+  translate: 38% -38%;
+  border-radius: 50%;
+  border: 1.35px solid rgb(var(--down-rgb) / 0.55);
+  box-shadow: 0 0 10px rgb(var(--down-rgb) / 0.1);
+  animation: addr-rent-wave 5.4s cubic-bezier(0.12, 0.62, 0.22, 1) infinite;
+}
+.addr-rent-waves > span:nth-child(2) {
+  animation-delay: 1.8s;
+}
+.addr-rent-waves > span:nth-child(3) {
+  animation-delay: 3.6s;
+}
+.addr-fact-balance.is-rent-soon .addr-rent-waves > span {
+  border-color: rgb(var(--down-rgb) / 0.68);
+}
+.addr-fact-balance.is-rent-due .addr-rent-waves > span {
+  border-color: rgb(var(--down-rgb) / 0.82);
+  animation-duration: 4.2s;
+}
+.addr-fact-balance.is-rent-due .addr-rent-waves > span:nth-child(2) {
+  animation-delay: 1.4s;
+}
+.addr-fact-balance.is-rent-due .addr-rent-waves > span:nth-child(3) {
+  animation-delay: 2.8s;
+}
+@keyframes addr-rent-wave {
+  0% {
+    transform: scale(0.16);
+    opacity: 0;
+  }
+  7% {
+    opacity: 0.9;
+  }
+  40% {
+    opacity: 0.32;
+  }
+  100% {
+    transform: scale(5.6);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .addr-rent-waves > span {
+    animation: none;
+    opacity: 0;
+  }
+  .addr-rent-waves > span:first-child {
+    opacity: 0.42;
+    transform: scale(1.55);
+  }
+  .addr-rent-waves > span:nth-child(2) {
+    opacity: 0.18;
+    transform: scale(2.5);
+  }
+}
 .addr-page {
   --addr-qr-side: 7.5rem;
 }
@@ -1137,14 +1222,29 @@ header button:hover {
     width: 100%;
     min-width: 0;
     align-items: center;
-    grid-template-columns:
-      minmax(0, 1.15fr)
-      minmax(0, 0.85fr)
-      2.75rem
-      minmax(0, 1fr)
-      minmax(0, 1fr)
-      minmax(0, 0.82fr)
-      minmax(0, 0.7fr);
+    /* Same five tracks as the fact tiles: address, balance, txs, activity, QR. */
+    grid-template-columns: repeat(4, minmax(0, 1fr)) var(--addr-qr-side);
+  }
+  .addr-facts-body .addr-history > .block-lane-pair {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+  }
+  /* Amount keeps the unit. 11 000 000 ERG still ends with ERG inside the address tile. */
+  .addr-facts-body .addr-history > .block-lane-pair:first-child {
+    grid-template-columns: minmax(0, max-content) minmax(9.25rem, 1fr);
+  }
+  .addr-facts-body .addr-head.addr-history > .block-lane-pair {
+    display: grid;
+    height: var(--addr-bar);
+    padding: 0;
+  }
+  .addr-facts-body .addr-head.addr-history > .block-lane-pair > *,
+  .addr-facts-body .addr-head.addr-history > :not(.block-lane-pair) {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    height: var(--addr-bar);
+    padding: 0 0.75rem;
   }
   .addr-facts-body .addr-span-qr {
     grid-column: 4 / -1;
@@ -1262,6 +1362,15 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 .addr-sheet .addr-lane.addr-lane-x:not(.addr-head) > * {
   min-height: 0;
   overflow: hidden;
+}
+.addr-sheet .addr-lane.addr-lane-x:not(.addr-head) > .addr-token-cell {
+  position: relative;
+  overflow: visible;
+}
+.addr-sheet .addr-lane.addr-lane-x:not(.addr-head):has(.addr-token-menu.is-open) {
+  z-index: 16;
+  isolation: isolate;
+  overflow: visible;
 }
 .addr-sheet .addr-lane.addr-lane-x:not(.addr-head) > .addr-act-pair,
 .addr-sheet .addr-list > .block-lane-pair:first-child,
@@ -1426,6 +1535,9 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   min-width: 0;
   max-width: 100%;
 }
+.addr-pan:has(.addr-token-menu.is-open) {
+  overflow: visible;
+}
 @media (max-width: 1023px) {
   .addr-pan {
     display: block;
@@ -1536,7 +1648,13 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   .addr-pan .addr-head.addr-history {
     width: 72rem;
     min-width: 72rem;
-    grid-template-columns: 11.5rem 8.5rem 3.25rem minmax(8rem, 1fr) minmax(8rem, 1fr) 8rem 6.75rem;
+    grid-template-columns: 16rem 12rem 18rem 16rem 8rem;
+  }
+  .addr-pan .addr-lane.addr-history > .block-lane-pair,
+  .addr-pan .addr-head.addr-history > .block-lane-pair {
+    display: grid;
+    height: auto;
+    padding: 0;
   }
 
   .addr-pan .addr-lane.token-tx-tape,
@@ -1957,6 +2075,43 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   min-height: 0;
   overflow: hidden;
 }
+.addr-token-peek {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+}
+.addr-token-peek-line {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.addr-token-menu {
+  position: fixed;
+  z-index: 16;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  padding: 0.45rem 0.75rem 0.55rem;
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--module), var(--module));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.55);
+}
 .name-marquee {
   display: block;
   position: relative;
@@ -1979,6 +2134,9 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   animation: name-marquee var(--marquee-s, 9s) linear infinite;
 }
 .name-marquee-inner {
+  padding-right: 0;
+}
+.name-marquee.is-overflow .name-marquee-inner {
   padding-right: 2em;
 }
 .name-marquee.is-fade {
@@ -3070,6 +3228,7 @@ html[data-ink="day"] .epoch-left {
     transition: opacity 0.2s var(--ease), visibility 0s;
   }
   .addr-token-fold,
+  .addr-token-menu,
   .supply-tile-copy {
     transition: none;
   }

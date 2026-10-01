@@ -2,6 +2,12 @@ import { getGateway } from "@/lib/config";
 
 const cache = new Map<string, { at: number; blocks: number | null }>();
 
+/** Sync read of the last lookup. `undefined` = not fetched yet. */
+export function cachedScoutRent(address: string): number | null | undefined {
+  const hit = cache.get(address.trim());
+  return hit ? hit.blocks : undefined;
+}
+
 /**
  * Blocks until the soonest rent on this address.
  * Gateway reads the oldest unspent box (one index row). 0 = already due.
