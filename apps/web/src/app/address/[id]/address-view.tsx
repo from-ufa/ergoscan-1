@@ -10,7 +10,7 @@ import { AddressPip } from "@/components/AddressPip";
 import { AddrFactCard } from "@/components/AddrFactCard";
 import { IconTxSlip } from "@/components/nav-icons";
 import { AddressQr } from "@/components/AddressQr";
-import { EmptyOops } from "@/components/EmptyOops";
+import { FavKayolo } from "@/components/FavKayolo";
 import { ScanWait, useScanWait } from "@/components/ScanWait";
 import { FavoriteHeart } from "@/components/FavoriteHeart";
 import {
@@ -1312,7 +1312,7 @@ export function AddressView({
               {activityFirstWait ? null : err && !tapeRows.length && txPage === 0 ? (
                 <p className="text-[var(--muted)]">{addrFailCopy(err, t)}</p>
               ) : !tapeRows.length && txPage === 0 ? (
-                <EmptyOops sub={t("address.noTxs")} />
+                <FavKayolo line={t("address.noTxs")} />
               ) : null}
               {listReady && (tapeRows.length > 0 || txPage > 0) && (
                 <div className="addr-sheet">
@@ -1419,7 +1419,7 @@ export function AddressView({
               {tokensFirstWait ? null : tokensFailed && !tokenRows.length ? (
                 <p className="text-[var(--muted)]">{t("address.err")}</p>
               ) : !tokenRows.length ? (
-                <EmptyOops sub={t("address.noTokens")} />
+                <FavKayolo line={t("address.noTokens")} />
               ) : (
                 <div className="addr-sheet">
                   <div ref={pinRef} className="h-px w-full" aria-hidden />
@@ -1480,7 +1480,7 @@ export function AddressView({
               {nftsFirstWait ? null : nftsFailed && !nfts.length ? (
                 <p className="text-[var(--muted)]">{t("address.err")}</p>
               ) : !nftTotal && !nfts.length ? (
-                <EmptyOops sub={t("address.noNfts")} />
+                <FavKayolo line={t("address.noNfts")} />
               ) : (
                 <div className="addr-sheet">
                   <div
@@ -1538,7 +1538,7 @@ export function AddressView({
                 boxOffset === 0 &&
                 data.sources?.boxes !== "stale" &&
                 data.sources?.boxes !== "deferred" && (
-                <EmptyOops sub={t("address.noBoxes")} />
+                <FavKayolo line={t("address.noBoxes")} />
               )}
               {(data.unspentBoxes.length > 0 || boxOffset > 0) && (
                 <div className="addr-sheet">

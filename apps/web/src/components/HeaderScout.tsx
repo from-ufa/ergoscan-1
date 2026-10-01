@@ -120,6 +120,27 @@ function addressDoor(): AddressDoor | null {
   };
 }
 
+function emptyNote(): HTMLElement | null {
+  return document.querySelector<HTMLElement>(".addr-page [data-fav-note]");
+}
+
+function emptyStand(note: HTMLElement) {
+  const rect = note.getBoundingClientRect();
+  return { x: rect.left - 34, y: rect.bottom - 2, rect };
+}
+
+/** Eyes lift only while the drive crosses a word in the header. */
+function eyesUnderHeader(header: HTMLElement, px: number, py: number) {
+  const bar = header.getBoundingClientRect();
+  if (py < bar.top - 8 || py > bar.bottom + 10) return false;
+  for (const el of header.querySelectorAll<HTMLElement>("[data-scout]")) {
+    const r = el.getBoundingClientRect();
+    if (r.width < 8 || r.height < 8) continue;
+    if (px > r.left - 16 && px < r.right + 16) return true;
+  }
+  return false;
+}
+
 function blinkScale(now: number) {
   const p = now % 5400;
   if (p > 150) return 1;
@@ -141,7 +162,13 @@ type PerchPhase =
   | "duck"
   | "slip"
   | "rise"
-  | "nest";
+  | "nest"
+  | "note-drive"
+  | "note-drop"
+  | "note-write"
+  | "note-live"
+  | "note-rise"
+  | "note-roll";
 
 type RentNote = { due: boolean; lines: [string, string, string] };
 
@@ -256,6 +283,7 @@ function runAddressPerch(
   canvas.style.left = "0";
   canvas.style.right = "auto";
   canvas.style.bottom = "auto";
+  canvas.style.zIndex = "30";
 
   let raf = 0;
   let dead = false;
@@ -278,6 +306,7 @@ function runAddressPerch(
   let note: RentNote | null = null;
   let leaveQueued = false;
   let noteA = 0;
+  let writtenEmpty = "";
   const onMove = (e: PointerEvent) => {
     aim = { x: e.clientX, y: e.clientY };
   };
@@ -401,6 +430,12 @@ function runAddressPerch(
         beatAt = now;
         segFromX = x;
         segFromY = y;
+      } else if (emptyNote()) {
+        writtenEmpty = "";
+        phase = "note-drive";
+        beatAt = now;
+        segFromX = x;
+        segFromY = y;
       } else {
         x += (door.x - x) * 0.14;
         y += (door.y - y) * 0.14;
@@ -518,6 +553,14 @@ function runAddressPerch(
         pick = 0.2;
       }
     } else if (phase === "watch") {
+      const lineEl = emptyNote();
+      if (lineEl && !leaveQueued) {
+        writtenEmpty = "";
+        phase = "note-drive";
+        beatAt = now;
+        segFromX = x;
+        segFromY = y;
+      } else {
       const lane = measureRentLane();
       if (lane) {
         const stand = rentStand(lane.bal);
@@ -537,6 +580,184 @@ function runAddressPerch(
         returnedToHeader = true;
         phase = "bye";
         beatAt = now;
+      }
+      }
+    } else if (phase === "note-drive") {
+      const lineEl = emptyNote();
+      if (!lineEl) {
+        phase = "note-rise";
+        beatAt = now;
+        segFromY = y;
+      } else {
+        const stand = emptyStand(lineEl);
+        const d = stand.x - x;
+        faceN = d >= 0 ? 1 : -1;
+        const step = Math.sign(d) * Math.min(Math.abs(d), (220 * dt) / 1000);
+        x += step;
+        y = segFromY;
+        roll += Math.abs(step) * 0.55;
+        apart += ((eyesUnderHeader(header, x, y) ? 1 : 0) - apart) * 0.22;
+        look = apart > 0.4 ? 0.12 : 0.35;
+        pick = 0.08;
+        pebble = 0.35;
+        if (Math.abs(d) < 1.5) {
+          x = stand.x;
+          apart = 0;
+          if (Math.abs(stand.y - y) < 2) {
+            y = stand.y;
+            faceN = 1;
+            writtenEmpty = lineEl.getAttribute("data-fav-note") ?? "";
+            lineEl.style.setProperty("--scratch", "0");
+            phase = "note-write";
+            beatAt = now;
+          } else {
+            phase = "note-drop";
+            beatAt = now;
+            segFromY = y;
+          }
+        }
+      }
+    } else if (phase === "note-drop") {
+      const lineEl = emptyNote();
+      if (!lineEl) {
+        phase = "note-rise";
+        beatAt = now;
+        segFromY = y;
+      } else {
+        const stand = emptyStand(lineEl);
+        const u = Math.min(1, (now - beatAt) / 460);
+        const k = smooth(u);
+        x = stand.x;
+        y = segFromY + (stand.y - segFromY) * k;
+        faceN = 1;
+        apart += (0 - apart) * 0.2;
+        look = 0.2;
+        pupil = Math.PI / 2;
+        orbit = 0.9;
+        roll += (dt / 16) * (1 - k) * 1.4;
+        pick = 0.08;
+        pebble = 0.3;
+        if (u >= 1) {
+          y = stand.y;
+          apart = 0;
+          faceN = 1;
+          writtenEmpty = lineEl.getAttribute("data-fav-note") ?? "";
+          lineEl.style.setProperty("--scratch", "0");
+          phase = "note-write";
+          beatAt = now;
+        }
+      }
+    } else if (phase === "note-write") {
+      const lineEl = emptyNote();
+      if (!lineEl) {
+        phase = "note-rise";
+        beatAt = now;
+        segFromY = y;
+      } else {
+        const stand = emptyStand(lineEl);
+        const WRITE = 760;
+        const u = Math.min(1, (now - beatAt) / WRITE);
+        const scratch = smooth(u);
+        lineEl.style.setProperty("--scratch", scratch.toFixed(3));
+        const tip = stand.rect.left - 34 + stand.rect.width * scratch * 0.18;
+        const nx = x + (tip - x) * 0.2;
+        roll += Math.abs(nx - x) * 0.5;
+        x = nx;
+        y += (stand.y - y) * 0.25;
+        faceN = 1;
+        apart = 0;
+        const stroke = Math.sin(Math.min(1, u) * Math.PI * 2);
+        pick = 0.14 + Math.abs(stroke) * 0.9;
+        look = 1.05;
+        head = 0.12 + Math.abs(stroke) * 0.08;
+        eye = 0.55 + Math.abs(stroke) * 0.35;
+        pebble = 0.2;
+        if (u >= 1) {
+          lineEl.style.setProperty("--scratch", "1");
+          phase = "note-live";
+          beatAt = now;
+          pick = 0.16;
+        }
+      }
+    } else if (phase === "note-live") {
+      const lineEl = emptyNote();
+      if (!lineEl) {
+        phase = "note-rise";
+        beatAt = now;
+        segFromY = y;
+      } else {
+        const stand = emptyStand(lineEl);
+        const line = lineEl.getAttribute("data-fav-note") ?? "";
+        x += (stand.x - x) * 0.08;
+        y += (stand.y + Math.sin(now / 900) * 0.7 - y) * 0.2;
+        faceN = 1;
+        apart = 0;
+        const blink = (now - beatAt) % 2600;
+        eye = blink < 90 ? 0.15 : 0.22;
+        look = 0.85 + Math.sin(now / 1700) * 0.28;
+        head = 0.1 + Math.sin(now / 1700) * 0.05;
+        pick = 0.14 + Math.sin(now / 1100) * 0.05;
+        pebble = 0.25;
+        if (aim && Math.hypot(aim.x - x, aim.y - (y - 18)) < 160) {
+          const pull = 1 - Math.hypot(aim.x - x, aim.y - y) / 160;
+          look = clamp((aim.x - x) / 20, -1.2, 1.4);
+          eye = 0.22 + pull * 0.4;
+          pick = 0.14 + pull * 0.12;
+        }
+        if (line !== writtenEmpty) {
+          writtenEmpty = line;
+          lineEl.style.setProperty("--scratch", "0");
+          phase = "note-write";
+          beatAt = now;
+        }
+      }
+    } else if (phase === "note-rise") {
+      const back = addressDoor() ?? door;
+      if (emptyNote()) {
+        phase = "note-drive";
+        beatAt = now;
+        segFromY = y;
+      } else {
+        const u = Math.min(1, (now - beatAt) / 460);
+        const k = smooth(u);
+        y = segFromY + (back.y - segFromY) * k;
+        faceN = -1;
+        apart += (0 - apart) * 0.2;
+        look = -0.15;
+        pupil = -Math.PI / 2;
+        orbit = 0.7;
+        roll += (dt / 16) * (1 - k) * 1.2;
+        pick = 0.08;
+        pebble = 0.4;
+        if (u >= 1) {
+          y = back.y;
+          phase = "note-roll";
+          beatAt = now;
+        }
+      }
+    } else if (phase === "note-roll") {
+      const back = addressDoor() ?? door;
+      if (emptyNote()) {
+        phase = "note-drive";
+        beatAt = now;
+        segFromY = y;
+      } else {
+        const d = back.x - x;
+        faceN = d >= 0 ? 1 : -1;
+        const step = Math.sign(d) * Math.min(Math.abs(d), (220 * dt) / 1000);
+        x += step;
+        y = back.y;
+        roll += Math.abs(step) * 0.55;
+        apart += ((eyesUnderHeader(header, x, y) ? 1 : 0) - apart) * 0.22;
+        look = apart > 0.4 ? 0.12 : 0.3;
+        pick = 0.08;
+        pebble = 0.45;
+        if (Math.abs(d) < 1.5) {
+          x = back.x;
+          apart = 0;
+          phase = "home";
+          beatAt = now;
+        }
       }
     } else if (phase === "bye") {
       const u = Math.min(1, (now - beatAt) / BYE_MS);
@@ -726,8 +947,8 @@ function runAddressPerch(
       eyesApart: apart,
       eyeLift: seek ? eye * 2.2 : eye * 1.4,
       eyeScale:
-        seek || phase === "carve" || phase === "watch"
-          ? (1 + eye * 0.34) * (phase === "watch" ? blinkScale(now) : 1)
+        seek || phase === "carve" || phase === "watch" || phase === "note-write" || phase === "note-live"
+          ? (1 + eye * 0.34) * (phase === "watch" || phase === "note-live" ? blinkScale(now) : 1)
           : (1 + eye * 0.2) * (phase === "home" ? blinkScale(now) : 1),
       pupil,
       pupilOrbit: orbit,
@@ -921,6 +1142,17 @@ function runHeaderPass(
   let askFace: 1 | -1 = -1;
   let elapsed = 0;
   let aim: { x: number; y: number } | null = null;
+  let emptyDrive: {
+    mode: "cross" | "drop" | "write" | "live" | "rise" | "roll";
+    beatAt: number;
+    fromY: number;
+    written: string;
+    x: number;
+    y: number;
+    roll: number;
+    face: 1 | -1;
+  } | null = null;
+  let emptyCanvas: string | null = null;
   const beats: ScoutBeat[] = [];
   const onMove = (e: PointerEvent) => {
     aim = { x: e.clientX, y: e.clientY };
@@ -929,6 +1161,252 @@ function runHeaderPass(
 
   const paint = (now: number) => {
     if (dead) return;
+    const lineElNow = emptyNote();
+    if (lineElNow || emptyDrive) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (emptyCanvas == null) emptyCanvas = canvas.getAttribute("style");
+      canvas.style.position = "fixed";
+      canvas.style.top = "0";
+      canvas.style.left = "0";
+      canvas.style.right = "auto";
+      canvas.style.bottom = "auto";
+      canvas.style.width = `${vw}px`;
+      canvas.style.height = `${vh}px`;
+      canvas.style.zIndex = "30";
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (canvas.width !== Math.round(vw * dpr) || canvas.height !== Math.round(vh * dpr)) {
+        canvas.width = Math.round(vw * dpr);
+        canvas.height = Math.round(vh * dpr);
+      }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        raf = requestAnimationFrame(paint);
+        return;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, vw, vh);
+      if (!ready) {
+        const g0 = world(root);
+        beats.push(...scoutBeats(!!g0.title, !!g0.mcap));
+        ready = true;
+        beatAt = now;
+        last = now;
+      }
+      const dt = Math.min(34, now - (last || now));
+      last = now;
+      if (!emptyDrive) {
+        const box = root.getBoundingClientRect();
+        const startX = scoutPose?.x ?? box.left + x;
+        const startY = scoutPose?.y ?? box.bottom - 6;
+        emptyDrive = {
+          mode: "cross",
+          beatAt: now,
+          fromY: startY,
+          written: "",
+          x: startX,
+          y: startY,
+          roll: scoutPose?.roll ?? roll,
+          face: scoutPose?.face ?? face,
+        };
+      }
+      const drive = emptyDrive;
+      const lineEl = emptyNote();
+      let head = 0;
+      let look = 0.4;
+      let pick = 0.12;
+      let eye = 0.2;
+      let eyeScale = 1;
+      let pupil = now * 0.0014;
+      let orbit = 0.3;
+      let apartN = 0;
+      const park = () => {
+        const box = root.getBoundingClientRect();
+        return { x: box.left + clamp(x, 20, Math.max(20, root.clientWidth - 20)), y: box.bottom - 6 };
+      };
+      if (drive.mode === "cross") {
+        if (!lineEl) {
+          drive.mode = "rise";
+          drive.beatAt = now;
+          drive.fromY = drive.y;
+        } else {
+          const stand = emptyStand(lineEl);
+          const d = stand.x - drive.x;
+          drive.face = d >= 0 ? 1 : -1;
+          const step = Math.sign(d) * Math.min(Math.abs(d), (220 * dt) / 1000);
+          drive.x += step;
+          drive.y = drive.fromY;
+          drive.roll += Math.abs(step) * 0.55;
+          apartN = eyesUnderHeader(root, drive.x, drive.y) ? 1 : 0;
+          look = apartN ? 0.12 : 0.35;
+          pick = 0.08;
+          if (Math.abs(d) < 1.5) {
+            drive.x = stand.x;
+            if (Math.abs(stand.y - drive.y) < 2) {
+              drive.y = stand.y;
+              drive.face = 1;
+              drive.written = lineEl.getAttribute("data-fav-note") ?? "";
+              lineEl.style.setProperty("--scratch", "0");
+              drive.mode = "write";
+              drive.beatAt = now;
+            } else {
+              drive.mode = "drop";
+              drive.beatAt = now;
+              drive.fromY = drive.y;
+            }
+          }
+        }
+      } else if (drive.mode === "drop") {
+        if (!lineEl) {
+          drive.mode = "rise";
+          drive.beatAt = now;
+          drive.fromY = drive.y;
+        } else {
+          const stand = emptyStand(lineEl);
+          const u = Math.min(1, (now - drive.beatAt) / 460);
+          const k = smooth(u);
+          drive.x = stand.x;
+          drive.y = drive.fromY + (stand.y - drive.fromY) * k;
+          drive.face = 1;
+          apartN = 0;
+          look = 0.2;
+          pupil = Math.PI / 2;
+          orbit = 0.9;
+          drive.roll += (dt / 16) * (1 - k) * 1.4;
+          pick = 0.08;
+          if (u >= 1) {
+            drive.y = stand.y;
+            drive.face = 1;
+            drive.written = lineEl.getAttribute("data-fav-note") ?? "";
+            lineEl.style.setProperty("--scratch", "0");
+            drive.mode = "write";
+            drive.beatAt = now;
+          }
+        }
+      } else if (drive.mode === "write") {
+        if (!lineEl) {
+          drive.mode = "rise";
+          drive.beatAt = now;
+          drive.fromY = drive.y;
+        } else {
+          const stand = emptyStand(lineEl);
+          const u = Math.min(1, (now - drive.beatAt) / 760);
+          const scratch = smooth(u);
+          lineEl.style.setProperty("--scratch", scratch.toFixed(3));
+          const tip = stand.rect.left - 34 + stand.rect.width * scratch * 0.18;
+          const nx = drive.x + (tip - drive.x) * 0.2;
+          drive.roll += Math.abs(nx - drive.x) * 0.5;
+          drive.x = nx;
+          drive.y += (stand.y - drive.y) * 0.25;
+          drive.face = 1;
+          const stroke = Math.sin(Math.min(1, u) * Math.PI * 2);
+          pick = 0.14 + Math.abs(stroke) * 0.9;
+          look = 1.05;
+          head = 0.12 + Math.abs(stroke) * 0.08;
+          eye = 0.55 + Math.abs(stroke) * 0.35;
+          if (u >= 1) {
+            lineEl.style.setProperty("--scratch", "1");
+            drive.mode = "live";
+            drive.beatAt = now;
+          }
+        }
+      } else if (drive.mode === "live") {
+        if (!lineEl) {
+          drive.mode = "rise";
+          drive.beatAt = now;
+          drive.fromY = drive.y;
+        } else {
+          const stand = emptyStand(lineEl);
+          const line = lineEl.getAttribute("data-fav-note") ?? "";
+          drive.x += (stand.x - drive.x) * 0.08;
+          drive.y += (stand.y + Math.sin(now / 900) * 0.7 - drive.y) * 0.2;
+          drive.face = 1;
+          const blink = (now - drive.beatAt) % 2600;
+          eyeScale = blink < 90 ? 1 - Math.sin((blink / 90) * Math.PI) * 0.86 : 1;
+          look = 0.85 + Math.sin(now / 1700) * 0.28;
+          head = 0.1;
+          pick = 0.14 + Math.sin(now / 1100) * 0.05;
+          eye = 0.22;
+          if (line !== drive.written) {
+            drive.written = line;
+            lineEl.style.setProperty("--scratch", "0");
+            drive.mode = "write";
+            drive.beatAt = now;
+          }
+        }
+      } else if (drive.mode === "rise") {
+        const home = park();
+        if (lineEl) {
+          drive.mode = "cross";
+          drive.beatAt = now;
+          drive.fromY = drive.y;
+        } else {
+          const u = Math.min(1, (now - drive.beatAt) / 460);
+          const k = smooth(u);
+          drive.y = drive.fromY + (home.y - drive.fromY) * k;
+          drive.face = -1;
+          look = -0.15;
+          pupil = -Math.PI / 2;
+          orbit = 0.7;
+          drive.roll += (dt / 16) * (1 - k) * 1.2;
+          pick = 0.08;
+          if (u >= 1) {
+            drive.y = home.y;
+            drive.mode = "roll";
+            drive.beatAt = now;
+          }
+        }
+      } else {
+        const home = park();
+        if (lineEl) {
+          drive.mode = "cross";
+          drive.beatAt = now;
+          drive.fromY = drive.y;
+        } else {
+          const d = home.x - drive.x;
+          drive.face = d >= 0 ? 1 : -1;
+          const step = Math.sign(d) * Math.min(Math.abs(d), (220 * dt) / 1000);
+          drive.x += step;
+          drive.y = home.y;
+          drive.roll += Math.abs(step) * 0.55;
+          apartN = eyesUnderHeader(root, drive.x, drive.y) ? 1 : 0;
+          look = apartN ? 0.12 : 0.3;
+          pick = 0.08;
+          if (Math.abs(d) < 1.5) {
+            const box = root.getBoundingClientRect();
+            x = clamp(drive.x - box.left, 20, Math.max(20, root.clientWidth - 20));
+            roll = drive.roll;
+            face = drive.face;
+            emptyDrive = null;
+            if (emptyCanvas == null) canvas.removeAttribute("style");
+            else canvas.setAttribute("style", emptyCanvas);
+            emptyCanvas = null;
+            raf = requestAnimationFrame(paint);
+            return;
+          }
+        }
+      }
+      if (emptyDrive) {
+        scoutPose = { x: drive.x, y: drive.y, face: drive.face, roll: drive.roll };
+        drawWallE(ctx, {
+          x: clamp(drive.x, 16, vw - 16),
+          y: drive.y,
+          head,
+          look: clamp(look, -2.1, 2.1),
+          pick,
+          roll: drive.roll,
+          face: drive.face,
+          scale: SCALE,
+          eyesApart: apartN,
+          eyeLift: eye * 2.2,
+          eyeScale,
+          pupil,
+          pupilOrbit: orbit,
+        });
+      }
+      raf = requestAnimationFrame(paint);
+      return;
+    }
     const w = root.clientWidth;
     const h = root.clientHeight;
     if (w < 8 || h < 8) {
