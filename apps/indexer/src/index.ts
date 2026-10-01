@@ -1929,7 +1929,7 @@ async function maybeSyncTokenBalancesUtxo(pool: Pool): Promise<void> {
         console.log("[indexer] token_balances UTXO sync done");
         try {
           const tip = await tipHeight();
-          await writeListSnapshots(pool, tip);
+          await writeListSnapshots(pool, tip, { force: true });
         } catch (e) {
           console.warn("[indexer] token_balances UTXO snapshots", String(e));
         }
@@ -2050,7 +2050,7 @@ async function maybeBackfillAddressTxCounts(pool: Pool): Promise<void> {
       await setState(pool, "address_summary_tx_count_v1", String(Date.now()));
       try {
         const tip = await tipHeight();
-        await writeListSnapshots(pool, tip);
+        await writeListSnapshots(pool, tip, { force: true });
       } catch (e) {
         console.warn("[indexer] address_summary tx_count snapshots", String(e));
       }

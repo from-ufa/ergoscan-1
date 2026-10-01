@@ -710,7 +710,8 @@ async function backfillMinerAddresses(pool: Pool, sinceMs: number): Promise<void
        ORDER BY t.height, bx.value_nano DESC NULLS LAST
      ) sub
      WHERE b.height = sub.height
-       AND b.timestamp_ms >= $1`,
+       AND b.timestamp_ms >= $1
+       AND b.miner_address IS DISTINCT FROM sub.address`,
     [sinceMs]
   );
 }
@@ -1595,39 +1596,34 @@ async function readRentClaimsPack(pool: Pool, tip: number): Promise<Record<strin
     await c.query("SET LOCAL statement_timeout = 8000");
     const dayLo = Math.max(0, tip - RENT_24H);
     const monthLo = Math.max(0, tip - RENT_30D);
+    // Claimer counts come from the grouped pools query below. COUNT(DISTINCT) here would sort every claim on disk.
     const tot = await c.query<{
       n: number;
       nano: string;
       covered_n: number;
       covered_nano: string;
-      claimers: number;
       day_n: number;
       day_nano: string;
       day_covered_n: number;
       day_covered_nano: string;
-      day_claimers: number;
       month_n: number;
       month_nano: string;
       month_covered_n: number;
       month_covered_nano: string;
-      month_claimers: number;
     }>(
       `SELECT
          COUNT(*)::int AS n,
          COALESCE(SUM(rent_nano), 0)::text AS nano,
          COUNT(*) FILTER (WHERE collector IS NOT NULL AND collector <> '')::int AS covered_n,
          COALESCE(SUM(rent_nano) FILTER (WHERE collector IS NOT NULL AND collector <> ''), 0)::text AS covered_nano,
-         COUNT(DISTINCT collector) FILTER (WHERE collector IS NOT NULL AND collector <> '')::int AS claimers,
          COUNT(*) FILTER (WHERE spent_height > $1)::int AS day_n,
          COALESCE(SUM(rent_nano) FILTER (WHERE spent_height > $1), 0)::text AS day_nano,
          COUNT(*) FILTER (WHERE spent_height > $1 AND collector IS NOT NULL AND collector <> '')::int AS day_covered_n,
          COALESCE(SUM(rent_nano) FILTER (WHERE spent_height > $1 AND collector IS NOT NULL AND collector <> ''), 0)::text AS day_covered_nano,
-         COUNT(DISTINCT collector) FILTER (WHERE spent_height > $1 AND collector IS NOT NULL AND collector <> '')::int AS day_claimers,
          COUNT(*) FILTER (WHERE spent_height > $2)::int AS month_n,
          COALESCE(SUM(rent_nano) FILTER (WHERE spent_height > $2), 0)::text AS month_nano,
          COUNT(*) FILTER (WHERE spent_height > $2 AND collector IS NOT NULL AND collector <> '')::int AS month_covered_n,
-         COALESCE(SUM(rent_nano) FILTER (WHERE spent_height > $2 AND collector IS NOT NULL AND collector <> ''), 0)::text AS month_covered_nano,
-         COUNT(DISTINCT collector) FILTER (WHERE spent_height > $2 AND collector IS NOT NULL AND collector <> '')::int AS month_claimers
+         COALESCE(SUM(rent_nano) FILTER (WHERE spent_height > $2 AND collector IS NOT NULL AND collector <> ''), 0)::text AS month_covered_nano
        FROM rent_collected
        WHERE kind = 'protocol'`,
       [dayLo, monthLo]
@@ -1731,7 +1727,7 @@ async function readRentClaimsPack(pool: Pool, tip: number): Promise<Record<strin
         rentNano: row.nano || "0",
         coveredBoxes: n(row.covered_n),
         coveredRentNano: row.covered_nano || "0",
-        claimerCount: n(row.claimers),
+        claimerCount: pools.rows.length,
         pools: allPools,
       }),
       minersDay: packClaimers({
@@ -1739,7 +1735,7 @@ async function readRentClaimsPack(pool: Pool, tip: number): Promise<Record<strin
         rentNano: row.day_nano || "0",
         coveredBoxes: n(row.day_covered_n),
         coveredRentNano: row.day_covered_nano || "0",
-        claimerCount: n(row.day_claimers),
+        claimerCount: pools.rows.filter((p) => n(p.day_n) > 0).length,
         pools: pools.rows
           .filter((p) => {
             try {
@@ -1755,7 +1751,7 @@ async function readRentClaimsPack(pool: Pool, tip: number): Promise<Record<strin
         rentNano: row.month_nano || "0",
         coveredBoxes: n(row.month_covered_n),
         coveredRentNano: row.month_covered_nano || "0",
-        claimerCount: n(row.month_claimers),
+        claimerCount: pools.rows.filter((p) => n(p.month_n) > 0).length,
         pools: pools.rows
           .filter((p) => {
             try {
@@ -1815,7 +1811,32 @@ async function writeRentSnapshot(pool: Pool, tip: number): Promise<void> {
   await upsert(pool, "rent", payload, tip);
 }
 
-export async function writeListSnapshots(pool: Pool, tip: number): Promise<void> {
+/**
+ * Same tip and same block: heavy lists at most this often. The status snapshot still goes
+ * out every call, because /status marks the indexer stale after 60 s.
+ */
+const SAME_TIP_LIST_MS = Math.max(0, Number(process.env.SAME_TIP_LIST_MS ?? 30_000) || 0);
+let lastListSnap: { key: string; at: number } | null = null;
+
+export async function writeListSnapshots(
+  pool: Pool,
+  tip: number,
+  opts: { force?: boolean } = {}
+): Promise<void> {
+  const head = await pool.query<{ id: string }>(
+    `SELECT encode(id, 'hex') AS id FROM packed.blocks WHERE height = $1`,
+    [tip]
+  );
+  const key = `${tip}:${head.rows[0]?.id ?? ""}`;
+  if (
+    !opts.force &&
+    lastListSnap?.key === key &&
+    Date.now() - lastListSnap.at < SAME_TIP_LIST_MS
+  ) {
+    await writeIndexerStatusSnapshot(pool, tip);
+    return;
+  }
+  const startedAt = Date.now();
   await ensureSnapshotSchema(pool);
   const extrasP = resolveCgMarketExtras(pool, tip);
 
@@ -2071,6 +2092,7 @@ export async function writeListSnapshots(pool: Pool, tip: number): Promise<void>
       console.warn("[indexer] rent snapshot", String(e));
     }
   }
+  lastListSnap = { key, at: startedAt };
 }
 
 /** SyncChip / `/v1/indexer/status` only. No COUNT(*), rent, or home lists. */
