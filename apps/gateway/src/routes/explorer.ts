@@ -1160,6 +1160,12 @@ const OPENAPI_SPEC = {
           "Oracle feed from schema oracle. slug=ergusd|erg-usd|xau-erg. Operators are P2PK from R4, not the datapoint P2S. Additive ?range=7d|30d. Empty when the writer has not run. GET does not call byTokenId or the node.",
       },
     },
+    "/v1/oracles/{slug}/buyback": {
+      get: {
+        summary:
+          "GORT (xau-erg) or DORT (erg-usd) buyback from the index. Box, LP price, mint top-ups, swaps, returns, chart, tape. Reads that NFT's boxes. Does not call the node.",
+      },
+    },
     "/v1/search": { get: { summary: "Same as /v1/resolve (index + mempool). Never the node." } },
     "/v1/resolve": {
       get: {

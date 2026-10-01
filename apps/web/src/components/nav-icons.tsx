@@ -429,6 +429,32 @@ export function IconOracleXau(props: IconProps) {
   );
 }
 
+/** GORT buyback — Lucide `gem`. */
+export function IconGort(props: IconProps) {
+  return glyph(
+    props,
+    <>
+      <path d="M10.5 3 8 9l4 13 4-13-2.5-6" {...cap} />
+      <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z" {...cap} />
+      <path d="M2 9h20" {...cap} />
+    </>
+  );
+}
+
+/** DORT buyback — Lucide `hand-coins`. */
+export function IconDort(props: IconProps) {
+  return glyph(
+    props,
+    <>
+      <path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17" {...cap} />
+      <path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" {...cap} />
+      <path d="m2 16 6 6" {...cap} />
+      <circle cx="16" cy="9" r="2.9" {...cap} />
+      <circle cx="6" cy="5" r="3" {...cap} />
+    </>
+  );
+}
+
 /** Pool list — Lucide `waves`. */
 export function IconPool(props: IconProps) {
   return glyph(
@@ -474,6 +500,8 @@ export const NAV_ICONS = {
   oracleUsd: IconOracleUsd,
   oracleUsdV2: IconOracleUsdV2,
   oracleXau: IconOracleXau,
+  gort: IconGort,
+  dort: IconDort,
 } as const;
 
 export type NavIconId = keyof typeof NAV_ICONS;

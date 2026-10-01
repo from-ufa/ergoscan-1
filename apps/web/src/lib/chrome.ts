@@ -11,6 +11,8 @@ export function chromeFor(path: string): { titleKey: string; heading: boolean } 
   if (p.startsWith("/nfts/collection")) return { titleKey: "nav.nfts", heading: false };
   if (p.startsWith("/nfts/issuer")) return { titleKey: "nav.nfts", heading: false };
   if (p.startsWith("/operators/nodes")) return { titleKey: "nodes.title", heading: true };
+  if (p.startsWith("/oracles/xau-erg/gort")) return { titleKey: "buyback.titleGort", heading: true };
+  if (p.startsWith("/oracles/erg-usd/dort")) return { titleKey: "buyback.titleDort", heading: true };
   if (p.startsWith("/oracles/xau-erg")) return { titleKey: "nav.oraclesXau", heading: true };
   if (p.startsWith("/oracles/ergusd")) return { titleKey: "nav.oraclesOfficial", heading: true };
   if (p.startsWith("/oracles/erg-usd")) return { titleKey: "nav.oraclesUsd", heading: true };

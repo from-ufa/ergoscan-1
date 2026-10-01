@@ -146,6 +146,16 @@ export const LIST_PAGES: Record<
     title: "XAU oracle",
     description: "XAU/ERG oracle pool on Ergo: live operators, epoch, tape.",
   },
+  "/oracles/xau-erg/gort": {
+    title: "GORT buyback",
+    description:
+      "GORT buyback box for the gold oracle: DexyGold fees, swaps against the ERG/GORT pool, and returns to the pool.",
+  },
+  "/oracles/erg-usd/dort": {
+    title: "DORT buyback",
+    description:
+      "DORT buyback box for the USD v2 oracle: DexyUSD fees, swaps against the ERG/DORT pool, and returns to the pool.",
+  },
   "/nfts": {
     title: "NFTs",
     description: "Ergo NFT gallery from the index: artwork and name series.",
@@ -328,6 +338,8 @@ export const SITEMAP_STATIC = [
   "/oracles/ergusd",
   "/oracles/erg-usd",
   "/oracles/xau-erg",
+  "/oracles/xau-erg/gort",
+  "/oracles/erg-usd/dort",
   "/rosen",
   "/nfts",
   "/learn",

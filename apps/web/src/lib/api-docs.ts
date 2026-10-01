@@ -1087,6 +1087,20 @@ export const DOCS_ROUTES: DocsRoute[] = [
     tryPath: "/v1/oracles/erg-usd?range=7d",
   },
   {
+    id: "oracle-buyback",
+    tab: "more",
+    method: "GET",
+    path: "/oracles/{slug}/buyback",
+    source: "index",
+    title: { en: "Oracle buyback", ru: "Выкуп оракула" },
+    blurb: {
+      en: "GORT (slug xau-erg) or DORT (slug erg-usd) buyback box from the index: ERG and tokens in the box, mint top-ups, pool swaps, returns, and the tape. Reads that NFT's boxes. Does not call the node.",
+      ru: "Ящик выкупа GORT (slug xau-erg) или DORT (slug erg-usd) из индекса: ERG и токены в ящике, пополнения с минта, покупки с пула, возвраты и лента. Читает боксы этого NFT. Ноду не зовёт.",
+    },
+    tag: { en: "packed boxes", ru: "packed boxes" },
+    tryPath: "/v1/oracles/erg-usd/buyback",
+  },
+  {
     id: "oracles-health",
     tab: "more",
     method: "GET",

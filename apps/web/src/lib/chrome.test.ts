@@ -26,6 +26,8 @@ test("toolbar chrome is a title only — no page lead", () => {
   assert.equal(chromeFor("/oracles/ergusd").titleKey, "nav.oraclesOfficial");
   assert.equal(chromeFor("/oracles/erg-usd").titleKey, "nav.oraclesUsd");
   assert.equal(chromeFor("/oracles/xau-erg").titleKey, "nav.oraclesXau");
+  assert.equal(chromeFor("/oracles/xau-erg/gort").titleKey, "buyback.titleGort");
+  assert.equal(chromeFor("/oracles/erg-usd/dort").titleKey, "buyback.titleDort");
   assert.equal(chromeFor("/nfts").titleKey, "nav.nfts");
   assert.equal(chromeFor("/nfts/collection/wolves").titleKey, "nav.nfts");
   assert.equal(chromeFor("/nfts/collection/wolves").heading, false);

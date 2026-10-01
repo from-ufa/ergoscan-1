@@ -534,6 +534,8 @@ export function CommandPalette() {
     { key: "nav.oraclesOfficial", href: "/oracles/ergusd" },
     { key: "nav.oraclesUsd", href: "/oracles/erg-usd" },
     { key: "nav.oraclesXau", href: "/oracles/xau-erg" },
+    { key: "nav.gort", href: "/oracles/xau-erg/gort" },
+    { key: "nav.dort", href: "/oracles/erg-usd/dort" },
     { key: "nav.rosen", href: "/rosen" },
     { key: "nav.learn", href: "/learn" },
     { key: "nav.network", href: "/learn/network" },

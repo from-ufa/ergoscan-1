@@ -1647,8 +1647,15 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     grid-template-columns: 10rem 7.5rem 6rem 6.5rem 9.5rem 10.25rem 10.25rem;
   }
 
-  .addr-pan .addr-lane:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape),
-  .addr-pan .addr-head:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape) {
+  .addr-pan .addr-lane.buyback-lane,
+  .addr-pan .addr-head.buyback-lane {
+    width: 68rem;
+    min-width: 68rem;
+    grid-template-columns: 5.6rem 6.6rem 6.4rem 8rem 6.8rem 7.6rem 6.8rem 7rem minmax(8rem, 1.2fr);
+  }
+
+  .addr-pan .addr-lane:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane),
+  .addr-pan .addr-head:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane) {
     width: 51rem;
     min-width: 51rem;
     grid-template-columns: 15rem 10rem 13rem 13rem;
@@ -1849,6 +1856,25 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   .addr-lane.block-lane {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+}
+.addr-lane.buyback-lane,
+.addr-head.buyback-lane {
+  grid-template-columns: 5.6rem 6.6rem 6.4rem 8rem 6.8rem 7.6rem 6.8rem 7rem minmax(8rem, 1.2fr);
+  align-items: center;
+  column-gap: 0.35rem;
+}
+.addr-lane.buyback-lane > *,
+.addr-head.buyback-lane > * {
+  min-width: 0;
+  padding: 0 0.2rem;
+}
+.addr-lane.buyback-lane > :first-child,
+.addr-head.buyback-lane > :first-child {
+  padding-left: 0.75rem;
+}
+.buyback-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .addr-lane.oracle-lane,
 .addr-head.oracle-lane {
