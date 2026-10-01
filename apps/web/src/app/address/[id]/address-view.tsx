@@ -1234,7 +1234,7 @@ export function AddressView({
               ink={INK.sky}
               mark={<KpiMarkBox className="h-9 w-9" />}
             >
-              <p className="mt-0.5 text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight">
+              <p className="mt-0.5 text-[22px] font-semibold leading-[1.15] tabular-nums tracking-tight">
                 <KpiNum>
                   {`${boxCount.toLocaleString(loc(locale))}${
                     data.pagination?.boxes.hasMore && data.pagination.boxes.total == null ? "+" : ""
@@ -1255,7 +1255,7 @@ export function AddressView({
             >
               <p
                 className={clsx(
-                  "mt-0.5 text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight",
+                  "mt-0.5 text-[22px] font-semibold leading-[1.15] tabular-nums tracking-tight",
                   tokenCount <= 0 && "text-[var(--muted)]"
                 )}
               >
@@ -1273,7 +1273,7 @@ export function AddressView({
               ink={INK.cyan}
               mark={<KpiMarkScrollText className="h-9 w-9" />}
             >
-              <p className="mt-0.5 text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight">
+              <p className="mt-0.5 text-[22px] font-semibold leading-[1.15] tabular-nums tracking-tight">
                 <KpiNum>{txCount.toLocaleString(loc(locale))}</KpiNum>
               </p>
               <p className="mt-0.5 truncate text-[12px] leading-[1.15] text-[var(--muted-2)]">
@@ -1288,7 +1288,7 @@ export function AddressView({
               ink={INK.teal}
               mark={<KpiMarkFootprints className="h-9 w-9" />}
             >
-              <p className="mt-0.5 text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight">
+              <p className="mt-0.5 text-[22px] font-semibold leading-[1.15] tabular-nums tracking-tight">
                 <KpiNum>{lastTs != null ? formatRelTime(lastTs) : "—"}</KpiNum>
               </p>
               <p className="mt-0.5 truncate text-[12px] leading-[1.15] text-[var(--muted-2)]">

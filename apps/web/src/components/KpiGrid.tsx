@@ -7,7 +7,7 @@ export function KpiNum({ children, className }: { children: ReactNode; className
   return <span className={clsx("kpi-scale-up inline-block max-w-full", className)}>{children}</span>;
 }
 
-/** Straight 3px ink stripe. Visible under `data-stamp=rail`; press tiles slide it. */
+/** Kept in the tile. The ink field on the mark replaced the stripe. */
 export function KpiTileRail() {
   return (
     <span className="kpi-tile-rail" aria-hidden>

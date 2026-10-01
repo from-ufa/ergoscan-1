@@ -439,12 +439,7 @@ html[data-float="ada"] .block-hop.chip-press.is-armed {
   }
 }
 
-/*
- * Rail stamp: a straight 3px ink stripe. Do not use border-left — that
- * follows the 20px radius and reads as an arc. Clip the bar on an inner
- * wrap so the Ada float-shadow still paints. Pressable tiles slide the
- * same stripe L→R while the paper is down.
- */
+/* The stripe is retired. The mark carries the ink as a field. */
 .kpi-tile-rail {
   display: none;
   position: absolute;
@@ -456,7 +451,7 @@ html[data-float="ada"] .block-hop.chip-press.is-armed {
 
 html[data-stamp="rail"] .kpi-tile-rail,
 [data-stamp-demo="rail"] .kpi-tile-rail {
-  display: block;
+  display: none;
 }
 
 .kpi-tile-rail-ink {
@@ -838,9 +833,33 @@ html[data-face="t2"] .font-mono {
   position: absolute;
   right: 0.75rem;
   bottom: 0.375rem;
-  height: 2.25rem;
-  width: 2.25rem;
+  height: 2.75rem;
+  width: 2.75rem;
   align-self: auto;
+}
+
+/* Address facts: the mark sits in a field of its own ink. The same field replaces the rail stamp on every KPI tile. */
+html[data-stamp="rail"] .kpi-tile-mark,
+[data-stamp-demo="rail"] .kpi-tile-mark {
+  height: 2.75rem;
+  width: 2.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--kpi-ink, var(--accent)) 12%, transparent);
+}
+html[data-stamp="rail"] .kpi-tile-mark svg,
+html[data-stamp="rail"] .kpi-tile-mark img,
+[data-stamp-demo="rail"] .kpi-tile-mark svg,
+[data-stamp-demo="rail"] .kpi-tile-mark img {
+  height: 1.75rem !important;
+  width: 1.75rem !important;
+}
+html[data-stamp="rail"] .kpi-tile-mark > span,
+[data-stamp-demo="rail"] .kpi-tile-mark > span {
+  display: flex;
+  height: auto !important;
+  width: auto !important;
+  align-items: center;
+  justify-content: center;
 }
 html[data-stamp="old"] .kpi-tile:not(.kpi-tile--aside),
 [data-stamp-demo="old"] .kpi-tile:not(.kpi-tile--aside) {
@@ -869,15 +888,6 @@ html[data-stamp="corner"] .kpi-tile-mark svg,
   height: 1.25rem !important;
   width: 1.25rem !important;
 }
-
-html[data-stamp="rail"] .kpi-tile:not(.kpi-tile--aside),
-[data-stamp-demo="rail"] .kpi-tile:not(.kpi-tile--aside) {
-  /* Width only: a coloured border-left follows the radius (arc). Ink is .kpi-tile-rail. */
-  border-left-color: transparent;
-  border-left-width: 3px;
-}
-
-/* Lab columns must not inherit the page-level stamp. */
 html [data-stamp-demo="corner"] .kpi-tile:not(.kpi-tile--aside),
 html [data-stamp-demo="old"] .kpi-tile:not(.kpi-tile--aside) {
   border-left-width: 1px;
