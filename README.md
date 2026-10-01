@@ -17,7 +17,7 @@
 
 **https://ergoscan.me**
 
-ErgoScan is an explorer for Ergo (ERG). It covers blocks, transactions, addresses, tokens, NFTs, the mempool, ErgoDex and Lithos fills, the AgeUSD bank, Rosen bridge events, oracle pools, and eUTXO storage rent. The interface is Russian and English. Confirmed data comes from our index. The mempool is live over WebSocket.
+ErgoScan is an explorer for Ergo (ERG). It covers blocks, transactions, addresses, tokens, NFTs, the mempool, ErgoDex and Lithos fills, the AgeUSD bank, Rosen bridge events, oracle pools, GORT and DORT buyback, and eUTXO storage rent. The interface is Russian and English. Confirmed data comes from our index. The mempool is live over WebSocket.
 
 It is an index, not a proxy of another explorer and not a façade in front of a node. One Postgres database holds the chain. Pages and the public API read that database. A user GET does not call the node. The only user write is submitting a transaction.
 
@@ -65,7 +65,7 @@ Every claim painted on a page has a class: on-chain, rule-decoded, telemetry, li
 | [`/nfts`](https://ergoscan.me/nfts) | Gallery of emission-1 tokens. Artwork is read from the index |
 | [`/defi`](https://ergoscan.me/defi) | ErgoDex (Spectrum), Lithos, pool cards, AgeUSD bank |
 | [`/rosen`](https://ergoscan.me/rosen) | Rosen Event Triggers seen on Ergo |
-| [`/oracles`](https://ergoscan.me/oracles) | USD v1, USD v2, and XAU/ERG pools |
+| [`/oracles`](https://ergoscan.me/oracles) | USD v1, USD v2, and XAU/ERG pools. [GORT](https://ergoscan.me/oracles/xau-erg/gort) and [DORT](https://ergoscan.me/oracles/erg-usd/dort) buyback boxes |
 | [`/rent`](https://ergoscan.me/rent) | Storage rent due and collected |
 | [`/search`](https://ergoscan.me/search) | Resolve a hash, address, or token name from the index |
 | [`/docs`](https://ergoscan.me/docs) | API |
