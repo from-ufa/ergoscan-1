@@ -9,6 +9,8 @@ import { getWritePool } from "./indexDb.js";
 
 const BATCH = 32;
 const EVERY_MS = 5_000;
+/** Blocks re-read every tick: a fork re-index can land below the last tip within one tick. */
+const OVERLAP = 6;
 let busy = false;
 let warned = false;
 let indexReady: boolean | null = null;
@@ -105,8 +107,8 @@ async function fillHeights(client: pg.PoolClient): Promise<void> {
   if (!Number.isFinite(tip) || tip <= 0) return;
   if (tipFrom < 0) tipFrom = Math.max(0, tip - 20);
   if (copyFrom < 0) copyFrom = Math.max(0, (copy || tip) - 20);
-  await insertHeights(client, Math.min(tipFrom, tip - 2), tip);
-  tipFrom = Math.max(0, tip - 2);
+  await insertHeights(client, Math.min(tipFrom, tip - OVERLAP), tip);
+  tipFrom = Math.max(0, tip - OVERLAP);
   if (copy > 0 && copy > copyFrom) {
     await insertHeights(client, copyFrom, copy);
     copyFrom = copy;
@@ -115,13 +117,16 @@ async function fillHeights(client: pg.PoolClient): Promise<void> {
 
 async function insertHeights(client: pg.PoolClient, from: number, to: number): Promise<void> {
   if (to < from) return;
+  // By block height: boxes.creation_height is the box's own creationHeight, which the tx author
+  // sets and can trail the block by many heights (a fifth of new boxes lag more than 2).
   await client.query(
     `INSERT INTO packed.box_template (box_id, template_hash, creation_height)
      SELECT b.box_id, s.template_hash, COALESCE(b.creation_height, 0)
-       FROM packed.boxes b
+       FROM packed.transactions t
+       JOIN packed.boxes b ON b.creation_tx_id = t.id
        JOIN packed.script s ON s.id = b.script_id
-      WHERE b.creation_height >= $1
-        AND b.creation_height <= $2
+      WHERE t.height >= $1
+        AND t.height <= $2
         AND octet_length(s.template_hash) = 32
      ON CONFLICT (box_id) DO NOTHING`,
     [from, to]
