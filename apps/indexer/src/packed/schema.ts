@@ -197,6 +197,8 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS packed_token_tx_seen_height_idx
 CREATE INDEX CONCURRENTLY IF NOT EXISTS packed_token_tx_move_token_height_idx
   ON packed.token_tx_move (token_id, height DESC NULLS LAST, tx_id DESC)
   WHERE height IS NOT NULL${ts};
+CREATE INDEX CONCURRENTLY IF NOT EXISTS packed_token_tx_seen_tx_idx ON packed.token_tx_seen (tx_id)${ts};
+CREATE INDEX CONCURRENTLY IF NOT EXISTS packed_token_tx_move_tx_idx ON packed.token_tx_move (tx_id)${ts};
 `;
 }
 

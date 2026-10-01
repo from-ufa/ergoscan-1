@@ -2241,27 +2241,41 @@ export async function unwindIndexedHeight(
     }
     if (!blk.rows[0]) {
       const touched = await packedTouchedAddresses(client, height);
+      const gone = await client.query<{ address: string }>(
+        `SELECT ad.address
+           FROM packed.address_tx x
+           JOIN packed.addr ad ON ad.id = x.addr_id
+          WHERE x.height = $1`,
+        [height]
+      );
       await invertTokenStatsAtHeight(client, height);
       await unwindPackedHeight(client, height);
       if (touched.length) {
+        // tx_count rose by one per new address_tx row, so take back rows, not addresses.
+        // max() over address_tx alone reads the (addr_id, height DESC) index; a JOIN sorts the whole fee contract.
         await client.query(
           `UPDATE address_summary s
               SET tx_count = GREATEST(0, s.tx_count - c.n),
                   last_height = (
-                    SELECT x.height
+                    SELECT max(x.height)
                       FROM packed.address_tx x
-                      JOIN packed.addr ad ON ad.id = x.addr_id
-                     WHERE ad.address = s.address
-                     ORDER BY x.height DESC NULLS LAST, x.tx_id DESC
-                     LIMIT 1
+                     WHERE x.addr_id = (
+                       SELECT ad.id
+                         FROM packed.addr ad
+                        WHERE ad.addr_md5 = md5(s.address) AND ad.address = s.address
+                     )
                   )
              FROM (
-               SELECT address, COUNT(*)::int AS n
-                 FROM unnest($1::text[]) AS a(address)
-                GROUP BY address
+               SELECT t.address, COALESCE(g.n, 0) AS n
+                 FROM unnest($1::text[]) AS t(address)
+                 LEFT JOIN (
+                   SELECT address, COUNT(*)::int AS n
+                     FROM unnest($2::text[]) AS a(address)
+                    GROUP BY address
+                 ) g ON g.address = t.address
              ) c
             WHERE s.address = c.address`,
-          [touched]
+          [touched, gone.rows.map((r) => r.address)]
         );
       }
       await bumpGixNextAfterUnwind(client);
