@@ -586,7 +586,7 @@ export function SideNavRail({
     >
       <div className="nav-rail-inner flex h-full min-h-0 flex-col overflow-hidden rounded-[inherit]">
         <NavBrand collapsed={collapsed} />
-        <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-14 pt-5">
+        <nav className="scrollbar-none min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-2 pb-14 pt-5">
           <NavList
             collapsed={collapsed}
             onExpandRail={onToggle && collapsed ? onToggle : undefined}
@@ -631,7 +631,7 @@ export function SideNavDrawer({
             aria-label={t("nav.menu")}
           >
             <NavBrand />
-            <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-6 pt-5">
+            <nav className="scrollbar-none min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-2 pb-6 pt-5">
               <NavList onNavigate={onClose} />
             </nav>
           </motion.aside>

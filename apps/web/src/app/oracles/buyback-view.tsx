@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import clsx from "clsx";
 import { Shell } from "@/components/Shell";
-import { KpiGrid, Segmented } from "@/components/KpiGrid";
+import { KpiGrid } from "@/components/KpiGrid";
 import { RankWindow } from "@/components/RankWindow";
 import { lookupAddress } from "@/lib/address-book";
 import {
@@ -26,10 +26,6 @@ import { INK } from "@/lib/palette";
 const DualLineChart = dynamic(() => import("@/components/DualLineChart"), {
   ssr: false,
 });
-
-const RANGES = ["all", "90d", "30d"] as const;
-type RangeId = (typeof RANGES)[number];
-const DAY = 86_400_000;
 
 const stroke = {
   fill: "none" as const,
@@ -173,7 +169,6 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
   const { markSynced } = usePageSync();
   const [pack, setPack] = useState(initial ?? emptyBuyback(kind));
   const [pending, setPending] = useState(false);
-  const [range, setRange] = useState<RangeId>("all");
   const [offset, setOffset] = useState(0);
   const [stuck, setStuck] = useState(false);
   const pinRef = useRef<HTMLDivElement>(null);
@@ -219,12 +214,13 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
     return () => obs.disconnect();
   }, [pack.moves.length]);
 
-  const points = useMemo(() => {
-    const cut = range === "all" ? 0 : Date.now() - (range === "90d" ? 90 : 30) * DAY;
-    return pack.series
-      .filter((p) => p.t >= cut && Number.isFinite(p.erg) && Number.isFinite(p.token))
-      .map((p) => ({ t: p.t, txs: p.erg, feesErg: p.token, feesKnown: true }));
-  }, [pack.series, range]);
+  const points = useMemo(
+    () =>
+      pack.series
+        .filter((p) => Number.isFinite(p.erg) && Number.isFinite(p.token))
+        .map((p) => ({ t: p.t, txs: p.erg, feesErg: p.token, feesKnown: true })),
+    [pack.series]
+  );
 
   const rows = pack.moves.slice(offset, offset + BUYBACK_PACK);
   const L = loc(locale);
@@ -253,6 +249,38 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
     facts.push(t("buyback.statusIdle"));
   }
   if (pack.ready) facts.push(t("buyback.hole"));
+
+  const notes: { key: string; label: string; value: string; hint?: string }[] = [];
+  if (pack.bank) {
+    notes.push({
+      key: "bank",
+      label: t("buyback.noteBank"),
+      value: `${(pack.bank.ratioBps / 100).toLocaleString(L, { maximumFractionDigits: 1 })}%`,
+      hint: t("buyback.noteBankHint"),
+    });
+  }
+  if (pack.coverRefreshes != null && pack.coverRefreshes > 0) {
+    notes.push({
+      key: "refresh",
+      label: t("buyback.noteRefresh"),
+      value: `~${pack.coverRefreshes.toLocaleString(L)}`,
+    });
+  }
+  const spareN = Number(pack.spare);
+  if (Number.isFinite(spareN) && spareN > 0) {
+    notes.push({
+      key: "nft",
+      label: t("buyback.noteNft"),
+      value: spareN.toLocaleString(L),
+    });
+  }
+  if (pack.emission) {
+    notes.push({
+      key: "dev",
+      label: t("buyback.noteDev"),
+      value: `${formatTokenAmount(pack.emission.amount, 0, locale)} ${pack.symbol} · #${pack.emission.height.toLocaleString(L)}`,
+    });
+  }
 
   return (
     <Shell>
@@ -331,37 +359,25 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
                 className="home-tile-enter mod flex min-w-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-4"
                 style={{ "--enter": 6 } as CSSProperties}
               >
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex h-[22px] min-w-0 items-center gap-3">
-                      <h2
-                        className="m-0 truncate text-[17px] font-semibold leading-[1.15] tracking-tight"
-                        title={t("buyback.chartHint")}
-                      >
-                        {t("buyback.chartTitle")}
-                      </h2>
-                    </div>
-                    <div className="mt-2 flex items-center gap-3 text-[12px] text-[var(--muted)]">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full" style={{ background: "#8ec8ff" }} />
-                        {t("buyback.chartErg")}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full" style={{ background: "#f472b6" }} />
-                        {fill(t("buyback.chartToken"), { sym })}
-                      </span>
-                    </div>
+                <div className="mb-2 min-w-0">
+                  <div className="flex h-[22px] min-w-0 items-center gap-3">
+                    <h2
+                      className="m-0 truncate text-[17px] font-semibold leading-[1.15] tracking-tight"
+                      title={t("buyback.chartHint")}
+                    >
+                      {t("buyback.chartTitle")}
+                    </h2>
                   </div>
-                  <Segmented
-                    value={range}
-                    onChange={setRange}
-                    options={RANGES.map((id) => ({
-                      id,
-                      label: t(
-                        id === "all" ? "buyback.rangeAll" : id === "90d" ? "buyback.range90" : "buyback.range30"
-                      ),
-                    }))}
-                  />
+                  <div className="mt-2 flex items-center gap-3 text-[12px] text-[var(--muted)]">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full" style={{ background: "#8ec8ff" }} />
+                      {t("buyback.chartErg")}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full" style={{ background: "#f472b6" }} />
+                      {fill(t("buyback.chartToken"), { sym })}
+                    </span>
+                  </div>
                 </div>
                 {points.length >= 2 ? (
                   <div className="min-h-[168px] flex-1">
@@ -431,12 +447,24 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
                     </li>
                   ))}
                 </ol>
-                <div className="mt-3 grid gap-x-6 gap-y-1.5 border-t border-[var(--border-soft)] pt-3 lg:grid-cols-2">
-                  {facts.map((line) => (
-                    <p key={line} className="m-0 text-[13px] leading-[1.4] text-[var(--muted)]">
-                      {line}
-                    </p>
-                  ))}
+                <div className="mt-auto border-t border-[var(--border-soft)] pt-3">
+                  <div className="grid gap-x-6 gap-y-1 lg:grid-cols-2">
+                    {facts.map((line) => (
+                      <p key={line} className="m-0 text-[13px] leading-[1.35] text-[var(--muted)]">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                  {notes.length > 0 ? (
+                    <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] leading-snug">
+                      {notes.map((note) => (
+                        <li key={note.key} className="min-w-0" title={note.hint}>
+                          <span className="text-[var(--muted-2)]">{note.label} </span>
+                          <span className="text-[var(--text)]">{note.value}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               </section>
             </div>
