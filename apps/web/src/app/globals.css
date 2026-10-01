@@ -1649,9 +1649,9 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 
   .addr-pan .addr-lane.buyback-lane,
   .addr-pan .addr-head.buyback-lane {
-    width: 68rem;
-    min-width: 68rem;
-    grid-template-columns: 5.6rem 6.6rem 6.4rem 8rem 6.8rem 7.6rem 6.8rem 7rem minmax(8rem, 1.2fr);
+    width: 78rem;
+    min-width: 78rem;
+    grid-template-columns: 6.5rem 7rem 5.5rem 8rem 8rem 8rem 8rem 13.5rem 13.5rem;
   }
 
   .addr-pan .addr-lane:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane),
@@ -1859,18 +1859,35 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 }
 .addr-lane.buyback-lane,
 .addr-head.buyback-lane {
-  grid-template-columns: 5.6rem 6.6rem 6.4rem 8rem 6.8rem 7.6rem 6.8rem 7rem minmax(8rem, 1.2fr);
+  grid-template-columns:
+    6.5rem
+    7rem
+    5.5rem
+    minmax(7.5rem, 1fr)
+    minmax(7.5rem, 1fr)
+    minmax(7.5rem, 1fr)
+    minmax(7.5rem, 1fr)
+    13.5rem
+    13.5rem;
   align-items: center;
-  column-gap: 0.35rem;
+  column-gap: 0.5rem;
 }
 .addr-lane.buyback-lane > *,
-.addr-head.buyback-lane > * {
+.addr-head.addr-lane.buyback-lane > * {
   min-width: 0;
   padding: 0 0.2rem;
+  justify-content: flex-start;
 }
 .addr-lane.buyback-lane > :first-child,
-.addr-head.buyback-lane > :first-child {
+.addr-head.addr-lane.buyback-lane > :first-child {
   padding-left: 0.75rem;
+}
+.addr-lane.buyback-lane > :last-child,
+.addr-head.addr-lane.buyback-lane > :last-child {
+  padding-right: 0.75rem;
+}
+.addr-head.addr-lane.buyback-lane > .buyback-num {
+  justify-content: flex-end;
 }
 .buyback-num {
   text-align: right;

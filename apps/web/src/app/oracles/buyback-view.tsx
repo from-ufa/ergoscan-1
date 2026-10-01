@@ -18,7 +18,7 @@ import {
   type BuybackMoveKind,
   type BuybackPack,
 } from "@/lib/buyback";
-import { formatErg, formatErgPrecise, formatRelAge, formatTokenAmount, shortId } from "@/lib/format";
+import { formatErg, formatErgFixed, formatErgPrecise, formatRelAge, formatTokenAmount, shortId } from "@/lib/format";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { useKeepFresh, usePageSync } from "@/lib/page-sync";
 import { INK } from "@/lib/palette";
@@ -164,7 +164,7 @@ function signedToken(raw: string, locale: string): string {
 
 function whoLabel(address: string | null): string {
   if (!address) return "";
-  return lookupAddress(address)?.name || shortId(address, 4);
+  return lookupAddress(address)?.name || shortId(address, 10);
 }
 
 export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: BuybackPack }) {
@@ -230,7 +230,6 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
   const L = loc(locale);
   const bought = formatTokenAmount(pack.totals.bought, 0, locale);
   const sent = formatTokenAmount(pack.totals.sent, 0, locale);
-  const whenTop = pack.lastTopup?.ts != null ? formatRelAge(pack.lastTopup.ts, locale) : "—";
   const backSub =
     pack.giveback === "blocked"
       ? t("buyback.kpiBackSubBlocked")
@@ -254,30 +253,6 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
     facts.push(t("buyback.statusIdle"));
   }
   if (pack.ready) facts.push(t("buyback.hole"));
-  if (pack.bank) {
-    facts.push(
-      fill(t("buyback.cover"), {
-        pct: `${(pack.bank.ratioBps / 100).toLocaleString(L, { maximumFractionDigits: 1 })}%`,
-      })
-    );
-  }
-  if (pack.emission) {
-    facts.push(
-      fill(t("buyback.emission"), {
-        n: formatTokenAmount(pack.emission.amount, 0, locale),
-        h: pack.emission.height.toLocaleString(L),
-      })
-    );
-  }
-  if (pack.coverRefreshes != null && pack.coverRefreshes > 0) {
-    facts.push(
-      fill(t("buyback.coverEpoch"), { n: pack.coverRefreshes.toLocaleString(L) })
-    );
-  }
-  const spareN = Number(pack.spare);
-  if (Number.isFinite(spareN) && spareN > 0) {
-    facts.push(fill(t("buyback.spare"), { n: spareN.toLocaleString(L) }));
-  }
 
   return (
     <Shell>
@@ -304,7 +279,7 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
                   label: fill(t("buyback.kpiToken"), { sym }),
                   value: pack.box ? formatTokenAmount(pack.box.token, 0, locale) : "—",
                   unavailable: !pack.box,
-                  sub: fill(t("buyback.kpiTokenSub"), { bought, sent }),
+                  sub: fill(t("buyback.kpiTokenSub"), { bought }),
                   mark: <MarkGem tone={INK.cyan} />,
                   ink: INK.cyan,
                   enter: 1,
@@ -323,8 +298,7 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
                   label: t("buyback.kpiTop"),
                   value: pack.totals.topups.toLocaleString(L),
                   sub: fill(t("buyback.kpiTopSub"), {
-                    erg: formatErgPrecise(pack.totals.ergIn, locale),
-                    when: whenTop,
+                    erg: formatErgFixed(pack.totals.ergIn, locale),
                   }),
                   mark: <MarkPlus tone={INK.violet} />,
                   ink: INK.violet,
@@ -352,20 +326,20 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
               ]}
             />
 
-            <div className="grid grid-cols-1 items-stretch gap-2 lg:grid-cols-5">
+            <div className="grid grid-cols-1 items-stretch gap-2 lg:grid-cols-3">
               <section
-                className="home-tile-enter mod flex min-w-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-4 lg:col-span-3"
+                className="home-tile-enter mod flex min-w-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-4"
                 style={{ "--enter": 6 } as CSSProperties}
               >
-                <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
+                <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex h-[22px] min-w-0 items-center gap-3">
-                      <h2 className="m-0 text-[17px] font-semibold leading-[1.15] tracking-tight">
+                      <h2
+                        className="m-0 truncate text-[17px] font-semibold leading-[1.15] tracking-tight"
+                        title={t("buyback.chartHint")}
+                      >
                         {t("buyback.chartTitle")}
                       </h2>
-                      <span className="truncate text-[13px] leading-[1.15] text-[var(--muted)]">
-                        {t("buyback.chartHint")}
-                      </span>
                     </div>
                     <div className="mt-2 flex items-center gap-3 text-[12px] text-[var(--muted)]">
                       <span className="inline-flex items-center gap-1.5">
@@ -390,7 +364,7 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
                   />
                 </div>
                 {points.length >= 2 ? (
-                  <div className="min-h-[188px] flex-1">
+                  <div className="min-h-[168px] flex-1">
                     <DualLineChart
                       points={points}
                       skipBin
@@ -403,11 +377,11 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
                       formatTxs={(v) => formatErg(v, v >= 100 ? 0 : 2)}
                       formatFees={(v) => formatTokenAmount(Math.round(v), 0, locale)}
                       locale={L}
-                      height={188}
+                      height={168}
                     />
                   </div>
                 ) : (
-                  <p className="flex min-h-[188px] flex-1 items-center justify-center text-[13px] text-[var(--muted)]">
+                  <p className="flex min-h-[168px] flex-1 items-center justify-center text-[13px] text-[var(--muted)]">
                     {t("buyback.chartWait")}
                   </p>
                 )}
@@ -417,13 +391,23 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
                 className="home-tile-enter mod flex min-w-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-4 lg:col-span-2"
                 style={{ "--enter": 7 } as CSSProperties}
               >
-                <div className="flex items-center gap-2">
-                  <MarkScroll tone={INK.violet} />
-                  <h2 className="m-0 text-[17px] font-semibold leading-[1.15] tracking-tight">
-                    {t("buyback.protoTitle")}
-                  </h2>
+                <div className="flex h-[22px] min-w-0 items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <MarkScroll tone={INK.violet} />
+                    <h2 className="m-0 truncate text-[17px] font-semibold leading-[1.15] tracking-tight">
+                      {t("buyback.protoTitle")}
+                    </h2>
+                  </div>
+                  <p className="m-0 flex shrink-0 items-center gap-x-3 text-[13px]">
+                    <Link href={`/token/${pack.tokenId}`} className="text-accent hover:underline">
+                      {fill(t("buyback.linkToken"), { sym })}
+                    </Link>
+                    <Link href={`/oracles/${pack.slug}`} className="text-accent hover:underline">
+                      {t("buyback.linkPool")}
+                    </Link>
+                  </p>
                 </div>
-                <ol className="mt-3 flex flex-col gap-3">
+                <ol className="mt-3 grid gap-3 sm:grid-cols-3">
                   {(
                     [
                       ["buyback.stepTop", "buyback.stepTopBody", INK.violet],
@@ -447,37 +431,12 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
                     </li>
                   ))}
                 </ol>
-                <div className="mt-3 flex flex-col gap-2 border-t border-[var(--border-soft)] pt-3">
+                <div className="mt-3 grid gap-x-6 gap-y-1.5 border-t border-[var(--border-soft)] pt-3 lg:grid-cols-2">
                   {facts.map((line) => (
                     <p key={line} className="m-0 text-[13px] leading-[1.4] text-[var(--muted)]">
                       {line}
                     </p>
                   ))}
-                  {pack.topSigner ? (
-                    <p className="m-0 text-[13px] leading-[1.4] text-[var(--muted)]">
-                      {lookupAddress(pack.topSigner.address)?.name ? (
-                        <span>{lookupAddress(pack.topSigner.address)?.name} </span>
-                      ) : null}
-                      <Link
-                        href={`/address/${pack.topSigner.address}`}
-                        className="text-accent hover:underline"
-                      >
-                        {shortId(pack.topSigner.address, 4)}
-                      </Link>{" "}
-                      {fill(t("buyback.signer"), {
-                        who: "",
-                        n: pack.topSigner.swaps.toLocaleString(L),
-                      }).trim()}
-                    </p>
-                  ) : null}
-                  <p className="m-0 flex flex-wrap gap-x-3 gap-y-1 text-[13px]">
-                    <Link href={`/token/${pack.tokenId}`} className="text-accent hover:underline">
-                      {fill(t("buyback.linkToken"), { sym })}
-                    </Link>
-                    <Link href={`/oracles/${pack.slug}`} className="text-accent hover:underline">
-                      {t("buyback.linkPool")}
-                    </Link>
-                  </p>
                 </div>
               </section>
             </div>
@@ -588,13 +547,20 @@ function BuybackRow({
       <div className="buyback-num truncate">{formatTokenAmount(row.token, 0, locale)}</div>
       <div className="truncate">
         <Link href={`/tx/${row.tx}`} className="font-mono text-[12px] text-accent hover:underline">
-          {shortId(row.tx, 4)}
+          {shortId(row.tx, 10)}
         </Link>
       </div>
       <div className="min-w-0 truncate">
         {row.who ? (
-          <Link href={`/address/${row.who}`} className="text-accent hover:underline" title={row.who}>
-            {name || shortId(row.who, 4)}
+          <Link
+            href={`/address/${row.who}`}
+            className={clsx(
+              "text-accent hover:underline",
+              !lookupAddress(row.who)?.name && "font-mono text-[12px]"
+            )}
+            title={row.who}
+          >
+            {name || shortId(row.who, 10)}
           </Link>
         ) : (
           <span className="text-[var(--muted)]">—</span>
