@@ -640,8 +640,8 @@ export const DOCS_ROUTES: DocsRoute[] = [
     source: "index",
     title: { en: "Resolve", ru: "Resolve" },
     blurb: {
-      en: "q is an id, address, or token name. Hex order: tx → token → block → box. Returns hits[].path.",
-      ru: "q — id, адрес или имя токена. Hex: tx → token → block → box. Ответ: hits[].path.",
+      en: "q is an id, height, address, or token name. Height may start with # and use thousand separators. Hex order: tx → token → block → box. Returns hits[].path.",
+      ru: "q — id, высота, адрес или имя токена. Высота может начинаться с # и содержать разделители разрядов. Hex: tx → token → block → box. Ответ: hits[].path.",
     },
     query: { en: "q", ru: "q" },
   },

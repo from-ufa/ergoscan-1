@@ -19,8 +19,20 @@ export type ResolvePage = {
 
 const HEIGHT = /^\d{1,10}$/;
 const HEX64 = /^[0-9a-fA-F]{64}$/;
-/** P2S can be hundreds of chars; address_summary PK cap is 2000. */
-const Q_MAX = 2000;
+/** Same cap as the address checksum: the longest P2S in the index is 5260 chars. */
+const Q_MAX = 8000;
+/** Heights as the site prints them: `#1885000`, `#1 885 000`, `1,885,000`. Groups of three only, so `1.5` stays a name. */
+const HEIGHT_SHOWN = /^#?\s*(?:\d+|\d{1,3}(?:[\s,.'_\u00a0\u202f]\d{3})+)$/;
+
+/** A block height typed or copied in any of the forms the site shows; otherwise null. */
+export function heightFromQuery(q: string): number | null {
+  const s = q.trim();
+  if (!HEIGHT_SHOWN.test(s)) return null;
+  const digits = s.replace(/\D/g, "");
+  if (!HEIGHT.test(digits)) return null;
+  const n = Number(digits);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
 const TOKEN_NAME_LIMIT = 25;
 /** Fuzzy LIKE is a seq scan. Do not run it on 1-char junk or a 2000-char leftover. */
 const TOKEN_LIKE_MIN = 2;
@@ -93,12 +105,12 @@ export async function resolveFromIndex(raw: string): Promise<ResolvePage> {
   const hits: ResolveHit[] = [];
   if (!q) return { q, hits, source: "index" };
 
-  if (HEIGHT.test(q)) {
-    const n = Number(q);
-    if (Number.isInteger(n) && n > 0) {
+  const height = heightFromQuery(q);
+  if (height != null || HEIGHT.test(q)) {
+    if (height != null) {
       const id = await oneId(
         `SELECT height::text AS id FROM packed.blocks WHERE height = $1 LIMIT 1`,
-        n
+        height
       );
       if (id) hits.push(hit("block", id, `/block/${id}`));
     }

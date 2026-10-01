@@ -24,6 +24,29 @@ async function resolveQuery(q: string): Promise<ResolveHit[]> {
   }
 }
 
+const HIT_TYPES = new Set<ResolveHit["type"]>(["block", "tx", "box", "token", "address"]);
+
+/** Index plus mempool RAM. Used only when the index alone found nothing. */
+async function wideQuery(q: string): Promise<ResolveHit[]> {
+  const gw = getGateway();
+  try {
+    const r = await fetch(`${gw}/v1/search?q=${encodeURIComponent(q)}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!r.ok) return [];
+    const j = (await r.json()) as { hits?: { type?: string; id?: string; path?: string; label?: string }[] };
+    return (j.hits ?? []).flatMap((h) =>
+      h.type && HIT_TYPES.has(h.type as ResolveHit["type"]) && h.id && h.path
+        ? [{ type: h.type as ResolveHit["type"], id: h.id, path: h.path, label: h.label }]
+        : []
+    );
+  } catch {
+    return [];
+  }
+}
+
 function isTokenNameList(hits: ResolveHit[]): boolean {
   return hits.length > 1 && hits.every((h) => h.type === "token");
 }
@@ -37,7 +60,8 @@ export default async function SearchPage({
   const raw = sp.q;
   const q = (Array.isArray(raw) ? raw[0] : raw)?.trim() ?? "";
   const gw = getGateway();
-  const hits = q ? await orderTokenHitsByHolders(q, await resolveQuery(q), gw) : [];
+  let hits = q ? await orderTokenHitsByHolders(q, await resolveQuery(q), gw) : [];
+  if (q && !hits.length) hits = await wideQuery(q);
   if (!isTokenNameList(hits) && hits[0]?.path) redirect(hits[0].path);
   return <SearchHits q={q} hits={hits} />;
 }

@@ -1170,7 +1170,7 @@ const OPENAPI_SPEC = {
     "/v1/resolve": {
       get: {
         summary:
-          "Canonical path from q. Additive. Hex hits ordered tx → token → block → box. Address: address_summary PK first, else blake2b256 checksum (P2PK/P2SH/P2S). Token name: exact lower(name), else LIKE. Never the node. Empty hits on miss. Cache like lists.",
+          "Canonical path from q. Additive. Height may start with # and use thousand separators (#1 885 000, 1,885,000). Hex hits ordered tx → token → block → box. Address: address_summary PK first, else blake2b256 checksum (P2PK/P2SH/P2S, up to 8000 chars). Token name: exact lower(name), else LIKE. Never the node. Empty hits on miss. Cache like lists.",
       },
     },
     "/v1/stream": {
