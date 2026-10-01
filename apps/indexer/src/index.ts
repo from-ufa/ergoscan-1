@@ -620,39 +620,41 @@ async function headerParentId(id: string): Promise<string | undefined> {
   }
 }
 
+/** Best-chain header at `height`, when the node tip is at most one unwind window ahead. */
+async function canonicalHeaderId(height: number): Promise<string | null> {
+  const info = await nodeInfo();
+  const tip = info.fullHeight;
+  const best = info.bestFullHeaderId;
+  if (!best || !Number.isFinite(tip) || tip < height) return null;
+  if (tip - height > TIP_UNWIND_CAP) return null;
+  let id = best;
+  for (let h = tip; h > height; h--) {
+    const parent = await headerParentId(id);
+    if (!parent) return null;
+    id = parent;
+  }
+  return id;
+}
+
 async function fetchBlockLinked(
   height: number,
   parentId: string
 ): Promise<FetchedBlock | null> {
   const ids = await nodeGet<string[]>(`/blocks/at/${height}`, 8000);
   if (!ids.length) return null;
-  let ordered = ids;
-  if (ids.length > 1) {
-    const info = await nodeInfo();
-    const best = info.bestFullHeaderId;
-    if (best && ids.includes(best)) {
-      ordered = [best, ...ids.filter((x) => x !== best)];
-    }
+  const matched: string[] = [];
+  for (const id of ids) {
+    const pid = await headerParentId(id);
+    if (pid && pid.toLowerCase() === parentId.toLowerCase()) matched.push(id);
   }
-  for (const id of ordered) {
-    let pid: string | undefined;
-    try {
-      const hdr = await nodeGet<{ parentId?: string }>(
-        `/blocks/${id}/header`,
-        8000
-      );
-      pid = hdr.parentId;
-    } catch {
-      const full = await nodeGet<NodeFullBlock>(`/blocks/${id}`, 20000);
-      pid = full.header?.parentId;
-      if (pid === parentId && full.header?.height != null) {
-        return { headerId: id, block: full };
-      }
-      continue;
-    }
-    if (pid === parentId) return fetchBlockById(id);
+  if (!matched.length) throw new TipForkError(height, parentId, ids);
+  const canon = await canonicalHeaderId(height);
+  if (canon) {
+    const hit = matched.find((id) => id.toLowerCase() === canon.toLowerCase());
+    if (!hit) throw new TipForkError(height, parentId, ids);
+    return fetchBlockById(hit);
   }
-  throw new TipForkError(height, parentId, ids);
+  return fetchBlockById(matched[0]);
 }
 
 async function lastPlusOneLink(
@@ -663,11 +665,30 @@ async function lastPlusOneLink(
   if (!ids.length) return "empty";
   const prev = await indexedBlockAt(pool, last);
   if (!prev?.id) return "ok";
+  const want = prev.id.toLowerCase();
+  let linked = false;
+  const foreign = new Set<string>();
   for (const id of ids) {
     const pid = await headerParentId(id);
-    if (pid === prev.id) return "ok";
+    if (pid && pid.toLowerCase() === want) linked = true;
+    else foreign.add(id.toLowerCase());
   }
-  return "fork";
+  if (!linked) return "fork";
+  const canon = await canonicalHeaderId(last + 1);
+  if (canon) {
+    const canonParent = await headerParentId(canon);
+    if (canonParent && canonParent.toLowerCase() !== want) return "fork";
+    return "ok";
+  }
+  // Far behind the node: a sibling that already has its own child is the
+  // chain to follow. Our header is then a side branch, even if it also has one.
+  if (!foreign.size) return "ok";
+  const further = await nodeGet<string[]>(`/blocks/at/${last + 2}`, 8000);
+  for (const id of further) {
+    const pid = await headerParentId(id);
+    if (pid && foreign.has(pid.toLowerCase())) return "fork";
+  }
+  return "ok";
 }
 
 async function fetchBlockAtHeightOnce(
@@ -2368,7 +2389,8 @@ export async function unwindIndexedHeight(
 /**
  * One block per height, so a fork is removed, not flagged.
  * While the indexed block at fullHeight is bestFullHeaderId, this is one PK read.
- * A header walk happens only when that id differs or we still hold blocks above the node.
+ * A header walk happens when the indexed tip is not the best chain, including a side
+ * branch sitting below the node tip. Missing heights are skipped on that walk.
  * No anchor within TIP_UNWIND_CAP means do not unwind.
  */
 async function canonicalAnchor(
@@ -2381,7 +2403,6 @@ async function canonicalAnchor(
   for (let i = 0; i < TIP_UNWIND_CAP; i++) {
     const ours = await indexedBlockAt(pool, h);
     if (ours && ours.id.toLowerCase() === id.toLowerCase()) return h;
-    if (!ours) return null;
     let parent: string | undefined;
     try {
       parent = await headerParentId(id);
@@ -2413,8 +2434,6 @@ async function reconcileCanonicalTip(
   if (ourMax <= 0) return none;
   const at = await indexedBlockAt(pool, fullHeight);
   const ahead = ourMax > fullHeight;
-  const conflict = at != null && at.id.toLowerCase() !== bestId.toLowerCase();
-  if (!ahead && !conflict) return none;
   if (ahead && !at) {
     console.warn(
       `[indexer] canonical tip ${fullHeight} missing while indexed max is ${ourMax}`
