@@ -947,8 +947,8 @@ export const DOCS_ROUTES: DocsRoute[] = [
     source: "index",
     title: { en: "DEX pool TVL ticks", ru: "Тики TVL пула" },
     blurb: {
-      en: "Per-pool TVL / 24h vol from the writer. ?poolId=&hours=24. Not a genesis walk.",
-      ru: "TVL / объём 24ч по пулу от писателя. ?poolId=&hours=24. Не genesis.",
+      en: "Per-pool TVL / 24h vol from the writer, one point per hour, 14 days. ?poolId=&hours=24. Not a genesis walk.",
+      ru: "TVL / объём 24ч по пулу от писателя, одна точка в час, 14 дней. ?poolId=&hours=24. Не genesis.",
     },
   },
   {

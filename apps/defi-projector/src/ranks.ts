@@ -27,6 +27,7 @@ const TVL_TIMEOUT_MS = Math.max(
 );
 const LAST_SWAP_TVL_TIMEOUT_MS = Math.max(TVL_TIMEOUT_MS, 8_000);
 const POOL_TICK_KEEP_MS = 14 * 24 * 3600 * 1000;
+const POOL_TICK_STEP_MS = 3600 * 1000;
 
 type Heat = {
   tokenId: string;
@@ -646,16 +647,15 @@ export async function materializeRanks(db: Db): Promise<{ heat: number; pools: n
       pPx.push(acc.priceErg > 0 ? acc.priceErg : null);
     }
     if (pids.length) {
+      // One point per pool per hour (the first cycle of the hour). Every cycle was ~780k rows a day for 850 pools.
+      const hour = Math.floor(now / POOL_TICK_STEP_MS) * POOL_TICK_STEP_MS;
       await client.query(
         `INSERT INTO defi.pool_tick (pool_id, ts_ms, tvl_erg, volume_erg_24h, price_erg)
          SELECT x.pool_id, $2::bigint, x.tvl_erg, x.volume_erg_24h, x.price_erg
          FROM unnest($1::text[], $3::float8[], $4::float8[], $5::float8[])
            AS x(pool_id, tvl_erg, volume_erg_24h, price_erg)
-         ON CONFLICT (pool_id, ts_ms) DO UPDATE SET
-           tvl_erg = COALESCE(EXCLUDED.tvl_erg, defi.pool_tick.tvl_erg),
-           volume_erg_24h = COALESCE(EXCLUDED.volume_erg_24h, defi.pool_tick.volume_erg_24h),
-           price_erg = COALESCE(EXCLUDED.price_erg, defi.pool_tick.price_erg)`,
-        [pids, bucket, pTvl, pVol, pPx]
+         ON CONFLICT (pool_id, ts_ms) DO NOTHING`,
+        [pids, hour, pTvl, pVol, pPx]
       );
       await client.query(`DELETE FROM defi.pool_tick WHERE ts_ms < $1`, [
         now - POOL_TICK_KEEP_MS,

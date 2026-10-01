@@ -697,7 +697,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
     },
 
     /**
-     * Per-pool TVL / 24h vol from defi.pool_tick (ranks cycle).
+     * Per-pool TVL / 24h vol from defi.pool_tick (one point per hour, 14 days).
      * GET ?poolId=&hours=24 → points[{t, tvlErg, vol24h, priceErg}]
      */
     async poolHistory(req: Request, res: Response) {
@@ -756,7 +756,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
         at: Date.now(),
         note:
           points.length < 2
-            ? "warming — ticks written each ranks cycle (~90s)"
+            ? "warming — one tick per pool per hour"
             : undefined,
       });
     },

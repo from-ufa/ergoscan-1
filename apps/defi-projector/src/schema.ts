@@ -2,7 +2,7 @@ import type { Db } from "./db.js";
 
 /**
  * Milestone 1 tables. Keep existing defi.trades / pool_snap / ranks_cache / price_tick.
- * Additive: defi.pool_tick (per-pool TVL/vol, 14d). Do NOT DROP schema defi.
+ * Additive: defi.pool_tick (per-pool TVL/vol, hourly, 14d). Do NOT DROP schema defi.
  */
 export async function ensureProjectorSchema(db: Db): Promise<void> {
   await db.query(`CREATE SCHEMA IF NOT EXISTS defi`);
