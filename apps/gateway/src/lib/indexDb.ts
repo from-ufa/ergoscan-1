@@ -12,8 +12,8 @@ import {
   eip4MediaFromRegs,
   eip4MintOfOutputs,
   eip4PreviewUrl,
-  netValueParties,
   isAgeUsdBankNft,
+  MINERS_FEE_ADDRESS,
   isNftKind,
   minerFeeFromOutputs,
   ORACLE_POOL_NFTS,
@@ -2891,6 +2891,8 @@ export async function addressTxActivity(
   const hexIds = packed ? ids.filter(isHex64) : ids;
   if (!hexIds.length) return out;
 
+  // This address's boxes only. `creation_height IS NOT NULL` is required:
+  // the address index on packed.boxes is partial, and addr_id alone seq-scans (~10s).
   const [rows, feeRows] = await Promise.all([
     qSlow<{
       box_id: string;
@@ -2903,23 +2905,33 @@ export async function addressTxActivity(
       token_amount: string | null;
     }>(
       packed
-        ? `WITH a AS (SELECT decode(lower(x), 'hex') AS tx_id FROM unnest($1::text[]) AS x)
-       SELECT encode(b.box_id, 'hex') AS box_id, ad.address,
+        ? `WITH a AS (SELECT decode(lower(x), 'hex') AS tx_id FROM unnest($1::text[]) AS x),
+            self AS (
+              SELECT id FROM packed.addr
+               WHERE addr_md5 = md5($2) AND address = $2
+               LIMIT 1
+            )
+       SELECT encode(b.box_id, 'hex') AS box_id, $2 AS address,
               b.value_nano::text AS value_nano,
               encode(b.creation_tx_id, 'hex') AS creation_tx_id,
               encode(b.spent_tx_id, 'hex') AS spent_tx_id, b.side,
               encode(ba.token_id, 'hex') AS token_id, ba.amount::text AS token_amount
        FROM (
-         SELECT b.box_id, b.addr_id, b.value_nano, b.creation_tx_id, b.spent_tx_id, 'out' AS side
+         SELECT b.box_id, b.value_nano, b.creation_tx_id, b.spent_tx_id, 'out' AS side
            FROM packed.boxes b
-          WHERE b.creation_tx_id IN (SELECT tx_id FROM a)
+          WHERE b.addr_id = (SELECT id FROM self)
+            AND b.creation_height IS NOT NULL
+            AND b.creation_tx_id IN (SELECT tx_id FROM a)
          UNION ALL
-         SELECT b.box_id, b.addr_id, b.value_nano, b.creation_tx_id, b.spent_tx_id, 'in' AS side
+         SELECT b.box_id, b.value_nano, b.creation_tx_id, b.spent_tx_id, 'in'
            FROM packed.boxes b
-          WHERE b.spent_tx_id IN (SELECT tx_id FROM a)
+          WHERE b.addr_id = (SELECT id FROM self)
+            AND b.creation_height IS NOT NULL
+            AND b.spent_tx_id IN (SELECT tx_id FROM a)
        ) b
-       JOIN packed.addr ad ON ad.id = b.addr_id AND ad.addr_md5 = md5($2) AND ad.address = $2
-       LEFT JOIN packed.box_assets ba ON ba.box_id = b.box_id`
+       LEFT JOIN LATERAL (
+         SELECT x.token_id, x.amount FROM packed.box_assets x WHERE x.box_id = b.box_id OFFSET 0
+       ) ba ON true`
         : `WITH a AS (SELECT unnest($1::text[]) AS tx_id)
        SELECT b.box_id, b.address, b.value_nano::text AS value_nano,
               b.creation_tx_id, b.spent_tx_id, b.side,
@@ -2985,86 +2997,177 @@ export async function addressTxActivity(
 }
 
 /**
- * From/To for one page of txs: who lost value and who gained it.
- * A contract whose box is only refreshed (same assets back) is in neither list.
+ * From/To for one page of txs.
+ * The tape shows one other address, or "many" once a second one exists.
+ * Each side is two index probes that stop at that second address.
+ * A 15k-output payment is not loaded box by box.
  */
+const PARTY_PROBE_SQL = `
+WITH p AS (
+  SELECT decode(lower(x), 'hex') AS tx_id FROM unnest($1::text[]) AS x
+),
+self AS (
+  SELECT id FROM packed.addr
+   WHERE addr_md5 = md5($2) AND address = $2
+   LIMIT 1
+)
+SELECT encode(tx_id, 'hex') AS tx_id, side, address FROM (
+  SELECT p.tx_id, 'in'::text AS side, q.address, 1 AS ord
+    FROM p
+    JOIN LATERAL (
+      SELECT ad.address, b.addr_id
+        FROM packed.boxes b
+        JOIN packed.addr ad ON ad.id = b.addr_id
+       WHERE b.spent_tx_id = p.tx_id
+         AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
+         AND ad.address <> $3
+       LIMIT 1
+    ) q ON true
+  UNION ALL
+  SELECT p.tx_id, 'in', q2.address, 2
+    FROM p
+    JOIN LATERAL (
+      SELECT b.addr_id AS first_id
+        FROM packed.boxes b
+        JOIN packed.addr ad ON ad.id = b.addr_id
+       WHERE b.spent_tx_id = p.tx_id
+         AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
+         AND ad.address <> $3
+       LIMIT 1
+    ) q1 ON true
+    JOIN LATERAL (
+      SELECT ad.address
+        FROM packed.boxes b
+        JOIN packed.addr ad ON ad.id = b.addr_id
+       WHERE b.spent_tx_id = p.tx_id
+         AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
+         AND b.addr_id <> q1.first_id
+         AND ad.address <> $3
+       LIMIT 1
+    ) q2 ON true
+  UNION ALL
+  SELECT p.tx_id, 'out', q.address, 1
+    FROM p
+    JOIN LATERAL (
+      SELECT ad.address, b.addr_id
+        FROM packed.boxes b
+        JOIN packed.addr ad ON ad.id = b.addr_id
+       WHERE b.creation_tx_id = p.tx_id
+         AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
+         AND ad.address <> $3
+         AND NOT EXISTS (
+           SELECT 1 FROM packed.boxes i
+            WHERE i.spent_tx_id = p.tx_id AND i.addr_id = b.addr_id
+         )
+       LIMIT 1
+    ) q ON true
+  UNION ALL
+  SELECT p.tx_id, 'out', q2.address, 2
+    FROM p
+    JOIN LATERAL (
+      SELECT b.addr_id AS first_id
+        FROM packed.boxes b
+        JOIN packed.addr ad ON ad.id = b.addr_id
+       WHERE b.creation_tx_id = p.tx_id
+         AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
+         AND ad.address <> $3
+         AND NOT EXISTS (
+           SELECT 1 FROM packed.boxes i
+            WHERE i.spent_tx_id = p.tx_id AND i.addr_id = b.addr_id
+         )
+       LIMIT 1
+    ) q1 ON true
+    JOIN LATERAL (
+      SELECT ad.address
+        FROM packed.boxes b
+        JOIN packed.addr ad ON ad.id = b.addr_id
+       WHERE b.creation_tx_id = p.tx_id
+         AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
+         AND b.addr_id <> q1.first_id
+         AND ad.address <> $3
+         AND NOT EXISTS (
+           SELECT 1 FROM packed.boxes i
+            WHERE i.spent_tx_id = p.tx_id AND i.addr_id = b.addr_id
+         )
+       LIMIT 1
+    ) q2 ON true
+) s
+ORDER BY tx_id, side, ord`;
+
+/** When nobody is a fresh output, who still ended with more ERG. */
+const PARTY_GAIN_SQL = `
+WITH p AS (
+  SELECT decode(lower(x), 'hex') AS tx_id FROM unnest($1::text[]) AS x
+),
+self AS (
+  SELECT id FROM packed.addr
+   WHERE addr_md5 = md5($2) AND address = $2
+   LIMIT 1
+),
+nets AS (
+  SELECT s.tx_id, ad.address, sum(s.signed) AS net
+    FROM (
+      SELECT b.creation_tx_id AS tx_id, b.addr_id, b.value_nano AS signed
+        FROM packed.boxes b
+       WHERE b.creation_tx_id IN (SELECT tx_id FROM p)
+      UNION ALL
+      SELECT b.spent_tx_id, b.addr_id, -b.value_nano
+        FROM packed.boxes b
+       WHERE b.spent_tx_id IN (SELECT tx_id FROM p)
+    ) s
+    JOIN packed.addr ad ON ad.id = s.addr_id
+   WHERE s.addr_id IS DISTINCT FROM (SELECT id FROM self)
+     AND ad.address <> $3
+   GROUP BY s.tx_id, ad.address
+)
+SELECT encode(tx_id, 'hex') AS tx_id, address
+  FROM (
+    SELECT tx_id, address, net,
+           row_number() OVER (PARTITION BY tx_id ORDER BY net DESC, address) AS rn
+      FROM nets
+     WHERE net > 0
+  ) g
+ WHERE rn <= 2`;
+
 export async function addressTxParties(
+  address: string,
   txIds: string[]
 ): Promise<Record<string, { from: string[]; to: string[] }>> {
   const ids = [...new Set(txIds.filter(isHex64))];
   const out: Record<string, { from: string[]; to: string[] }> = {};
-  if (!ids.length) return out;
-  const [rows, feeRows] = await Promise.all([
-    qSlow<{
-      tx_id: string;
-      box_id: string;
-      side: string;
-      address: string | null;
-      value_nano: string;
-      token_id: string | null;
-      amount: string | null;
-    }>(
-      `WITH p AS (
-         SELECT decode(lower(x), 'hex') AS tx_id FROM unnest($1::text[]) AS x
-       )
-       SELECT encode(p.tx_id, 'hex') AS tx_id, encode(b.box_id, 'hex') AS box_id,
-              'in' AS side, ad.address, b.value_nano::text AS value_nano,
-              encode(ba.token_id, 'hex') AS token_id, ba.amount::text AS amount
-         FROM p
-         JOIN packed.boxes b ON b.spent_tx_id = p.tx_id
-         JOIN packed.addr ad ON ad.id = b.addr_id
-         LEFT JOIN LATERAL (
-           SELECT x.token_id, x.amount FROM packed.box_assets x WHERE x.box_id = b.box_id OFFSET 0
-         ) ba ON true
-       UNION ALL
-       SELECT encode(p.tx_id, 'hex'), encode(b.box_id, 'hex'),
-              'out', ad.address, b.value_nano::text,
-              encode(ba.token_id, 'hex'), ba.amount::text
-         FROM p
-         JOIN packed.boxes b ON b.creation_tx_id = p.tx_id
-         JOIN packed.addr ad ON ad.id = b.addr_id
-         LEFT JOIN LATERAL (
-           SELECT x.token_id, x.amount FROM packed.box_assets x WHERE x.box_id = b.box_id OFFSET 0
-         ) ba ON true`,
-      [ids],
-      4000
-    ),
-    qSlow<{ id: string; fee: string }>(
-      `SELECT encode(id, 'hex') AS id, fee::text AS fee
-         FROM packed.transactions
-        WHERE id IN (SELECT decode(lower(x), 'hex') FROM unnest($1::text[]) AS x)`,
-      [ids],
-      4000
-    ),
-  ]);
-  if (!rows) return out;
-  type PartyBox = {
+  if (!ids.length || !address) return out;
+  const rows = await qSlow<{
+    tx_id: string;
+    side: string;
     address: string | null;
-    value: string;
-    assets: { tokenId: string; amount: string }[];
-  };
-  const bag = new Map<string, { inputs: Map<string, PartyBox>; outputs: Map<string, PartyBox> }>();
-  for (const id of ids) bag.set(id, { inputs: new Map(), outputs: new Map() });
+  }>(PARTY_PROBE_SQL, [ids, address, MINERS_FEE_ADDRESS], 4000);
+  if (!rows) return out;
+  for (const id of ids) out[id] = { from: [], to: [] };
   for (const row of rows) {
-    const slot = bag.get(row.tx_id);
-    if (!slot) continue;
-    const side = row.side === "in" ? slot.inputs : slot.outputs;
-    let box = side.get(row.box_id);
-    if (!box) {
-      box = { address: row.address, value: row.value_nano || "0", assets: [] };
-      side.set(row.box_id, box);
-    }
-    if (row.token_id) box.assets.push({ tokenId: row.token_id, amount: row.amount || "0" });
+    const slot = out[row.tx_id];
+    const who = row.address?.trim();
+    if (!slot || !who || who === address) continue;
+    const list = row.side === "in" ? slot.from : slot.to;
+    if (!list.includes(who)) list.push(who);
   }
-  const fees = new Map<string, bigint>();
-  for (const row of feeRows ?? []) fees.set(row.id, parseNanoErg(row.fee));
-  for (const [id, slot] of bag) {
-    const parties = netValueParties(
-      [...slot.inputs.values()],
-      [...slot.outputs.values()],
-      fees.get(id) ?? 0n
+  const unresolved = ids.filter((id) => !out[id]?.to.length);
+  if (unresolved.length) {
+    const gained = await qSlow<{ tx_id: string; address: string | null }>(
+      PARTY_GAIN_SQL,
+      [unresolved, address, MINERS_FEE_ADDRESS],
+      4000
     );
-    if (parties.from.length || parties.to.length) out[id] = parties;
+    for (const row of gained ?? []) {
+      const slot = out[row.tx_id];
+      const who = row.address?.trim();
+      if (!slot || !who || who === address || slot.to.includes(who)) continue;
+      if (slot.to.length >= 2) continue;
+      slot.to.push(who);
+    }
+  }
+  // Token-only counterparty (a pool spent and recreated with the same ERG).
+  for (const slot of Object.values(out)) {
+    if (!slot.to.length && slot.from.length) slot.to = [...slot.from];
   }
   return out;
 }

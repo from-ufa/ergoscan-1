@@ -1079,7 +1079,7 @@ export function registerChainRoutes(app: Express, deps: ChainDeps) {
         ? addressTxActivity(address, pageTxIds)
         : Promise.resolve({});
     const partiesP: Promise<Record<string, { from: string[]; to: string[] }>> =
-      pageTxIds.length > 0 ? addressTxParties(pageTxIds) : Promise.resolve({});
+      pageTxIds.length > 0 ? addressTxParties(address, pageTxIds) : Promise.resolve({});
     const [summary, idxBoxes, tokenBals, idxSt, activity, parties] = await Promise.all([
       summaryP,
       boxesP,
@@ -1177,11 +1177,25 @@ export function registerChainRoutes(app: Express, deps: ChainDeps) {
     > = {};
     for (const [tid, flow] of Object.entries({ ...activity, ...mempoolPack.activity })) {
       const side = parties[tid];
+      // Confirmed tape: one counterparty, or two so the column can say "many".
+      // Intra is this address alone — a refreshed script is not a party.
+      // Mempool rows already carry from/to.
+      const decided = flow.from != null || flow.to != null;
+      const from = decided
+        ? (flow.from ?? [])
+        : flow.kind === "sent" || flow.kind === "intra"
+          ? [address]
+          : (side?.from ?? []);
+      const to = decided
+        ? (flow.to ?? [])
+        : flow.kind === "received" || flow.kind === "intra"
+          ? [address]
+          : (side?.to ?? []);
       activityOut[tid] = {
         kind: flow.kind,
         erg: amountStr(flow.erg),
-        from: side?.from ?? flow.from ?? [],
-        to: side?.to ?? flow.to ?? [],
+        from,
+        to,
         tokens: flow.tokens.map((tok) => {
           const meta = metaMap.get(tok.tokenId);
           return {
