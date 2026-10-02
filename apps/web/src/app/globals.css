@@ -3112,19 +3112,19 @@ html[data-ink="day"] .mcap-vol {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  color: var(--party);
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
 }
 .addr-tx-mark svg {
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 18px !important;
+  height: 18px !important;
 }
 .addr-tx-mark:hover {
   color: var(--text);
 }
 .addr-party {
-  color: var(--party);
+  color: var(--accent);
 }
 .addr-multi {
   color: var(--muted);
@@ -3467,6 +3467,16 @@ html[data-ink="day"] .epoch-left {
   overflow: visible;
   display: block;
   color: inherit;
+}
+/* Dense catalog tiles only: CPU pins, pickaxe, and the script file fill the 24 box more than piggy / P2PK spirals. */
+.kpi-tile--dense .kpi-mark--cpu,
+.kpi-tile--dense .kpi-mark--pickaxe {
+  transform: scale(0.86);
+  transform-origin: center;
+}
+.kpi-tile--dense .kpi-mark--file-code {
+  transform: scale(0.9);
+  transform-origin: center;
 }
 
 .kpi-mark--tokens .kpi-coin,

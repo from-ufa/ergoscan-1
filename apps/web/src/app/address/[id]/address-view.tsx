@@ -8,7 +8,6 @@ import { Shell } from "@/components/Shell";
 import { AddressPageSkeleton } from "@/components/AddressPageSkeleton";
 import { AddressPip } from "@/components/AddressPip";
 import { AddrFactCard } from "@/components/AddrFactCard";
-import { IconTxSlip } from "@/components/nav-icons";
 import { AddressQr } from "@/components/AddressQr";
 import { FavKayolo } from "@/components/FavKayolo";
 import { ScanWait, useScanWait } from "@/components/ScanWait";
@@ -19,6 +18,7 @@ import {
   KpiMarkFootprints,
   KpiMarkScrollText,
   KpiMarkWalletMinimal,
+  KpiMarkWorkflow,
 } from "@/components/kpi-marks";
 import { KpiNum } from "@/components/KpiGrid";
 import { NftCard } from "@/components/NftCard";
@@ -39,6 +39,8 @@ import {
   formatScaledGlance,
   formatTs,
   nanoToUsd,
+  relAgeTone,
+  relAgeToneClass,
   shortId,
   toBigIntAmt,
   laterEpochMs,
@@ -1865,15 +1867,19 @@ function AddrParty({
   if (others.length === 1) {
     const head = others[0] ?? "";
     const party = describeParty(head);
-    const label = party.known || party.short || shortId(head, 6);
+    const name = party.known;
+    const label = name || party.short || shortId(head, 6);
     return (
       <Link
         href={`/address/${encodeURIComponent(head)}`}
         data-addr={head}
         title={head}
-        className="addr-party min-w-0 truncate font-mono text-[13px] leading-none hover:underline"
+        className={clsx(
+          "addr-party min-w-0 max-w-full text-[13px] leading-none hover:underline",
+          name ? "block w-full" : "truncate font-mono"
+        )}
       >
-        {label}
+        {name ? <NameMarquee text={name} /> : label}
       </Link>
     );
   }
@@ -1977,16 +1983,18 @@ function HistoryRow({
             title={String(tx.id)}
             aria-label={String(tx.id)}
           >
-            <IconTxSlip />
+            <KpiMarkWorkflow className="!h-[18px] !w-[18px]" />
           </Link>
           {tx.mempool ? (
             <span className="addr-pending-mark shrink-0">{t("address.pending")}</span>
           ) : null}
         </div>
         <div className="min-w-0 px-3 text-right">
-          <p className="tabular-nums text-[var(--text)]">{formatRelTime(tx.timestamp)}</p>
+          <p className={clsx("whitespace-nowrap tabular-nums", relAgeToneClass(relAgeTone(tx.timestamp)))}>
+            {formatRelTime(tx.timestamp)}
+          </p>
           {ms != null && (
-            <p className="mt-0.5 text-[12px] tabular-nums text-[var(--muted-2)]">
+            <p className="mt-0.5 whitespace-nowrap text-[12px] tabular-nums text-[var(--muted-2)]">
               {formatFactWhen(ms, locale)}
             </p>
           )}
@@ -2247,21 +2255,21 @@ function FlowMark({ kind }: { kind?: AddrFlowKind }) {
         ? "text-[var(--down)]"
         : "text-[var(--muted)]";
   return (
-    <span className={clsx("flex h-7 w-7 shrink-0 items-center justify-center", tone)} aria-hidden>
+    <span className={clsx("flex h-[18px] w-[18px] shrink-0 items-center justify-center", tone)} aria-hidden>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
         {kind === "sent" ? (
           <>
             <path
               d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.65"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d="M16 17l5-5-5-5M21 12H9"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.65"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -2271,14 +2279,14 @@ function FlowMark({ kind }: { kind?: AddrFlowKind }) {
             <path
               d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.65"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d="M10 17l5-5-5-5M15 12H3"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.65"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -2288,21 +2296,21 @@ function FlowMark({ kind }: { kind?: AddrFlowKind }) {
             <path
               d="M8 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.65"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d="M16 5h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.65"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d="M9 9h6.5M13.3 6.7 15.5 9l-2.2 2.3M15 15H8.5M10.7 12.7 8.5 15l2.2 2.3"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.65"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -2311,7 +2319,7 @@ function FlowMark({ kind }: { kind?: AddrFlowKind }) {
           <path
             d="M4 12h6M8 9l-3 3 3 3M20 12h-6M16 9l3 3-3 3"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.65"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -2335,7 +2343,7 @@ function AddressNameSource({
 }) {
   if (name) {
     return (
-      <p className="mt-1 min-w-0 truncate text-[11px] leading-[1.2] text-[var(--muted-2)]">
+      <p className="mt-1 min-w-0 -mr-[calc(2.75rem+0.5rem)] whitespace-nowrap text-[11px] leading-[1.2] text-[var(--muted-2)]">
         {t(name.by === "project" ? "address.nameByProject" : "address.nameByErgoscan")}
         {" · "}
         <a href={name.fileUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline">
