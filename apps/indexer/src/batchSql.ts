@@ -299,7 +299,8 @@ export async function bumpTokensForBoxes(
                   FROM unnest($1::text[]) AS x
                  WHERE x ~ '^[0-9a-fA-F]{64}$'
               )
-          AND a.token_id = packed.hex32(t.token_id)`,
+          -- On tokens' text PK: hex32(t.token_id) walked all 140k tokens per block.
+          AND t.token_id = encode(a.token_id, 'hex')`,
       [ids, height]
     );
     return;

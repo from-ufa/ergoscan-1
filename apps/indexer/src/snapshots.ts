@@ -1274,12 +1274,24 @@ let priceCache: { at: number; usd: Map<string, number> } | null = null;
 
 async function pricedTokenUsd(pool: Pool): Promise<Map<string, number>> {
   if (priceCache && Date.now() - priceCache.at < PRICE_EVERY_MS) return priceCache.usd;
+  // Latest priced tick per token, skipping along the (token_id, ts_ms) key. DISTINCT ON sorted the
+  // whole 14-day table on disk (1.3M rows, 136 MB temp) to keep about 120 rows.
   const r = await pool.query<{ token_id: string; price_usd: string }>(
-    `SELECT DISTINCT ON (token_id) lower(token_id) AS token_id, price_usd::text AS price_usd
-       FROM defi.price_tick
-      WHERE price_usd IS NOT NULL AND price_usd > 0
-        AND token_id ~ '^[0-9a-fA-F]{64}$'
-      ORDER BY token_id, ts_ms DESC`
+    `WITH RECURSIVE t AS (
+       (SELECT token_id FROM defi.price_tick ORDER BY token_id LIMIT 1)
+       UNION ALL
+       SELECT (SELECT p.token_id FROM defi.price_tick p
+                WHERE p.token_id > t.token_id ORDER BY p.token_id LIMIT 1)
+         FROM t WHERE t.token_id IS NOT NULL
+     )
+     SELECT lower(t.token_id) AS token_id, l.price_usd::text AS price_usd
+       FROM t
+       CROSS JOIN LATERAL (
+         SELECT p.price_usd FROM defi.price_tick p
+          WHERE p.token_id = t.token_id AND p.price_usd IS NOT NULL AND p.price_usd > 0
+          ORDER BY p.ts_ms DESC LIMIT 1
+       ) l
+      WHERE t.token_id IS NOT NULL AND t.token_id ~ '^[0-9a-fA-F]{64}$'`
   );
   const usd = new Map<string, number>();
   for (const row of r.rows) {
@@ -1322,7 +1334,11 @@ async function readRentDanger(
               encode(a.token_id, 'hex') AS token_id,
               a.amount::text AS amount
          FROM packed.boxes b
-         JOIN packed.box_assets a ON a.box_id = b.box_id
+         -- Per window box by box_id. OFFSET 0 and the token test outside keep the planner from
+         -- reading every box_assets row of 100+ priced tokens (14M rows, 15 s) or probing per token.
+         CROSS JOIN LATERAL (
+           SELECT x.token_id, x.amount FROM packed.box_assets x WHERE x.box_id = b.box_id OFFSET 0
+         ) a
         WHERE b.spent_tx_id IS NULL
           AND b.creation_height IS NOT NULL
           AND b.creation_height > $1
@@ -1831,6 +1847,8 @@ async function writeRentSnapshot(pool: Pool, tip: number): Promise<void> {
  */
 const SAME_TIP_LIST_MS = Math.max(0, Number(process.env.SAME_TIP_LIST_MS ?? 30_000) || 0);
 let lastListSnap: { key: string; at: number } | null = null;
+const BLOCK_VALUE_FILL_REST_MS = 24 * 3600 * 1000;
+let blockValueFillIdleAt = 0;
 
 export async function writeListSnapshots(
   pool: Pool,
@@ -1855,23 +1873,27 @@ export async function writeListSnapshots(
   const extrasP = resolveCgMarketExtras(pool, tip);
 
   // One-shot fill for heights indexed before fee_nano/value_nano existed. After that, indexHeight writes the row.
-  await pool.query(
-    `UPDATE packed.blocks b
-     SET fee_nano = COALESCE(s.fee, 0),
-         value_nano = COALESCE(s.val, 0)
-     FROM (
-       SELECT t.height,
-              SUM(t.fee) AS fee,
-              SUM(t.value_nano) AS val
-       FROM packed.transactions t
-       WHERE t.height IN (
-         SELECT height FROM packed.blocks WHERE value_nano = 0 ORDER BY height DESC LIMIT $1
-       )
-       GROUP BY t.height
-     ) s
-     WHERE b.height = s.height`,
-    [BLOCKS_N]
-  );
+  // An empty probe still walks every block (0.7 s), so it rests a day after finding nothing.
+  if (Date.now() - blockValueFillIdleAt >= BLOCK_VALUE_FILL_REST_MS) {
+    const filled = await pool.query(
+      `UPDATE packed.blocks b
+       SET fee_nano = COALESCE(s.fee, 0),
+           value_nano = COALESCE(s.val, 0)
+       FROM (
+         SELECT t.height,
+                SUM(t.fee) AS fee,
+                SUM(t.value_nano) AS val
+         FROM packed.transactions t
+         WHERE t.height IN (
+           SELECT height FROM packed.blocks WHERE value_nano = 0 ORDER BY height DESC LIMIT $1
+         )
+         GROUP BY t.height
+       ) s
+       WHERE b.height = s.height`,
+      [BLOCKS_N]
+    );
+    blockValueFillIdleAt = filled.rowCount ? 0 : Date.now();
+  }
 
   const blocksRes = await pool.query<BlockRow>(
     `SELECT encode(id, 'hex') AS id, height, timestamp_ms AS timestamp, COALESCE(size, 0) AS size,
