@@ -1398,12 +1398,36 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Names: name | address | source | txs | ERG | last. Phone keeps name + ERG; lg sits on the 6 tiles above. */
 .addr-lane.book-lane {
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+.addr-lane.book-lane > * {
+  display: flex;
+}
+.addr-lane.book-lane > .book-addr,
+.addr-lane.book-lane > .book-src,
+.addr-lane.book-lane > .book-txs,
+.addr-lane.book-lane > .book-last {
+  display: none;
+}
+@media (min-width: 640px) {
+  .addr-lane.book-lane {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) max-content max-content;
+  }
+  .addr-lane.book-lane > .book-addr,
+  .addr-lane.book-lane > .book-last {
+    display: flex;
+  }
 }
 @media (min-width: 1024px) {
   .addr-lane.book-lane {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    column-gap: 0.5rem;
+  }
+  .addr-lane.book-lane > .book-src,
+  .addr-lane.book-lane > .book-txs {
+    display: flex;
   }
 }
 @media (min-width: 1024px) {

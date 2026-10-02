@@ -556,6 +556,18 @@ export const DOCS_ROUTES: DocsRoute[] = [
     },
   },
   {
+    id: "names-stats",
+    tab: "chain",
+    method: "GET",
+    path: "/names/stats",
+    source: "index",
+    title: { en: "Named address stats", ru: "Сводка по адресам с именами" },
+    blurb: {
+      en: "Balance (nanoERG), tokenCount, txCount and lastTs of every address in /names/book, with the project, who named it and the registry file. Cached a minute.",
+      ru: "Баланс (nanoERG), tokenCount, txCount и lastTs каждого адреса из /names/book, с проектом, кто дал имя и файлом реестра. Кэш минута.",
+    },
+  },
+  {
     id: "names-book",
     tab: "chain",
     method: "GET",

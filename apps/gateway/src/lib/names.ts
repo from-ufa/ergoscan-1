@@ -93,6 +93,59 @@ export async function addressName(address: string): Promise<AddressName | null> 
   return tpl[0] ? nameFromRow(tpl[0]) : null;
 }
 
+export type NameStats = {
+  address: string;
+  nanoerg: string | null;
+  tokenCount: number | null;
+  txCount: number | null;
+  lastTs: number | null;
+  project: string;
+  by: "project" | "ergoscan";
+  fileUrl: string;
+};
+
+let statsCache: { at: number; items: NameStats[] } | null = null;
+
+/** Balance and activity of every named address: one join over ~150 primary keys, cached a minute. */
+export async function namesStats(): Promise<NameStats[] | null> {
+  if (statsCache && Date.now() - statsCache.at < BOOK_TTL_MS) return statsCache.items;
+  const pool = getIndexPool();
+  if (!pool) return statsCache?.items ?? null;
+  try {
+    const r = await pool.query<{
+      address: string;
+      nanoerg: string | null;
+      token_count: number | null;
+      tx_count: number | null;
+      last_ts: string | null;
+      project_name: string;
+      by_whom: string;
+      file: string;
+    }>(
+      `SELECT n.address, s.nanoerg::text AS nanoerg, s.token_count, s.tx_count,
+              b.timestamp_ms::text AS last_ts, r.project_name, r.by_whom, r.file
+         FROM names_address n
+         JOIN names_registry r ON r.match_kind = n.match_kind AND r.match_value = n.match_value
+         LEFT JOIN address_summary s ON s.address = n.address
+         LEFT JOIN packed.blocks b ON b.height = s.last_height`
+    );
+    const items = r.rows.map((x) => ({
+      address: x.address,
+      nanoerg: x.nanoerg,
+      tokenCount: x.token_count,
+      txCount: x.tx_count,
+      lastTs: x.last_ts == null ? null : Number(x.last_ts),
+      project: x.project_name,
+      by: x.by_whom === "project" ? ("project" as const) : ("ergoscan" as const),
+      fileUrl: registryFileUrl(x.file),
+    }));
+    statsCache = { at: Date.now(), items };
+    return items;
+  } catch {
+    return statsCache?.items ?? null;
+  }
+}
+
 export type NamesBook = {
   commit: string | null;
   syncedAt: string | null;
