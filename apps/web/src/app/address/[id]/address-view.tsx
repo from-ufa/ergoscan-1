@@ -1880,10 +1880,11 @@ function AddrParty({
         title={head}
         className={clsx(
           "addr-party min-w-0 max-w-full text-[13px] leading-none hover:underline",
-          name ? "block w-full" : "truncate font-mono"
+          name ? "block w-full" : "truncate font-mono",
+          side === "to" && "text-right"
         )}
       >
-        {name ? <NameMarquee text={name} /> : label}
+        {name ? <NameMarquee text={name} className={side === "to" ? "text-right" : undefined} /> : label}
       </Link>
     );
   }

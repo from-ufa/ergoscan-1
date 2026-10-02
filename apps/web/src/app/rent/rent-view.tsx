@@ -323,6 +323,10 @@ export function RentView({
   }, [packKey]);
 
   useKeepFresh(() => {
+    if (pane === "history") {
+      markSynced();
+      return;
+    }
     loadRef.current(true);
   });
 
@@ -746,6 +750,10 @@ function toChartPts(rows: readonly RentSeriesPoint[]) {
   }));
 }
 
+function rentSeriesSig(rows?: readonly RentSeriesPoint[]) {
+  return (rows ?? []).map((p) => `${p.t}:${p.boxes}:${p.rentNano}`).join("|");
+}
+
 function dropOpenDay(points: RentSeriesPoint[], now: number) {
   if (points.length < 2) return points;
   const last = points[points.length - 1]!;
@@ -760,6 +768,9 @@ function yearCaption(points: { t: number }[], locale: string): string | null {
   return locale === "ru" ? `${span.lo}–${span.hi}` : `${span.lo} – ${span.hi}`;
 }
 
+const NO_AHEAD: RentSeriesPoint[] = [];
+const NO_CHART_PTS: { t: number; boxes: number; rentErg: number }[] = [];
+
 function RentCollectedChart({
   enter,
   daily,
@@ -773,16 +784,18 @@ function RentCollectedChart({
   locale: string;
   t: (k: string) => string;
 }) {
-  const now = useMemo(() => Date.now(), [daily, series]);
-  const source = daily && daily.length >= 2 ? daily : series ?? [];
+  const sourceKey = daily && daily.length >= 2 ? rentSeriesSig(daily) : rentSeriesSig(series);
   const past = useMemo(() => {
+    const source = daily && daily.length >= 2 ? daily : series ?? [];
+    const now = Date.now();
     const rolled = fillRentRangeGaps(rollupRentSeries(source, "day"), "day");
     return dropOpenDay(
       rolled.filter((p) => p.t <= now),
       now
     );
-  }, [source, now]);
-  const ahead: RentSeriesPoint[] = [];
+    // sourceKey is the closed daily bins; skip rebuild on a same-content tip bump.
+  }, [sourceKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pastPts = useMemo(() => toChartPts(past), [past]);
   const last = past.length ? past[past.length - 1] : null;
   const show = past.length >= 2;
   const years = yearCaption(past, locale);
@@ -813,7 +826,7 @@ function RentCollectedChart({
                 <span className="h-2 w-2 rounded-full" style={{ background: ERG_LINE }} />
                 {t("rent.chartErg")}
               </span>
-              {ahead.length > 0 && (
+              {NO_AHEAD.length > 0 && (
                 <span className="inline-flex items-center gap-1.5">
                   <span
                     className="h-0 w-3 border-t-[1.5px] border-dashed"
@@ -838,10 +851,8 @@ function RentCollectedChart({
         {show ? (
           <div className="min-h-0 flex-1 max-lg:min-h-[168px]">
             <RentHistoryChart
-              past={toChartPts(past)}
-              ahead={toChartPts(ahead)}
-              nowMs={now}
-              nowLabel={t("rent.chartNow")}
+              past={pastPts}
+              ahead={NO_CHART_PTS}
               nameBoxes={t("rent.chartBoxes")}
               nameErg={t("rent.chartErg")}
               nameAhead={t("rent.chartAhead")}

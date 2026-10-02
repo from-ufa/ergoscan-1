@@ -16,7 +16,6 @@ import {
   RENT_SERIES_DAY_MS,
   mixRentExtent,
   rentChartCut,
-  rentChartFutureMs,
   rentPadExtent,
   rentWindowExtent,
 } from "@ergoscan/shared";
@@ -117,8 +116,6 @@ function yClose(
 export function RentHistoryChart({
   past,
   ahead = [],
-  nowMs,
-  nowLabel,
   nameErg,
   nameAhead,
   nameBoxes,
@@ -128,8 +125,6 @@ export function RentHistoryChart({
 }: {
   past: RentChartPoint[];
   ahead?: RentChartPoint[];
-  nowMs: number;
-  nowLabel: string;
   nameErg: string;
   nameAhead: string;
   nameBoxes: string;
@@ -141,15 +136,16 @@ export function RentHistoryChart({
   const chart = useRef<echarts.ECharts | null>(null);
   const fmtBoxes = useRef(formatBoxes);
   const fmtErg = useRef(formatErg);
-  const labels = useRef({ nameErg, nameAhead, nameBoxes, nowLabel });
+  const labels = useRef({ nameErg, nameAhead, nameBoxes });
   const loc = useRef(locale);
   const win = useRef({ start: 0, end: 0, min: 0, max: 0 });
   const yPainted = useRef({ min: 0, max: 1 });
   const yTarget = useRef({ min: 0, max: 1 });
   const series = useRef({ past, ahead });
+  const paintedSig = useRef("");
   fmtBoxes.current = formatBoxes;
   fmtErg.current = formatErg;
-  labels.current = { nameErg, nameAhead, nameBoxes, nowLabel };
+  labels.current = { nameErg, nameAhead, nameBoxes };
   loc.current = locale;
   const ink = useInk();
   series.current = { past, ahead };
@@ -301,27 +297,30 @@ export function RentHistoryChart({
     const chrome = chartChrome();
     if (past.length < 2) {
       c.clear();
+      paintedSig.current = "";
       return;
     }
     const tMin = Math.min(past[0]!.t, ahead[0]?.t ?? past[0]!.t);
-    const now = Number.isFinite(nowMs) ? nowMs : Date.now();
-    const peekAhead = ahead.some((p) => Number.isFinite(p.t));
-    const horizon = peekAhead ? now + rentChartFutureMs("day") : now;
-    const cut = rentChartCut("day", tMin, horizon, now);
-    const end = peekAhead ? cut.end : now;
-    win.current = { start: cut.start, end, min: tMin, max: end };
+    const peek = ahead.filter((p) => Number.isFinite(p.t));
+    const lastPast = past[past.length - 1]!;
+    const lastT = peek.length ? peek[peek.length - 1]!.t : lastPast.t;
+    const cut = rentChartCut("day", tMin, lastT, lastT);
+    const end = lastT;
+    const start = Math.min(cut.start, end);
+    const sig = `${ink}:${locale}:${past.map((p) => `${p.t}:${p.rentErg}`).join(",")}|${peek.map((p) => `${p.t}:${p.rentErg}`).join(",")}`;
+    if (paintedSig.current === sig) return;
+    paintedSig.current = sig;
+    win.current = { start, end, min: tMin, max: end };
     const reduced =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const peek = ahead.filter((p) => Number.isFinite(p.t));
-    const xTicks = utcTicks(cut.start, end);
+    const xTicks = utcTicks(start, end);
     const pastErg = past.map((p) => [p.t, p.rentErg] as [number, number]);
     const peekErg = peek.map((p) => [p.t, p.rentErg] as [number, number]);
-    const lastPast = past[past.length - 1]!;
     const firstPeek = peek[0];
     const tips: [number, number][] = [[lastPast.t, lastPast.rentErg]];
     if (firstPeek) tips.push([firstPeek.t, firstPeek.rentErg]);
-    const y = fitY(cut.start, end);
+    const y = fitY(start, end);
     yTarget.current = y;
     yPainted.current = y;
     c.setOption(
@@ -330,13 +329,13 @@ export function RentHistoryChart({
         animationDuration: reduced ? 0 : 480,
         animationDurationUpdate: 0,
         animationEasing: "cubicOut",
-        grid: { top: 12, right: 12, bottom: 28, left: 48 },
+        grid: { top: 8, right: 8, bottom: 24, left: 48 },
         dataZoom: [
           {
             type: "inside",
             xAxisIndex: 0,
             filterMode: "none",
-            startValue: cut.start,
+            startValue: start,
             endValue: end,
             zoomLock: true,
             moveOnMouseMove: false,
@@ -377,7 +376,7 @@ export function RentHistoryChart({
           type: "time",
           min: tMin,
           max: end,
-          boundaryGap: ["2%", "2%"],
+          boundaryGap: false,
           axisLine: { show: false },
           axisTick: { show: false },
           splitLine: { show: false },
@@ -415,29 +414,6 @@ export function RentHistoryChart({
             lineStyle: { width: 2.6, color: ERG, cap: "round", join: "round" },
             itemStyle: { color: ERG },
             emphasis: { scale: true, lineStyle: { width: 2.8 } },
-            markLine: {
-              silent: true,
-              symbol: "none",
-              label: {
-                show: true,
-                formatter: labels.current.nowLabel,
-                color: chrome.muted,
-                fontSize: 11,
-                position: "insideEndTop" as const,
-              },
-              lineStyle: { color: chrome.hair, width: 1, type: "solid" as const },
-              data: [{ xAxis: now }],
-              animation: !reduced,
-            },
-            ...(peekAhead
-              ? {
-                  markArea: {
-                    silent: true,
-                    itemStyle: { color: chrome.wash },
-                    data: [[{ xAxis: now }, { xAxis: end }]],
-                  },
-                }
-              : {}),
           },
           ...(peek.length > 0
             ? [
@@ -468,7 +444,7 @@ export function RentHistoryChart({
       },
       { notMerge: true }
     );
-  }, [past, ahead, nowMs, locale, ink]);
+  }, [past, ahead, locale, ink]);
 
   return (
     <div

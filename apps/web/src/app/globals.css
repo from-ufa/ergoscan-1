@@ -2276,6 +2276,9 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   display: inline-flex;
   max-width: 100%;
 }
+.name-marquee.text-right:not(.is-overflow) .name-marquee-track {
+  margin-left: auto;
+}
 .name-marquee.is-overflow .name-marquee-track {
   max-width: none;
   animation: name-marquee var(--marquee-s, 9s) linear infinite;
