@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { AGEUSD_BANK_V2_NFT } from "./ageusd.js";
-import { ERG_USD_ORACLE_NFT } from "./registers.js";
+import { ORACLE_FEEDS } from "./oracle-pools.js";
+import { ERG_USD_ORACLE_NFT, ERGUSD_PT, GOLD_POOL_ORACLE_TOKENS, ORACLE_POOL_NFTS } from "./registers.js";
 import { MINERS_FEE_ADDRESS } from "./tx-shape.js";
 import {
   LOCK_BY_ADDRESS,
@@ -61,6 +62,21 @@ test("oracle NFT names the box", () => {
     assets: [{ tokenId: ERG_USD_ORACLE_NFT, amount: "1" }],
   });
   assert.equal(t?.id, "oracle");
+});
+
+test("every oracle feed pool NFT and oracle token marks the tx as oracle", () => {
+  for (const def of Object.values(ORACLE_FEEDS)) {
+    for (const id of [def.poolNft, def.oracleToken]) {
+      assert.ok(ORACLE_POOL_NFTS.includes(id), `${def.slug} ${id}`);
+    }
+  }
+});
+
+test("gold seats of every token generation and USD v1 datapoints are oracle", () => {
+  for (const tokenId of [...GOLD_POOL_ORACLE_TOKENS, ERGUSD_PT]) {
+    const t = classifyBoxLock({ address: leftover.address, assets: [{ tokenId, amount: "1" }] });
+    assert.equal(t?.id, "oracle", tokenId);
+  }
 });
 
 test("AgeUSD bank NFT is sigmausd even if registry lists it as a pool", () => {

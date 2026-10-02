@@ -66,6 +66,16 @@ test("directory filters by kind and name query", () => {
   assert.equal(rosen[0]?.name, "Rosen Cold");
 });
 
+test("oracle datapoint contracts share a prefix but carry their own pool names", () => {
+  const usd = listBookEntries({ q: "USD v2 Oracle Datapoints" })[0];
+  const gold = listBookEntries({ q: "XAU/ERG Oracle Datapoints" })[0];
+  assert.ok(usd && gold);
+  assert.notEqual(usd.address, gold.address);
+  assert.equal(usd.address.slice(0, 14), gold.address.slice(0, 14));
+  assert.equal(lookupAddress(usd.address)?.kind, "contract");
+  assert.equal(lookupAddress(gold.address)?.name, "XAU/ERG Oracle Datapoints");
+});
+
 test("book kind tiles count named entries only", () => {
   const n = countBookKinds();
   assert.equal(n.all, n.protocol + n.exchange + n.pool + n.contract + n.wallet);

@@ -20,14 +20,37 @@ export const ERG_USD_ORACLE_NFTS = [ERG_USD_ORACLE_NFT, ERG_USD_ORACLE_NFT_V1];
 /** USD Pool oracle token — EIP-4 name on the mint, same family as EIP-23. */
 export const USD_POOL_ORACLE_NFT =
   "74fa4aee3607ceb7bdefd51a856861b5dbfa434a8f6c93bfe967de8ed1a30a78";
+/** USD v2 pool NFT (explorer slug erg-usd). */
+export const USD_POOL_NFT =
+  "6a2b821b5727e85beb5e78b4efb9f0250d59cd48481d2ded2c23e91ba1d07c66";
 /** MORACLE pool oracle NFT — EIP-4 name on the mint. */
 export const MORACLE_NFT =
   "e5abaf1f0a9442123104cdf4d2d56ddd8065803e842bc6d433e712601133a9bc";
+/** MORACLE pool NFT (MPOOL). */
+export const MORACLE_POOL_NFT =
+  "f7f008ad8fcaad4490d8e78ab6d3f11efe7213a13f7b243795818b155e1acc92";
+/** XAU/ERG pool NFT (explorer slug xau-erg). */
+export const GOLD_POOL_NFT =
+  "3c45f29a5165b030fdb5eaf5d81f8108f9d8f507b31487dd51f4ae08fe07cf4a";
+/** XAU/ERG oracle tokens, newest first. Older seats still sit in the same oracle script. */
+export const GOLD_POOL_ORACLE_TOKENS = [
+  "78263e5613557e129f075f0a241287e09c4204be76ad53d77d6e7feebcccb001",
+  "a007e07a9d3c243e998efe1731e8be46b821109a37f1778d7e3f60ea61afeaaa",
+  "6183680b1c4caaf8ede8c60dc5128e38417bc5b656321388b22baa43a9d150c2",
+];
 
-/** Overlay matching. Price snapshots stay on `ERG_USD_ORACLE_NFTS` only. */
+/**
+ * Pool NFTs and oracle tokens of every oracle pool. Overlay matching and NFT list skip.
+ * Price snapshots stay on `ERG_USD_ORACLE_NFTS` only.
+ */
 export const ORACLE_POOL_NFTS = [
   ...ERG_USD_ORACLE_NFTS,
+  ERGUSD_PT,
+  USD_POOL_NFT,
   USD_POOL_ORACLE_NFT,
+  GOLD_POOL_NFT,
+  ...GOLD_POOL_ORACLE_TOKENS,
+  MORACLE_POOL_NFT,
   MORACLE_NFT,
 ];
 
