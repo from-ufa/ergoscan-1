@@ -13,6 +13,7 @@ import {
   classifyTxShape,
   classifyAddrFlow,
   eip4MintOfOutputs,
+  netValueParties,
   parseNanoErg,
   pickTxLock,
   type AddrFlowKind,
@@ -21,7 +22,6 @@ import {
   publicArtworkUrl,
   decodeSigmaConstantMap,
 } from "@ergoscan/shared";
-import { flowParties } from "../lib/flow-parties.js";
 import { laterTs } from "../lib/later-ts.js";
 import { pageLimit } from "../lib/page-limit.js";
 import { addressFromErgoTree, ergoTreeFromAddress, normErgoTree } from "../lib/ergoAddress.js";
@@ -241,9 +241,18 @@ function mempoolFlowForAddress(
     const hinted = hint?.address?.trim();
     return hinted || null;
   };
-  const parties = flowParties(
-    inputs.map((box) => ({ address: partyOf(box, hintFor(box)) })),
-    outputs.map((box) => ({ address: partyOf(box, hintFor(box)) }))
+  const asParty = (box: unknown, hint?: BoxLite) => {
+    const raw = box && typeof box === "object" ? (box as { value?: unknown; assets?: { tokenId?: string; amount?: unknown }[] }) : null;
+    return {
+      address: partyOf(box, hint),
+      value: hint?.value ?? raw?.value ?? null,
+      assets: raw?.assets ?? hint?.assets ?? [],
+    };
+  };
+  const parties = netValueParties(
+    inputs.map((box) => asParty(box, hintFor(box))),
+    outputs.map((box) => asParty(box, hintFor(box))),
+    fee
   );
   return {
     kind,

@@ -4,6 +4,7 @@
  * Not DEX: Spectrum is order tx then fill tx — kind is per-tx, not a swap label.
  * GET computes this. Not a column. Distinct from transactions.shape.
  */
+import { MINERS_FEE_ADDRESS } from "./tx-shape.js";
 
 export const ADDR_FLOW_RULES_VERSION = 2;
 
@@ -91,6 +92,74 @@ export type Eip4MintBox = {
     amount?: unknown;
   }>;
 };
+
+export type ValuePartyBox = {
+  address?: string | null;
+  value?: unknown;
+  assets?: Array<{ tokenId?: string | null; amount?: unknown }>;
+};
+
+const PARTY_CAP = 8;
+
+/**
+ * From/To by who actually lost or gained. A box spent and recreated at the same
+ * contract with the same assets is not a payment, so that contract is in neither list.
+ * Change that returns to the payer (the only loss is the fee) keeps the payer on both sides.
+ * The miners-fee contract is omitted; the fee is the amount column.
+ */
+export function netValueParties(
+  inputs: ValuePartyBox[],
+  outputs: ValuePartyBox[],
+  feeNano: bigint
+): { from: string[]; to: string[] } {
+  type Acc = { erg: bigint; tok: Map<string, bigint>; back: boolean };
+  const acc = new Map<string, Acc>();
+  const order: string[] = [];
+  const touch = (address: string): Acc => {
+    const row = acc.get(address);
+    if (row) return row;
+    const fresh: Acc = { erg: 0n, tok: new Map(), back: false };
+    acc.set(address, fresh);
+    order.push(address);
+    return fresh;
+  };
+  const leg = (boxes: ValuePartyBox[], sign: 1n | -1n) => {
+    for (const box of boxes) {
+      const address = box.address?.trim() ?? "";
+      if (!address || address === MINERS_FEE_ADDRESS) continue;
+      const row = touch(address);
+      row.erg += sign * parseNanoErg(box.value);
+      if (sign === 1n) row.back = true;
+      for (const asset of box.assets ?? []) {
+        const id = asset.tokenId?.trim().toLowerCase() ?? "";
+        if (!id || /^0+$/.test(id)) continue;
+        const qty = parseNanoErg(asset.amount);
+        if (qty === 0n) continue;
+        row.tok.set(id, (row.tok.get(id) ?? 0n) + sign * qty);
+      }
+    }
+  };
+  leg(inputs, -1n);
+  leg(outputs, 1n);
+  const fee = feeNano < 0n ? 0n : feeNano;
+  const from: string[] = [];
+  const to: string[] = [];
+  for (const address of order) {
+    const row = acc.get(address)!;
+    let lost = row.erg < 0n;
+    let gained = row.erg > 0n;
+    let tokenMove = false;
+    for (const qty of row.tok.values()) {
+      if (qty < 0n) lost = true;
+      else if (qty > 0n) gained = true;
+      if (qty !== 0n) tokenMove = true;
+    }
+    const change = row.back && !tokenMove && fee > 0n && row.erg === -fee;
+    if (lost && from.length < PARTY_CAP) from.push(address);
+    if ((gained || change) && to.length < PARTY_CAP) to.push(address);
+  }
+  return { from, to };
+}
 
 /** Ergo EIP-4: token id is the box id of the issuing output. */
 export function eip4MintOfOutputs(outputs: Eip4MintBox[]): Map<string, bigint> {

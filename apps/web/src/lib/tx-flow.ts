@@ -1,6 +1,7 @@
 import {
   classifyAddrFlow,
   eip4MintOfOutputs,
+  netValueParties,
   type AddrFlowKind,
 } from "@ergoscan/shared";
 import { toBigIntAmt } from "./format";
@@ -249,18 +250,6 @@ export function addressFlow(
       mint: mint.get(id) ?? 0n,
     })),
   });
-  const uniq = (rows: TxIo[], skipFee: boolean) => {
-    const out: string[] = [];
-    const seen = new Set<string>();
-    for (const row of rows) {
-      const a = row.address?.trim() ?? "";
-      if (!a || seen.has(a)) continue;
-      if (skipFee && isFeeAddress(a)) continue;
-      seen.add(a);
-      out.push(a);
-      if (out.length >= 8) break;
-    }
-    return out;
-  };
-  return { kind, erg: netErg, tokens, from: uniq(inputs, false), to: uniq(outputs, true) };
+  const parties = netValueParties(inputs, outputs, feeNano);
+  return { kind, erg: netErg, tokens, from: parties.from, to: parties.to };
 }

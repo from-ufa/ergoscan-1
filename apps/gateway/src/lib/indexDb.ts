@@ -12,6 +12,7 @@ import {
   eip4MediaFromRegs,
   eip4MintOfOutputs,
   eip4PreviewUrl,
+  netValueParties,
   isAgeUsdBankNft,
   isNftKind,
   minerFeeFromOutputs,
@@ -2983,52 +2984,82 @@ export async function addressTxActivity(
   return out;
 }
 
-/** From/to for one page of txs. Existing creation/spent indexes, 16 boxes a side, then capped. */
+/**
+ * From/To for one page of txs: who lost value and who gained it.
+ * A contract whose box is only refreshed (same assets back) is in neither list.
+ */
 export async function addressTxParties(
   txIds: string[]
 ): Promise<Record<string, { from: string[]; to: string[] }>> {
   const ids = [...new Set(txIds.filter(isHex64))];
   const out: Record<string, { from: string[]; to: string[] }> = {};
   if (!ids.length) return out;
-  const rows = await qSlow<{ tx_id: string; side: string; address: string | null }>(
-    `WITH p AS (
-       SELECT decode(lower(x), 'hex') AS tx_id
-         FROM unnest($1::text[]) AS x
-     )
-     SELECT encode(p.tx_id, 'hex') AS tx_id, s.side, s.address
-       FROM p
-       JOIN LATERAL (
-         SELECT 'to'::text AS side, ad.address
-           FROM packed.boxes b
-           JOIN packed.addr ad ON ad.id = b.addr_id
-          WHERE b.creation_tx_id = p.tx_id
-          LIMIT 16
-       ) s ON true
-     UNION ALL
-     SELECT encode(p.tx_id, 'hex') AS tx_id, s.side, s.address
-       FROM p
-       JOIN LATERAL (
-         SELECT 'from'::text AS side, ad.address
-           FROM packed.boxes b
-           JOIN packed.addr ad ON ad.id = b.addr_id
-          WHERE b.spent_tx_id = p.tx_id
-          LIMIT 16
-       ) s ON true`,
-    [ids],
-    4000
-  );
+  const [rows, feeRows] = await Promise.all([
+    qSlow<{
+      tx_id: string;
+      box_id: string;
+      side: string;
+      address: string | null;
+      value_nano: string;
+      token_id: string | null;
+      amount: string | null;
+    }>(
+      `WITH p AS (
+         SELECT decode(lower(x), 'hex') AS tx_id FROM unnest($1::text[]) AS x
+       )
+       SELECT encode(p.tx_id, 'hex') AS tx_id, encode(b.box_id, 'hex') AS box_id,
+              'in' AS side, ad.address, b.value_nano::text AS value_nano,
+              encode(ba.token_id, 'hex') AS token_id, ba.amount::text AS amount
+         FROM p
+         JOIN packed.boxes b ON b.spent_tx_id = p.tx_id
+         JOIN packed.addr ad ON ad.id = b.addr_id
+         LEFT JOIN packed.box_assets ba ON ba.box_id = b.box_id
+       UNION ALL
+       SELECT encode(p.tx_id, 'hex'), encode(b.box_id, 'hex'),
+              'out', ad.address, b.value_nano::text,
+              encode(ba.token_id, 'hex'), ba.amount::text
+         FROM p
+         JOIN packed.boxes b ON b.creation_tx_id = p.tx_id
+         JOIN packed.addr ad ON ad.id = b.addr_id
+         LEFT JOIN packed.box_assets ba ON ba.box_id = b.box_id`,
+      [ids],
+      4000
+    ),
+    qSlow<{ id: string; fee: string }>(
+      `SELECT encode(id, 'hex') AS id, fee::text AS fee
+         FROM packed.transactions
+        WHERE id IN (SELECT decode(lower(x), 'hex') FROM unnest($1::text[]) AS x)`,
+      [ids],
+      4000
+    ),
+  ]);
   if (!rows) return out;
-  const bag = new Map<string, { inputs: { address: string | null }[]; outputs: { address: string | null }[] }>();
-  for (const id of ids) bag.set(id, { inputs: [], outputs: [] });
+  type PartyBox = {
+    address: string | null;
+    value: string;
+    assets: { tokenId: string; amount: string }[];
+  };
+  const bag = new Map<string, { inputs: Map<string, PartyBox>; outputs: Map<string, PartyBox> }>();
+  for (const id of ids) bag.set(id, { inputs: new Map(), outputs: new Map() });
   for (const row of rows) {
     const slot = bag.get(row.tx_id);
     if (!slot) continue;
-    const party = { address: row.address };
-    if (row.side === "from") slot.inputs.push(party);
-    else slot.outputs.push(party);
+    const side = row.side === "in" ? slot.inputs : slot.outputs;
+    let box = side.get(row.box_id);
+    if (!box) {
+      box = { address: row.address, value: row.value_nano || "0", assets: [] };
+      side.set(row.box_id, box);
+    }
+    if (row.token_id) box.assets.push({ tokenId: row.token_id, amount: row.amount || "0" });
   }
+  const fees = new Map<string, bigint>();
+  for (const row of feeRows ?? []) fees.set(row.id, parseNanoErg(row.fee));
   for (const [id, slot] of bag) {
-    const parties = flowParties(slot.inputs, slot.outputs);
+    const parties = netValueParties(
+      [...slot.inputs.values()],
+      [...slot.outputs.values()],
+      fees.get(id) ?? 0n
+    );
     if (parties.from.length || parties.to.length) out[id] = parties;
   }
   return out;
