@@ -3,9 +3,18 @@ import { test } from "node:test";
 import {
   absorbPoolBox,
   classifyPoolTvlBox,
+  keepWithdrawn,
   nextSnapTvl,
   poolNeedsNftTvl,
 } from "./ranks-tvl.js";
+
+test("keepWithdrawn rests a withdrawn pool, then walks it again; forceNft always walks", () => {
+  const rest = 15 * 60_000;
+  assert.equal(keepWithdrawn(undefined, 1_000_000, rest), false);
+  assert.equal(keepWithdrawn(1_000_000, 1_000_000 + rest - 1, rest), true);
+  assert.equal(keepWithdrawn(1_000_000, 1_000_000 + rest, rest), false);
+  assert.equal(keepWithdrawn(1_000_000, 1_000_001, rest, true), false);
+});
 
 test("nextSnapTvl keeps the previous snap when the box is missing", () => {
   assert.equal(nextSnapTvl(0, false, 412), 412);

@@ -109,3 +109,17 @@ export function poolNeedsNftTvl(input: {
   if (input.hadLastSwap) return true;
   return input.prevTvl > 0 || input.volumeErg > 0;
 }
+
+/**
+ * A pool whose newest token box was a wallet stays withdrawn for `restMs` without a new NFT walk.
+ * Those walks were 90% of the TVL work (pool tokens copied into dozens of wallets); a new swap
+ * still revives the pool through the last-fill pass, which runs every cycle.
+ */
+export function keepWithdrawn(
+  withdrawnAt: number | undefined,
+  now: number,
+  restMs: number,
+  forceNft?: boolean
+): boolean {
+  return !forceNft && withdrawnAt != null && now - withdrawnAt < restMs;
+}

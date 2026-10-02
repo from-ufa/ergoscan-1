@@ -11,7 +11,7 @@ import {
   sqlNotAgeUsdBankPool,
 } from "@ergoscan/shared";
 import type { Db } from "./db.js";
-import { absorbPoolBox, poolNeedsNftTvl, type PoolBox, type PoolBoxRow } from "./ranks-tvl.js";
+import { absorbPoolBox, keepWithdrawn, poolNeedsNftTvl, type PoolBox, type PoolBoxRow } from "./ranks-tvl.js";
 import { T2T_VENUE } from "./t2t-registry.js";
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -26,6 +26,9 @@ const TVL_TIMEOUT_MS = Math.max(
   Number(process.env.RANKS_TVL_TIMEOUT_MS || 4_000) || 4_000
 );
 const LAST_SWAP_TVL_TIMEOUT_MS = Math.max(TVL_TIMEOUT_MS, 8_000);
+const WITHDRAWN_REST_MS = 15 * 60_000;
+/** Pool id → when its NFT walk last found the newest token box in a wallet. */
+const withdrawnAt = new Map<string, number>();
 const POOL_TICK_KEEP_MS = 14 * 24 * 3600 * 1000;
 const POOL_TICK_STEP_MS = 3600 * 1000;
 
@@ -182,17 +185,26 @@ async function loadPoolBoxes(
       console.warn(JSON.stringify({ type: "tvl_last_swap_skip", err: String(e) }));
     }
 
-    const missing = pools.filter(
-      (p) =>
-        !withdrawn.has(p.poolId) &&
-        (p.forceNft ||
-          poolNeedsNftTvl({
-            hadBox: best.has(p.poolId),
-            hadLastSwap: hadLastSwap.has(p.poolId),
-            prevTvl: p.prevTvl,
-            volumeErg: p.volumeErg,
-          }))
-    );
+    const now = Date.now();
+    for (const p of pools) if (best.has(p.poolId)) withdrawnAt.delete(p.poolId);
+    const missing: PoolBoxAsk[] = [];
+    for (const p of pools) {
+      if (withdrawn.has(p.poolId)) continue;
+      const needsWalk =
+        p.forceNft ||
+        poolNeedsNftTvl({
+          hadBox: best.has(p.poolId),
+          hadLastSwap: hadLastSwap.has(p.poolId),
+          prevTvl: p.prevTvl,
+          volumeErg: p.volumeErg,
+        });
+      if (!needsWalk) continue;
+      if (keepWithdrawn(withdrawnAt.get(p.poolId), now, WITHDRAWN_REST_MS, p.forceNft)) {
+        withdrawn.add(p.poolId);
+        continue;
+      }
+      missing.push(p);
+    }
     for (let i = 0; i < missing.length; i += NFT_TVL_CHUNK) {
       const chunk = missing.slice(i, i + NFT_TVL_CHUNK);
       try {
@@ -228,6 +240,10 @@ async function loadPoolBoxes(
         for (const row of tvl.rows) {
           const ask = byId.get(String(row.pool_id || "").toLowerCase());
           takeTvlBox(best, withdrawn, row, ask?.allowZeroNano ?? false);
+        }
+        for (const p of chunk) {
+          if (withdrawn.has(p.poolId)) withdrawnAt.set(p.poolId, now);
+          else withdrawnAt.delete(p.poolId);
         }
       } catch (e) {
         try {
