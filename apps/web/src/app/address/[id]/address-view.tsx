@@ -1347,11 +1347,14 @@ export function AddressView({
                         <span>{t("address.colFrom")}</span>
                         <span className="justify-end">{t("address.colTo")}</span>
                       </div>
-                      <div className="block-lane-pair">
+                      <div className="addr-tail">
                         <span>{t("address.colTx")}</span>
-                        <span className="justify-end">{t("address.colTime")}</span>
+                        <div className="addr-when-pair">
+                          <span className="justify-end">{t("tx.fee")}</span>
+                          <span className="justify-end tabular-nums">{t("address.colHeight")}</span>
+                          <span className="justify-end">{t("address.colTime")}</span>
+                        </div>
                       </div>
-                      <div className="min-w-0 justify-end tabular-nums">{t("address.colHeight")}</div>
                     </div>
                     {tapeRows.map((tx) => (
                       <HistoryRow
@@ -1976,7 +1979,7 @@ function HistoryRow({
           />
         </div>
       </div>
-      <div className="block-lane-pair">
+      <div className="addr-tail">
         <div className="flex min-w-0 items-center px-3">
           <Link
             href={`/tx/${tx.id}`}
@@ -1990,32 +1993,41 @@ function HistoryRow({
             <span className="addr-pending-mark shrink-0">{t("address.pending")}</span>
           ) : null}
         </div>
-        <div className="min-w-0 px-3 text-right">
-          <p className={clsx("whitespace-nowrap tabular-nums", relAgeToneClass(relAgeTone(tx.timestamp)))}>
-            {formatRelTime(tx.timestamp)}
-          </p>
-          {ms != null && (
-            <p className="mt-0.5 whitespace-nowrap text-[12px] tabular-nums text-[var(--muted-2)]">
-              {formatFactWhen(ms, locale)}
+        <div className="addr-when-pair">
+          <div className="px-3 text-right">
+            {tx.fee == null || tx.fee === "" ? (
+              <span className="text-[var(--muted)]">—</span>
+            ) : (
+              <ErgFigure nano={toBigIntAmt(tx.fee)} locale={locale} size="sm" />
+            )}
+          </div>
+          <div className="px-3 text-right">
+            {tx.mempool ? (
+              <span className="addr-pending-mark" title={t("address.inMempool")}>
+                {t("address.inMempool")}
+              </span>
+            ) : tx.inclusionHeight != null ? (
+              <Link
+                href={`/block/${tx.inclusionHeight}`}
+                className="tabular-nums text-accent hover:underline"
+              >
+                {tx.inclusionHeight.toLocaleString(loc(locale))}
+              </Link>
+            ) : (
+              <span className="text-[var(--muted)]">—</span>
+            )}
+          </div>
+          <div className="px-3 text-right">
+            <p className={clsx("whitespace-nowrap tabular-nums", relAgeToneClass(relAgeTone(tx.timestamp)))}>
+              {formatRelTime(tx.timestamp)}
             </p>
-          )}
+            {ms != null && (
+              <p className="mt-0.5 whitespace-nowrap text-[12px] tabular-nums text-[var(--muted-2)]">
+                {formatFactWhen(ms, locale)}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="px-3 text-right">
-        {tx.mempool ? (
-          <span className="addr-pending-mark" title={t("address.inMempool")}>
-            {t("address.inMempool")}
-          </span>
-        ) : tx.inclusionHeight != null ? (
-          <Link
-            href={`/block/${tx.inclusionHeight}`}
-            className="tabular-nums text-accent hover:underline"
-          >
-            {tx.inclusionHeight.toLocaleString(loc(locale))}
-          </Link>
-        ) : (
-          <span className="text-[var(--muted)]">—</span>
-        )}
       </div>
     </div>
   );

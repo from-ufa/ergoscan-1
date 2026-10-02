@@ -1238,7 +1238,6 @@ header button:hover {
     width: 100%;
     min-width: 0;
     align-items: center;
-    /* Same five tracks as the fact tiles: address, balance, txs, activity, QR. */
     grid-template-columns: repeat(4, minmax(0, 1fr)) var(--addr-qr-side);
   }
   .addr-facts-body .addr-history > .block-lane-pair {
@@ -1248,6 +1247,24 @@ header button:hover {
   /* Amount keeps the unit. 11 000 000 ERG still ends with ERG inside the address tile. */
   .addr-facts-body .addr-history > .block-lane-pair:first-child {
     grid-template-columns: minmax(0, max-content) minmax(9.25rem, 1fr);
+  }
+  .addr-facts-body .addr-history .addr-when-pair {
+    display: grid;
+    grid-template-columns: 7rem 6.5rem 10.5rem;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  .addr-facts-body .addr-history > .addr-tail > :first-child {
+    box-sizing: border-box;
+    flex: 0 0 2.5rem;
+    width: 2.5rem;
+  }
+  .addr-facts-body .addr-history > .addr-tail {
+    grid-column: 4 / -1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
   }
   .addr-facts-body .addr-head.addr-history > .block-lane-pair {
     display: grid;
@@ -1259,6 +1276,24 @@ header button:hover {
     display: flex;
     align-items: center;
     min-width: 0;
+    height: var(--addr-bar);
+    padding: 0 0.75rem;
+  }
+  .addr-facts-body .addr-head.addr-history .addr-when-pair {
+    display: grid;
+    height: auto;
+    padding: 0;
+    margin-left: auto;
+  }
+  .addr-facts-body .addr-head.addr-history > .addr-tail {
+    display: flex;
+    height: auto;
+    padding: 0;
+  }
+  .addr-facts-body .addr-head.addr-history .addr-when-pair > *,
+  .addr-facts-body .addr-head.addr-history > .addr-tail > span {
+    display: flex;
+    align-items: center;
     height: var(--addr-bar);
     padding: 0 0.75rem;
   }
@@ -1693,15 +1728,32 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 
   .addr-pan .addr-lane.addr-history,
   .addr-pan .addr-head.addr-history {
-    width: 72rem;
-    min-width: 72rem;
-    grid-template-columns: 16rem 12rem 18rem 16rem 8rem;
+    width: 74rem;
+    min-width: 74rem;
+    grid-template-columns: 16rem 12rem 18rem 28rem;
   }
   .addr-pan .addr-lane.addr-history > .block-lane-pair,
   .addr-pan .addr-head.addr-history > .block-lane-pair {
     display: grid;
     height: auto;
     padding: 0;
+  }
+  .addr-pan .addr-history .addr-when-pair {
+    display: grid;
+    grid-template-columns: 7rem 6.5rem 10.5rem;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  .addr-pan .addr-history > .addr-tail > :first-child {
+    box-sizing: border-box;
+    flex: 0 0 2.5rem;
+    width: 2.5rem;
+  }
+  .addr-pan .addr-history > .addr-tail {
+    display: flex;
+    align-items: center;
+    min-width: 0;
   }
 
   .addr-pan .addr-lane.token-tx-tape,
@@ -1721,6 +1773,12 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   .addr-pan .addr-head.addr-history > .block-lane-pair > *,
   .addr-pan .addr-head.addr-boxes > .block-lane-pair > *,
   .addr-pan .addr-head.addr-token-tape > .block-lane-pair > * {
+    height: var(--addr-bar);
+    padding: 0 0.75rem;
+    display: flex;
+    align-items: center;
+  }
+  .addr-pan .addr-head.addr-history .addr-when-pair > * {
     height: var(--addr-bar);
     padding: 0 0.75rem;
     display: flex;
@@ -2205,6 +2263,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   position: relative;
   min-width: 0;
   overflow: hidden;
+  line-height: 1.35;
   white-space: nowrap;
 }
 .name-marquee-measure {
@@ -4333,6 +4392,90 @@ html[data-ink="day"] .epoch-left {
   max-width: calc(var(--rail) + var(--stage-max));
   min-width: 0;
   margin-inline: auto;
+}
+
+/* Blocks margin chain sits under the sheet. The column keeps it above the page wash. */
+.stage-col {
+  position: relative;
+  z-index: 0;
+}
+.block-chain-field {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Menu mark. Behind the sheet while you stay; in front only while it grows or shrinks to a point. */
+.sheet-spin {
+  position: fixed;
+  z-index: -1;
+  top: auto;
+  left: auto;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  width: min(18rem, 40vh);
+  aspect-ratio: 1;
+  pointer-events: none;
+  transform: translateX(0) rotate(0deg) scale(0);
+  transform-origin: center;
+  transition: transform 720ms var(--ease);
+}
+.sheet-spin.is-in {
+  transform: translateX(0) rotate(0deg) scale(1);
+}
+.sheet-spin.is-out {
+  transform: translateX(calc(100% + 2.5rem)) rotate(320deg) scale(1);
+}
+.sheet-spin.is-hidden {
+  transition: none;
+}
+.sheet-spin.is-front {
+  z-index: 30;
+}
+.sheet-spin-drift {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: sheet-float 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.sheet-spin img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.22;
+  animation: sheet-spin 16s linear infinite;
+}
+@media (max-width: 1023px) {
+  .sheet-spin {
+    right: 0.75rem;
+    bottom: calc(var(--tabbar, 0px) + 0.75rem);
+    width: min(11rem, 34vh);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet-spin,
+  .sheet-spin-drift,
+  .sheet-spin img {
+    animation: none;
+    transition: none;
+  }
+}
+@keyframes sheet-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sheet-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3.25rem);
+  }
 }
 
 .stage-frame.is-ready {

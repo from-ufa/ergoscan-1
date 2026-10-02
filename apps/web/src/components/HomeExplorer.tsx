@@ -1582,7 +1582,7 @@ function HomeMempoolTile({
           {all}
         </Link>
       </div>
-      <div className="relative overflow-hidden" style={{ height: CADENCE_TRACK + CADENCE_HEAD }}>
+      <div className="home-pit relative" style={{ height: CADENCE_TRACK + CADENCE_HEAD }}>
         <HomeMempoolStage
           balls={balls}
           ariaLabel={pitLabel}

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import clsx from "clsx";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { CommandPalette } from "./CommandPalette";
 import { RouteNavProgress } from "./RouteNavProgress";
 import { IndexerStatus } from "./IndexerStatus";
@@ -17,6 +18,58 @@ import { formatCompact, formatUsd } from "@/lib/format";
 import { HOME, INK } from "@/lib/palette";
 import { HeaderScout } from "./HeaderScout";
 import { SCOUT_CUES_EN, SCOUT_CUES_RU } from "@/lib/header-scout";
+
+function SheetMark({ home }: { home: boolean }) {
+  const prev = useRef(home);
+  const [phase, setPhase] = useState<"hidden" | "arm" | "in" | "out">(home ? "hidden" : "in");
+  const [front, setFront] = useState(false);
+
+  useEffect(() => {
+    if (prev.current === home) return;
+    prev.current = home;
+    if (home) {
+      setPhase("out");
+      setFront(true);
+      const id = window.setTimeout(() => {
+        setPhase("hidden");
+        setFront(false);
+      }, 760);
+      return () => window.clearTimeout(id);
+    }
+    setPhase("arm");
+    setFront(true);
+    let inner = 0;
+    let done = 0;
+    const raf = requestAnimationFrame(() => {
+      inner = window.setTimeout(() => {
+        setPhase("in");
+        done = window.setTimeout(() => setFront(false), 760);
+      }, 30);
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(inner);
+      window.clearTimeout(done);
+    };
+  }, [home]);
+
+  return (
+    <div
+      className={clsx(
+        "sheet-spin",
+        phase === "in" && "is-in",
+        phase === "out" && "is-out",
+        phase === "hidden" && "is-hidden",
+        front && "is-front"
+      )}
+      aria-hidden
+    >
+      <span className="sheet-spin-drift">
+        <img src="/ergoscan-mark.svg" alt="" />
+      </span>
+    </div>
+  );
+}
 
 function openSearch() {
   window.dispatchEvent(new Event("lumen:open-search"));
@@ -89,6 +142,7 @@ export function Shell({
         <SideNavRail collapsed={railCollapsed} onToggle={toggleRail} />
 
         <div className="stage-col flex min-h-dvh min-w-0 flex-col max-lg:pb-[var(--tabbar)]">
+          <SheetMark home={path === "/"} />
           <header className="sticky top-0 z-40 overflow-visible border-b border-[var(--border)] bg-[var(--bg)] pt-[env(safe-area-inset-top)]">
             <div className="stage-width hidden h-[var(--toolbar)] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-3 px-4 sm:px-6 lg:grid lg:px-8">
               <div className="flex h-full min-w-0 items-center gap-3">

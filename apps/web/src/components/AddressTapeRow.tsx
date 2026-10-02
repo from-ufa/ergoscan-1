@@ -279,7 +279,7 @@ export function AddressTapeRow({
       <div className="block-lane-pair">
         <div className="flex min-w-0 items-center px-3">
           {pip.name ? (
-            <NameMarquee text={pip.name} className="min-w-0 w-full leading-none text-[var(--text)]" />
+            <NameMarquee text={pip.name} className="min-w-0 w-full text-[var(--text)]" />
           ) : null}
         </div>
         <div className="whitespace-nowrap px-3 text-right tabular-nums leading-none text-[var(--muted)]">
@@ -475,7 +475,7 @@ export function TokenHolderTapeRow({
       <div className="block-lane-pair">
         <div className="flex min-w-0 items-center px-3">
           {pip.name ? (
-            <span className="truncate leading-none text-[var(--text)]" title={pip.name}>
+            <span className="block min-w-0 truncate text-[var(--text)]" title={pip.name}>
               {pip.name}
             </span>
           ) : null}

@@ -386,7 +386,7 @@ function NameTapeRow({
       onPointerEnter={() => prefetchAddressPage(row.address)}
     >
       <div className="book-name min-w-0 flex-col justify-center px-3">
-        <div className="flex h-[18px] min-w-0 items-center gap-2">
+        <div className="flex min-h-[1.35em] min-w-0 items-center gap-2">
           <AddressPip
             address={row.address}
             nanoerg={nano ?? "0"}
@@ -396,7 +396,7 @@ function NameTapeRow({
           <Link
             href={`/address/${encodeURIComponent(row.address)}`}
             aria-label={aria}
-            className="min-w-0 leading-none text-soft hover:underline"
+            className="min-w-0 text-soft hover:underline"
             title={row.name}
             onFocus={() => prefetchAddressPage(row.address)}
           >

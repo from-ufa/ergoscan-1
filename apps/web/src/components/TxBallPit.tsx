@@ -70,6 +70,8 @@ type MixBody = {
 
 const MIX_MAX = 48;
 const MIX_REST = 0.35;
+/** Home well: balls stop at the tile floor; their contact shadow may paint past it. */
+const HOME_SHADOW_BLEED = 14;
 
 /** Viewport point → canvas pixels. The opening flight scales the painted box; the well stays in layout size. */
 function canvasPoint(canvas: HTMLCanvasElement, clientX: number, clientY: number): { x: number; y: number } {
@@ -475,6 +477,7 @@ export function TxBallPit({
   const mixRef = useRef<MixBody[]>([]);
   const wellRef = useRef<WellBody[]>([]);
   const sizeRef = useRef({ w: 0, h: 0 });
+  const shadowBleedRef = useRef(0);
   const hoverRef = useRef<string | null>(null);
   const txsRef = useRef(txs);
   txsRef.current = txs;
@@ -783,10 +786,12 @@ export function TxBallPit({
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const w = Math.max(1, host.clientWidth);
       const h = Math.max(1, host.clientHeight);
+      const bleed = wellOn.current && scaleRef.current === "home" ? HOME_SHADOW_BLEED : 0;
+      shadowBleedRef.current = bleed;
       canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
+      canvas.height = Math.floor((h + bleed) * dpr);
       canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
+      canvas.style.height = `${h + bleed}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       sizeRef.current = { w, h };
       if (wellOn.current) syncWell(true);
@@ -818,7 +823,7 @@ export function TxBallPit({
 
     const draw = (now: number) => {
       const { w, h } = sizeRef.current;
-      ctx.clearRect(0, 0, w, h);
+      ctx.clearRect(0, 0, w, h + shadowBleedRef.current);
       if (wellOn.current) {
         paintWell(
           ctx,
