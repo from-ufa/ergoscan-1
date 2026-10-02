@@ -3027,7 +3027,6 @@ SELECT encode(tx_id, 'hex') AS tx_id, side, address FROM (
         JOIN packed.addr ad ON ad.id = b.addr_id
        WHERE b.spent_tx_id = p.tx_id
          AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
-         AND ad.address <> $3
        LIMIT 1
     ) q ON true
   UNION ALL
@@ -3039,7 +3038,6 @@ SELECT encode(tx_id, 'hex') AS tx_id, side, address FROM (
         JOIN packed.addr ad ON ad.id = b.addr_id
        WHERE b.spent_tx_id = p.tx_id
          AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
-         AND ad.address <> $3
        LIMIT 1
     ) q1 ON true
     JOIN LATERAL (
@@ -3049,7 +3047,6 @@ SELECT encode(tx_id, 'hex') AS tx_id, side, address FROM (
        WHERE b.spent_tx_id = p.tx_id
          AND b.addr_id IS DISTINCT FROM (SELECT id FROM self)
          AND b.addr_id <> q1.first_id
-         AND ad.address <> $3
        LIMIT 1
     ) q2 ON true
   UNION ALL
@@ -3173,8 +3170,11 @@ export async function addressTxParties(
     }
   }
   // Token-only counterparty (a pool spent and recreated with the same ERG).
+  // The fee contract stays on From only: collecting it is not a payment to the fee box.
   for (const slot of Object.values(out)) {
-    if (!slot.to.length && slot.from.length) slot.to = [...slot.from];
+    if (slot.to.length) continue;
+    const rest = slot.from.filter((a) => a !== MINERS_FEE_ADDRESS);
+    if (rest.length) slot.to = rest;
   }
   return out;
 }

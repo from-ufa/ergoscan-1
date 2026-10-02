@@ -1842,12 +1842,13 @@ function AddrParty({
   multipleLabel: string;
   multipleHint: string;
 }) {
+  const t = useT();
   const others: string[] = [];
   const seen = new Set<string>();
   let hasSelf = false;
   for (const raw of addresses) {
     const address = raw.trim();
-    if (!address || seen.has(address) || isFeeAddress(address)) continue;
+    if (!address || seen.has(address)) continue;
     seen.add(address);
     if (address === selfAddress) hasSelf = true;
     else others.push(address);
@@ -1867,7 +1868,7 @@ function AddrParty({
   if (others.length === 1) {
     const head = others[0] ?? "";
     const party = describeParty(head);
-    const name = party.known;
+    const name = isFeeAddress(head) ? t("tx.minerFee") : party.known;
     const label = name || party.short || shortId(head, 6);
     return (
       <Link
