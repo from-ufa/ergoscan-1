@@ -11,7 +11,8 @@
     "extract:known-kinds": "node ./scripts/extract-known-kinds.mjs",
     "bake:earth": "node ./scripts/bake-earth.mjs",
     "bake:og": "python3 ./scripts/bake-og.py",
-    "logos:fetch": "python3 ./scripts/fetch-token-logos.py"
+    "logos:fetch": "python3 ./scripts/fetch-token-logos.py",
+    "names:snapshot": "node scripts/names-snapshot.mjs"
   },
   "dependencies": {
     "@ergoscan/shared": "*",

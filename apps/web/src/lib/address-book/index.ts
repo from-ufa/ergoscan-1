@@ -1,7 +1,7 @@
 import exchanges from "./exchanges.json";
-import overrides from "./overrides.json";
 import pools from "./pools.json";
 import protocol from "./protocol.json";
+import registry from "./registry.json";
 
 /**
  * Address book. Layers, in order:
@@ -9,7 +9,7 @@ import protocol from "./protocol.json";
  * protocol.json  — consensus boxes.
  * exchanges.json — CEX mains we own (seeded from ergo.watch).
  * pools.json     — named miner-reward P2S / payout wallets. Prefix 88 is shape.
- * overrides.json — our names; always win on the same address.
+ * registry.json  — contract and wallet names from ergo-names (npm run names:snapshot); win on the same address.
  */
 
 export type BookKind =
@@ -165,9 +165,17 @@ function buildMap(): Map<string, BookEntry> {
   }
   applyExchanges(m, exchanges as CexFile);
   applyPools(m, pools as PoolFile);
-  for (const e of (overrides as BookFile).entries ?? []) {
+  for (const e of (registry as BookFile).entries ?? []) {
     if (e?.address) m.set(e.address, e);
   }
+  // kind "miner" keeps the fee contract on the miner label instead of a book name.
+  m.set(protocol.fee, {
+    address: protocol.fee,
+    name: "Miner fee",
+    kind: "miner",
+    source: "protocol",
+    note: "Ergo miners fee contract — every tx fee lands here",
+  });
   return m;
 }
 

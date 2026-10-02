@@ -1,0 +1,733 @@
+{
+  "version": 1,
+  "note": "Generated from github.com/kayolo-ergoscan/ergo-names by npm run names:snapshot. Edit the registry, not this file.",
+  "commit": "b001fa9",
+  "entries": [
+    {
+      "address": "2BggBDgr9n9geTKjCJBCEWMReb2i7wcocw7fjVd3QyM7qFMtmVHyoFr78kChAxGekJxUTZru2aMjyZKcVoPfHX5d12RqNrnEAgzGqUCoJ2v9xCqmT75V5xdhT1JBqQbeRKJZT4XGMg7hZAqVvbMsQF26nkWRPqiCqPoKfy7GZw9zuvr15qaqbB2ZcZXaGTrvqDN2o15SRTJwvVADDx2inzrk3U25cdjFWYBc6ECKSjmYpPWL8fn4msxsBZKNiGbP8vDrYWqQuPtMwJ5Ag",
+      "name": "EF Multi-sig",
+      "kind": "contract",
+      "note": "Ergo Foundation",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/ergo-foundation.json"
+      }
+    },
+    {
+      "address": "2dixsQeWPVtED6JEL3hmsJFhdNbtcEYckwb9bbQwgh3r2pnwd1sne1KFRztfG2nvA4z8jyF2ASHM3YdXG4SBPbLXsZm9ER49Xy2od5mAsHLeci4UDPgqqWRwchARhdRicZcGsStvjbZxcWVPW7yFKK3ndfp19LHLDaqwX2bCLreBk9uszXm5fHNGzQr3SR84mc9CL9d3zq2Nh2cr7cyGWVFx2MGztbNbLKS8MqXieVPjGE1LyJtWPqpJJi6WsczpFY118fYhE7XMbo87drDQMtm8WrxEbKUut2fRDox6RnvLTDjTcBLgv2rp7tmFiBLpcbzmiJJAau1ioHpcpSVFAUsn5cwrpCbXScPAkukMsqVCtG4CwMAcWQJnDGYPLheoeKvSJuKAV7ej4tjntoYiJYTar13KPGew7ypGW9C121omdHfj76WxkjqAKCLdEEWrYQQPLjXxjscqXxnCe3xDtWbHNSKd3v9CUin2cBhuPLWWgvEQ6TGfTna6Y3V6fwSVSzY2cmrrTxuMd6H7UMybp99uRhcmShvxF3kH3HBE6BWWi1rYGehdnk1Dns59",
+      "name": "USD v2 Oracle Update",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "2dixsQeWPVtED6JEL3hmsJFXTKCBngyQDvxSrXJKU5uXhEkodMGo813a2hRPuhWps1rKpBzMxTRm2NfvvHTvcdeVSmooAKWH1tuDRrSV1vKkDhnA4HxhXKi2g8KskT5Hx9ufdVpmr5QHJFaRK2PUL6L9tgriJ9L1tQFzZbXqbXf7zp3LiBfnoBtDvSbwc193JcoLNbRex7ncCAT7UzEYWg7fpZNqiZfWmx8EeWW1d6cHZtW3xRQu5cKtV245RkbusUPqeR93pT4XaRxXeFxoiMEJCqvDtc3SDEf2M4Ub9cgEmxvDCRaYWeiTaK8Xb56codRqmptto13nQSBBSYndtFC6GxZKZxLkFxwPdQmt57BtnWtemLY1ozbP5mHSpDTqALZShfY7WLqRXoW1aS1k9m1KwH4dN4EW5LziwRogn7mASLxKuYzvcFbfUsrBi9SzK6gR3Z7b8H2tXnt9SgS4MhsrdmPJdYJpfPS31MRR5ZH6hNsM4GBFsSUR9EVVJGj88trBPACvVMsM93xRZqapahGJ6rZX5myqmJCCbynX6H3pXeDSoQUFytoNKVRi",
+      "name": "XAU/ERG Oracle Update",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "2Eit2LFRqu2Mo33z3pYTJRHNCPZXtS2f68LNW668eK4nJNwXQZMTEW23dCLCxfBX9CZfhHCCt1AbFaprUWX4wG2LfPVrXjGSpZCB5oX3FQ23WXmNRtzqk34CHFBRzcqwHKfq6Nb6DNBzECArvDoeD65ViwRDvv2BuD7TLL499JwhxtWTmdAcEdC76bJVLzpCcpy8YBSXmXG8zm2b94BKaWRGzXuY8x2MQveE9cD7goUvU3iVqKxcM2boXfm9odgBQTjMnsVVPXzE2C6xvXsWUMoByh3pvwyCXJBSvKQeHAiJGuhB56FVum7Xxf3J5CBmXJWgU3GuJszvHXmDEGgXjEyWWyP6VCiQtokZrfWYzFUPtGQNzqMwmrAQC1A8yXxnJXuQG41BG2EFpgktZDyrRwXtPaCNDbrMSZ3JDH3K55UuiK5jPTszeHCGyj9efwVKtt3defLLW6r5npqW5QyoHZ7qAAjoy3mpLDe5tujTsKWJywtRsWwXRgxMWhCV31Gmv8bqZUhKb3Uy1PycskevybXTnb9K9FmLkHbDGt6EvZeHWDcar7hjs35hj1rzMHMeKnRvS5ScjSEwyh1kxhfXxqBG1gVWAzgyb2feU37YBg7s3tESnrTEUVtKpo3TNXR3STbtmbGgJK3Gks2ibcqGYpWQFsjPmUdwb828Sd9E2eGa4npGCgqtE79eacf9mD2bG39ZMK",
+      "name": "Rosen Watcher Permit",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "2FF5cwPFLkVs9R5SWBgBfLEPeqvnJUkNXMb2kCZaWBjicAETB1vwAh58QMHHi3eK6vXhax5hrGegyCXx7Dciamn5x2degycya3XZGe26FWAhoer9J3pqsfXsg1KXNu9fG2ah94WHM7q877Ury54q9gPkEtpddUW2KnroPWbzkw62adKHR7UmNiXzSWXp4Nve9eRa1txzV8pcatdYchvkAqFf7N8fqp4cJJzRDAsq4AUk8zTrKUh9XvGG7kMZXNjxi8Y2LjsdLSLFTCybgkCZd9sU2skzE5JzC9SNXxLnAURky7kkYrEQyY41UVRg7hwPw62NiTW7MULaaH8JRhRYQ6b65D7851UiMZYyvVrz3NiYYq2xVqnUKqs3vny2mfK6FJNU7Pr9JnRASDof6yTooJARsunnSMcWxkgqHJSqMC4dRwpsmK4WEkHJvKoBQbdP845Qhqqz8cMKn8hTSSMQi3uFrwDnyFD45RECD3LHw3VynYVRQpUakaphvFuLb9ZRXDYBAEmsySuSQsa",
+      "name": "DexyGold Tracking",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "2kpyq1fiKFRACqTBYLqT4BNGfnrym226pPanSzftuVJdWmxAKncZScWcY2XkJXLdFFKXcqy7zLB8LVpHkaXgyAJkjTC4LXxss6tMbL7ZqEpwj5oGhv1q2FbsCab2KR2RdWhrwWSpC6qXXR6srcbve7c5ni8JQhWQKZdCqiuWxTXyapsTE1mB459YgLcPBBrPmA8qdudEToo9QVWXPSwXTGq3Uxod5V5JaBjWPcPi7UPMR1J9Y5guSCVxbLavcRnPxoxtgouFGimPcYxpMd5Vc",
+      "name": "ErgoMixer Full Mix",
+      "kind": "contract",
+      "note": "ErgoMixer",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/ergomixer.json"
+      }
+    },
+    {
+      "address": "2mBWMdKsUAa73zuGrwJTW9SPWrTCNq6Cee8gGhorrwdsyHRiBnPUujMhYTiBdRQmhhyGZdYsjjpoM4vVPtwyGzzUWKAxgucqwMQYqFX9RuT4uiHAPon2Bw4QrUXWsi6LtFrPsSyrubBpv6NuQ2Emh87zusUrb3PBxzFez9xqmL5ycMpbzXYFEr7kxiqDHyyweEmqkPfrntKS3G3ssonduZSwRKonLXtEJBEa4DiHgfgd43Uz5phAS8ng2BjWGjQKpTvpDvw536LuEdz3JNhuYn3tANCo5JGd1kKNYx1dm9zMcW8XQEiZCtGaFd4REQAa4xdL8RWHvLhjPnDNe8H2MePXZqQGVsuE4y67MTKvzQGe4SbWMJJ5zAkom4ehyc4gZA9zEZvamEF2vEu8LRumHbCNRmDVBMzqm8UnwauU9mFPXN4VAcMjXUdhJoyn8UrDQvBZL2izDXpsQxccpot7J5n5eQ2dnGjCwTkLJMNc7paaDWtExbdpF3iYhpstGzctD6PuCKZx8JrbwJxKLUVkGLDnvXruYn4HwNq1izyr64E7vVomuykGZWiLN8zTo3NiPc28nzr48w54wRvQ63EKtSZzsNYUXeqQ4Vh4nKHMV5BpfwPUPbdRiiZ5P5avMK9NWjpLfDrbMLP18WPNK8RVL3837Xw23WUXo4ZL6vNFYBW6QDsqCtWvQiWP7xwnQig4tJaS9WwbVpbbpBNkJHG8xzNBUNUbXHPCqMh2LGQTQvoEkzmZwNNRUgt7hu6SvfiXe6i5LFA5WsWWqY9ndLm72wdYZvo8eYA2PZdsxja2AcFdCmqVesrgMAh9Vb6bhQUZK1haXdkyJfdEkN5doFHBYFnvJimi8SzENbE2JUwTyAYaTr9TP57aSTHCU2kx2izBEsWhuM3NcxCqAJFAwACQ3QAw7QFErfLLXHHC3nvGXnDhMn9JhzmFDFV34",
+      "name": "ErgoMixer Token Emission",
+      "kind": "contract",
+      "note": "ErgoMixer",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/ergomixer.json"
+      }
+    },
+    {
+      "address": "2mvvBUNih47dAVouDAzQTao62nFGoB7Mb7NQ582TYRDjipgtUM6QmkqAfY687pCSiFk3B2NxqHrTwLWBFgX3s15q8eVwCB3MSuSsZq56gcujhK3Gy9Y4TpHo1RkYFDrThrrFeQqFFjVYp9Fv4a5RGGrCnHLS9ovTmKiehrPo4HQ6qL5H9pkUj5477fwbpervhffPqwjSirGHNNxSd6JxMhv4askmTKKQw5RfnxywnvCKm923V9brZMS2VaJR3Zek5AaQHDfHQ94jLpvanKrwjN7GooUndABj9HDk2azPveUpcA99wUow3Nytws4cvDHogA9YPfHDc2wTPKpfoyTkY3GVM7JxTrFp6yrrRniXGwRTrtgLdFGsDSC3GocvTyUn1itrvL66gmznXKubcimrK77Vens6dphBtHrRE3F8XqhdYwwonKepPyyTHqEqVid7Kh54Je6upWQXM4RZ144WdRMfYDmWrVmy8kppbPHZ23irCJoSdTzu1mDZnZscDSuwS3iR4F18zQm8m43k5a8kKp8b1rQGrpcg8QNfwqV77DtExdEzovrwb6Ak2heQ3iNYjWeKvpTJrhGqiNPMpRjuurX2cZPEvNZUg1gUGpJSMMGszFV3XfiefQdGRfvqqr8Y2yz1JzqsatFoq2xpVjW9m6mYfSMsCkMc3pHMmxcGcGi6X91vqWMrsVFAARVgcexDxZcKwVUGST7pYUQMEe8HaezuK4mNTQxwQBSVdjbigREVU4B8VFt6oXhFWkTXFEjui9",
+      "name": "DexyGold FreeMint",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "2U1Bm1VfBKJQzNr6Zu6yAh2ZUwK2sV8uwmjyFfXZ1LBWEdTaG1FsQUHxbLK8J4Mwwf8nKYEQGE53Dw3qHqXbHjbZaufNjqgVAt3hGCPn7CBkWnq78ZgKUfnqjZPyfJeeFhr4sbaPubujhfXmpXHdMwPNUq3iCYk1YtSphPGRRUDfnQR88BdNTZzCtRc9ckJseYG32LkumBnewyPvoC88MPLrX69WnC7orkjQk8qoQn8VDnGHcTmj2Wh",
+      "name": "Rosen Fraud",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "2vTHJzWVd7ryXrP3fH9KfEFGynndKKKNFrURzDPPhJeC8cH8GJRSo2EBd1h1M2MKcJyG1DQtQdD8s8nyTv8iBf7bK2nzfgubQeNTthVKVdAm6EvZbY4okpQovADbcgwf83Tsi8uNEHoY7UPE1tzqbobXSAdD7Sw2ATSDJpCHXf3NqqRDFShQeswBaG34Sbf8vL9XTR9ndKsRynUCXzQU93FaAYMe1hFgxoe3Q8w2xBPuYXvmv8suHSCTFo6TJ9JWWKhxUnpPCiKkbfCbrUPpyYzNepdVcTgsbyQ3",
+      "name": "XAU/ERG Oracle Datapoints",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "2vTHJzWVd7ryXrP3fH9KfEFH2W62Njq1GBzqyvJUvZZAdMsYNN5dbwF9sC3raNEdCUK4xw4Ygjkz41mYRiAWsyFHLeAESUuDxTpbuyG77Y9riUxJN9tMZ6nLCLTpgP5T2XoaYEgGaBkbaf1n5fqUjFUvpoeFr9cLoHRevEEQAiQ6QKEaqsPaWrUq6TbujgvqEw6gB35xug7WKjANyZePMyyrbE1ySthXjLCj6KUGdruDaw63LQdk6XxVNjVdppMW9jHJt6xCGJn93gqtLGUeoErHeX3t3K93KC4Z",
+      "name": "USD v2 Oracle Datapoints",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "2vTHJzWVd7ryXrP3fH9KfEFHAsxkTBPp9YVhNRdkiaNFFU6gjsFqP9Roeprps7hzNBAwGA6WFWzoqBWx58ARZP5sb4Y2Cc5rTgARSeq43vFMAUvSB1cS3v55Rs9vEq9FpBJK2KUWNY6ZAA3xzMamDFF9jfU4bjm35g7GGCZMhzC2ve3SuCBqAhgb6vhT4eHaqjL92hiHW9MRFghv49AycbNwtobRid3sd7UQt6Lg1VHoziseayd9ao3H2Lc8hyRNffLcMy8RhEosZzufutEWRwLwsgDkuEbzE5pW",
+      "name": "MORACLE Datapoints",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "3F9bBReNRNpy8HU2PNNRbCdHgzj6F5WgDmKSRAg7bkW3qaJ3VrjQkfqX5W8zDRuUTRJfpt56L1mpx1V7Pt5Bo9QtT7HVQBWqRoUvTVcTkTRsPHRR363M14WsjKXfqPLvauS7BvwtggxXA8S6TTW4gArraoqauhfvyCzjHPNmmfEDypY2wvvMsYNW3VRQYCK8eDNLmdsQwvtGbULeeMdKXCvyH68CpAayLhuVbALRkKCyvdQvAz3gr3yxqNcrScFPxYwE61521iVGwJjfNdXPnHmkespPtM9hhj2qh7HdsAmbQUAJenRpD6RCN2pSh7aQUUZiQENbTxVmiJkqENs99yTv8aHmGFWsw2WQcwVH394M1Sj5ue1CCJYHg6N6FyCXyptsVSqvBG1scmUPqbPneQDCvS2xHgBd1HCrUram8mgD9GewBehXJXa5TL8fe5G2XnGtLukkqfJfmRRmwvjCxEcYv65gAsGW6xxy6YgGm3VxzDUdTnHisGYf3qFnEKkiZf6stFRWPNRcJmRh5jKHqVHjEWMQgdqRjv44qT4zKG6ewUYjubGhHjVy7qedLUnDvM1X7P1CCankPJzDJuZJqnefRrbcuNcP5Fawx2E2NdihRbiAKbA6g3RuNuS2WEPEkQUs7rKGT1fgDw41hq8LaoSf35Xax6eopjzEGLRKYyXqWb7yQfPVNebnYVxbXbRg5aVqHLyiJ4h5sqAdSm2QUjD1oMKuYmbqbqCsYfp2oxJKcL5i7JLnvEKSP23YmsN9Va4SAmmWj4VwiqexH1DGR2pt78LPpWgK2EtHN2gLk9KFnGmK8ZVZG2yx2taH6JXoZXieXarGkBPJrHyB4ZzB1K2pftLwk6vyvSVmfqz2VSi2Lc6NPyLiJ7eKdpbMFaZYm39FkhgCy5Wc7Be7Yqvd7RRVDhx6K9jS4YwPN8aCn24jtKXMs8T6orwxS3tFQR2cCMwqkFuLthR9PUVwX6wiEZ7qNc2p9eCQ7hcqSSAEnqg4teua4GLWtqYFeG1uebJERSBbgjEptrKswnPhzvcdabrwsMopBvknjzjdawW96fqgraPBhbcKDo172x6rFtJnmYrLd9mfNww1twDy43Nz6xGyP31u15Vjqr17g7tdd8sKHPjHFZX37RXquKf5k1i2DdXtcjmAWmuACe1QtfBitqJNwRbMe4RxgLk5doDX1tNfQMQdS1i94RSRrmMaRZUSndJZGPXxVjX6YcjXmVFarb8S9EkkC4jSm6SsHu5aHYG351kTP2mv3fHohRwNrqKkKpvxw1qe9QgYHDufFMYZb88SmmsBLnLGy6rsdurvdqdqWJFbxYvxmRumeSY3H69C3R8pbdrWjSLwxJTy6F2yQ4SQTBuwGpRuD7hcnKt84ajhNsFc4Fmzp8Zn8j9Tg3FSXR4M68bf1ABwnkKPBLdHmEe1qD4qYhGWd73SJVnHarpfyK2Gc1rXTrwCw6kqJRoQesNWQrgxbdGmm1aawJ1Pasks2pBd5118zKPHi2Wi8mCRepWKzv6oJjbWBiZtzrC6kEPXS8S7g9XpiGSFCSfK8aiHHYdHn8iAyuZeA2Yne4DmHZdys85gAh5hjjaPPYuMTHmCr4WbrNfMegX7oDyh7yrhV2sPbgRq7d75eXwpNW9Q5fs4xBqDbeJA1o26yCx7fkQ6yKs8DaWcgv9cFoJB1GA4V3izUpejSw1wqRR3tpMHT1LfB5GpJGoSXGkFQ9Mybt",
+      "name": "Duckpools ERG Lending Pool",
+      "kind": "contract",
+      "note": "Duckpools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/duckpools.json"
+      }
+    },
+    {
+      "address": "3FBpC6dt4xNpexUbLSZDR4YbuMWwLyKDUjbnHPCQf6VpUfqqLGzQ6P6uKkfoF1Eudh9YSU9uTEwYYJ3J8hDERT2mhM6wvCciz4HvZPLMUtdjeg5mCtJMyi6Wy2wTeQQ6UxyuwKCNGxU669QN1HNz7MF5JMg1xy84cEFVcTCcU2rKqiYpHNotatUq6uP6K3fAraF",
+      "name": "Rosen Guard Sign",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "3gb1RZucekcRdda82TSNS4FZSREhGLoi1FxGDmMZdVeLtYYixPRviEdYireoM9RqC6Jf4kx85Y1jmUg5XzGgqdjpkhHm7kJZdgUR3VBwuLZuyHVqdSNv3eanqpknYsXtUwvUA16HFwNa3HgVRAnGC8zj8U7kksrfjycAM1yb19BB4TYR2BKWN7mpvoeoTuAKcAFH26cM46CEYsDRDn832wVNTLAmzz4Q6FqE29H9euwYzKiebgxQbWUxtupvfSbKaHpQcZAo5Dhyc6PFPyGVFZVRGZZ4Kftgi1NMRnGwKG7NTtXsFMsJP6A7yvLy8UZaMPe69BUAkpbSJdcWem3WpPUE7UpXv4itDkS5KVVaFtVyfx8PQxzi2eotP2uXtfairHuKinbpSFTSFKW3GxmXaw7vQs1JuVd8NhNShX6hxSqCP6sxojrqBxA48T2KcxNrmE3uFk7Pt4vPPdMAS4PW6UU82UD9rfhe3SMytK6DkjCocuRwuNqFoy4k25TXbGauTNgKuPKY3CxgkTpw9WfWsmtei178tLefhUEGJueueXSZo7negPYtmcYpoMhCuv4G1JZc283Q7f3mNXS",
+      "name": "Spectrum AMM Pool (token/token)",
+      "kind": "contract",
+      "note": "Spectrum Finance",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/spectrum.json"
+      }
+    },
+    {
+      "address": "3W5ZTNTWAwgjcNhctkBccWeUVruJJVLATdYp1makMwoP78WiW2MDjMd2HKxZ2eUwtaSrhtRujuvi27k49msqFVAi7T2BsVHvMCHQ879nf5oJvuXjhEshf76EZgrijL3v3KcEA8CYi511YFtwN1b9u7ZUXeQSSUhqcMvyXMwaCZrpZsgCfbiLxk2DQMrngBMUh96vh7cBfPxZWhsZ9DGUtkGhiquqH3DcgFhpP33rRMjanCRXPAx9SbbphH3RBA2Z9K9j9TvWV6PnUafVGSpixUS8eawxUCiAuUAZHttXK9DjWqzeTDxDH9Tz1gSyjy7aKokwZyoAGTEafuiNQQrJ1UVfuVJCHPUD5v9eomJLmLVqdVDEUm7gj6Qj9a2cEKDfzedex977RkqXvuaeUdaumcikVCr9spzgmv7rhFCovdzAJscwTio98iRGS9rqcnUoTZFN6YmNJPXKe3krdQ7c9yvv74Ad7SBQmvNyuMkchFRnbPRozogKzV3xmTMxpLzagjQ1AdcP",
+      "name": "USE LP Pool",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "3W5ZTNTWAwgjcNhctkBccWeUVruJJVLATdYp29mnGMCFZADaExRGC6PPrusg4wV6srzDrgkRHhzQWBsugmYxXRE54rsc41SRf87KKvE6NdPHmtYM3HWsE746kotBqQ1Nk1Mun3AHQUDEP3seLSa1DzWwuNx7HmBBn9ZxnbVCZy3UdX4PHmkbj9NtJkZH2Upz9o7S2txbaoSnSAA6zwUXoypxkRtAXvx9neoUhjng7EvyDtFJcyKbXFB8vDZNPvHd6yjL12JUZjxDVWAFgUhBecPjUM5LRYmsyHArunqSsEC9WRRuK3TGo9jJCbpEh527UyNkDvYnwhbJ9kwmSXEx69zNPez8tNn5hXZrqFa5BqrDqALYqkShBwmw1BmeZPoqHRWNANn72ZAMibrbz8if7gWNEJmYuA36bESriXiwUBVxkNVD79zSiyjkv8QTemdaTR6NvWAQEAdbhNn4eqvzEgAMnzbiWv6AMNAE36noWggRchCwnnvmnna7yRvjW5j5861w6dMU",
+      "name": "DexyGold LP Pool",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "4B8vRwhxhAJb8TuN4RZpBeLmAkQUtf7a4QaYqqSCZAQHjyhzgVLGiFTPp9CaZRbssRnVHAzqUKtBBCWjfMSxpi1Z59H7sj1E8o6XFqYCRYFp1n2aC6tYptFLrrX3c1jXBhcsS7NNU5NLHSuCNC6bDf9KYhxfgQTtYkozrGk2qzB3aB8mmaC8ZHaAfzvQmSzcxGwtTyquk4yfeR9tsvrvhGPeyv6Ys74Q3VqQoVkuSMq21gRY5wgBz4gq6tTBY1Xv4BkHoFQm2wx8TWQc8Rof81DCePanX598Z9ZJzaDLnT5TDjQpECKPXvuuxLivbbFjtc4FZ65xTSHGk2uHsohRAMrMiug5aVa7UXwoRRLomvCrg8MbyowkuiQXcZWu8ue3QBTLuL5yy6yqxs2SYDPiFHqJhU3ag94Tb5Q2bPaJcAgomJehtn9BB5L9GoLe6Mx9Jti6F1WXgrGcuHeBQnXpiS8pRMN845AxseExzyvksmj4gyXEJqgookbneHtPuDW3QefeWH4LH13AvmXhm8QFTYdAFRuhXMBwJJbXL1yBcLE4nexa7d2AY7Hndr7gfecxRY4UnypdpLnpTTec5vEppaDrEx6KQ4gdeiDyJLmJCGHeB",
+      "name": "ErgoMixer Fee Emission",
+      "kind": "contract",
+      "note": "ErgoMixer",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/ergomixer.json"
+      }
+    },
+    {
+      "address": "4CUtAFpXrPSin49uT1BzmCRbNyUAC3fwCwZejk5x69Tzmiy4vhjexDkwofEVzJ7EPWDC21XtFv8R899jb6yqFu8QunaiWW7TXaaTEDGndmnyjji4t7uEBEXFysK8E1CgFsNESdw3SjdZwE6r5tvv5rJUiaUMH9PMyzSzVZyQzUuTaLuzKmhrFHDLJQKSVEUauunzgBFy52vpjZwquLNsE4HHPwSe9Q42wEh1PBviAvgmgTbVZjLqxY5DoTok8QrFjwR7RQNPhHx3cdwtHoRMfCvuHBwTa6igTxBYab18KneDmqeK6esPJMeHcBtap6vV2Vz1PRAbGPMfxTVj5A9PzqZd3e3N4QYz1DTXQHLswyA9aRKT7DgYXavKCcTFAhwPTMvWDd2pSiXfYjEEunEzGVDchNzGFXVxtUXSLWQerdnUaBifXhHumN",
+      "name": "DexyGold Payout",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "4qCVUToafqBhtiuhyUEYCwaLpetzDcqE32nATDitdQ8fqBKKNL4u7TcobWaGuvRBw7bZXep3Z1L7NhmficeDTaPpyhBPLbyJYbMxymZK2drZobFhmH1a2cwBeEeN7GhUDJ1EY14scAK37G9utbmUCZGfj8t4DHkK2bnSyqZyLLRmVwUSpC8DHtG17iXcCuoXHByatcNQ1SbhMfz33bnFcESwfj4poaWjoaZGiyT86xAV3QqroVi1hHeBsjkCBR7g68A9dceyvgqbcF1ouyURDXpjAP44UC5J6NpUeA8yKbskaYe1xud7tA4ojsGeiv4oAUcBRAKc6435x2E1UvzYasA8WuyLRAXoq8CgJe7Lc2NxKkGRDumEJKz7VECijkPRByF7nTq256jwEviTcZ8RzAt9qyj8rMKo7Bzy22CSvrDAfiXtVDzherZmEKij6jeECMqPq88eVmXyB9qaGmAT",
+      "name": "DexyGold LP Redeem",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "5ivrmzxYa2fPRuSMsFA3at4RrZhv9SHi17B1UoU74JNL1m8YWnxRs8UfifV8VYjLbifEAczBEo1W2mU7SbeDYRn5HphWf2uvpeHgptESPrYWUmKg9QbaPL8du1i1dJJPWUTVNZsMaWkPSadzazX5uHqAX1bssGJGg75uqVdW1jxdEmixZgU68JnrQdyJybjeFuD2qAxyCYBrW9KHBwMvuzjyUHmF9VhvzFuaWs1Cxr5Jk3tXT6GeTuehauFy5Nf6RuWYabqxHjyKoaNLAQ995CF91wAXTVfH3z9JQuxS3kiyBDCRqfpK5y3wn2bbYJESNkK3DE8idbyNYUD72xipwcD7t29GUMx64wDHYLiTKZNDvTvbZ2i7x8EusAFbJMVppbnfWPzjFyq1THwPsqh9ZscJUeXSC4xKovwYF1oDA3ESkxXYJESwhixwb4MbveLor65rj73rPHRFat4nmFDUmBJzyBqF9CGwCsuKSmPzAvC1SnoEAfgYSS92GzXYNUMqoehdWsp91U6cgVBAygvH9E982VQsLBdewybVcfUQNCKVgRfaCNM1FswCw6MbbLRGELrAk6ahVnVqCctn66apBnNJWQL7cfpsb57JvxAgwF9dzyAyUgMB3PKqKpYNPYGZ4Rz2Vrgu6LznSS1wdZsTgJuXuCKPS36Xw4LfmTYQppeCoAc6zv6QfFybdbyHcDEQbvrVYtR5Va8MCgwKiRQZ1Nyr2qiQRfkUemGhw4UDkzHJqaQ5a7QJY1xbKy5An9HzpsAtZqgD2eW5qoTPDoNmYNcjYFt7ZBBqNKecEi7SKrc7HsbV9As2PdaxqHZb55GuduryAfKUtsBMC6Wb7vt25m2BL6fCeF69YFcH9rGdGhQy6m1fGEFxxYxSV1sf9TkRcY5dSo9wjsjxaE94QJCp4D75uE7fn3uRx3rjaHXcrNLYYN7NoosK1W6T6LePD2o1GNm8LujzGWa2QwXjYUqgXSPTqM4xBoXwMPhPoSBPgvBg5wm1DiaZ1kyTDjVetiXzWe5SPt5FPxfqeGE7T3Pcqv6nnBczR7VfwvvGB2uQM2F9zfxm3nUYegJuuZvQXPEd7PjDPMk9fJBNL5v7D1P4dezzxcA9m3q6DrkmcW1Ar5UMXSU5g8Cqb1CdV5wgabZdDcGuJaE8PZFDtzj5ehWvVjbnTP9z4jKxNjpz2Lom91RXiVKsyZJkk8ypSLm95FEHnmeZAuaVxwNuziQML7Y1Rqx3fLL328G8xG1qtnE2UisBD913UBZxgne1erdSHUc98ciHaYVoxzghVaozi1ckJ",
+      "name": "Rosen Commitment",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "5t19JGogcry9DRipPNcLs4mSnHYXQoqazPDMXXcdMixeH2mkgzMvWXjENsHRJzfHAFnTL5FBDHQCzBcnYg4CU1LcJZMmUXAaDcsKdgfBk4sE9BDbLt6Yxkjh6ow65HGCgxkwNAEArMAz8tqZL7GzKx4AvYVkqG3ExKggwDyVrvx7YzN8xeFtEUcnVkDKM8ow7YWW8eee2EidfYArPRd8fxQr5EuZVEiQbzKZ6m4xgtHfhsEptE3pNdt69F94gkytpounxBYpJPqfeZ8hVxLk8qaXTGFiJTDTt2p9D5ue4skZf4AGSLJyuzpMkjdifczQNc784ic1nbTAcjL3FKGHqnkaVwnCxU7go45X9ZFHwdpc6v67vFDoHzAAqypax4UFF1ux84X5G4xK5NFFjMZtvPyjqn2ErNXVgHBs2AkpngBPjnVRiN4sWkhR66NfBNpigU8PaTiB4Rim2FMZSXuyhRySCA1BV8ydVxz45T9VHqHA6WYkXp2ppAHmc29F8MrHX5Ew2x6amraFgvsdgAB3XiiEqEjRc83mhZVL1QgKi5CdeeGNYiXeCkxaRhG3j6r1JdAgzGDAQfN8sdRcEc1aYxbPfbqM1s81NFm7K1UmMUxrfCUp73poGAfV8FvQa2akyascKBaSCqvwuHW2ZP4oMoJHjZjTAgQjQF8cBNF9YLo6wXEtMQT5FYc3bHSgd4xZXCk2oHYjUSACW1Z5e7KZ3Qw1Sa2UvpMdWhbZ5Ncu99WT7v6nHFLJvHEPM7evr41nhCe9Yt3pAq4ee4rKCtEer4vQWq2b5UJSDXDj5VkVepQ5tmeXfXrBc42Yqucy6VeQSE7W66o4hQjwW1iN3yipmdTmpaAEASmbXwCxRSm7g4sNkfA969xo14PZQpBY3QUGqgCWoqJJVFWMhfvD53rzfgJpA4JH5B1fvY99q5iwbsAKdJfZi4fxub9QWZSNQfht4JqXMDmc6XTkWLE4VCxBRQYzF44H2E6mdf5EbZHUrpXj5c2VfC6PZGg9qmrz14aZjafM4M7kRTqMwVB8R9r7kXM1FWidGoprp2fRoJUALAKxKDSTVHX8ejT8zkSKJ5W45dSQjMe3WUDTeKhiy6Fqio2ukV8THaizTp6yZWxMVdu3a15pGBv1kmXZJEnLN9BsxyhnW2iGM7tvwK1jAneXeBH1uVdusR59j5ubCGKeoaS5ToC8Ky6wZ2iCyb2JF5CTvR4sMUg2ksmUm1dk8EoRjJ9i5gkqY",
+      "name": "Auction House",
+      "kind": "contract",
+      "note": "Ergo Auction House",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/ergo-auction-house.json"
+      }
+    },
+    {
+      "address": "5vSUZRZbdVbnk4sJWjg2uhL94VZWRg4iatK9VgMChufzUgdihgvhR8yWSUEJKszzV7Vmi6K8hCyKTNhUaiP8p5ko6YEU9yfHpjVuXdQ4i5p4cRCzch6ZiqWrNukYjv7Vs5jvBwqg5hcEJ8u1eerr537YLWUoxxi1M4vQxuaCihzPKMt8NDXP4WcbN6mfNxxLZeGBvsHVvVmina5THaECosCWozKJFBnscjhpr3AJsdaL8evXAvPfEjGhVMoTKXAb2ZGGRmR8g1eZshaHmgTg2imSiaoXU5eiF3HvBnDuawaCtt674ikZ3oZdekqswcVPGMwqqUKVsGY4QuFeQoGwRkMqEYTdV2UDMMsfrjrBYQYKUBFMwsQGMNBL1VoY78aotXzdeqJCBVKbQdD3ZZWvukhSe4xrz8tcF3PoxpysDLt89boMqZJtGEHTV9UBTBEac6sDyQP693qT3nKaErN8TCXrJBUmHPqKozAg9bwxTqMYkpmb9iVKLSoJxG7MjAj72SRbcqQfNCVTztSwN3cRxSrVtz4p87jNFbVtFzhPg7UqDwNFTaasySCqM",
+      "name": "Spectrum AMM Pool (ERG/token)",
+      "kind": "contract",
+      "note": "Spectrum Finance",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/spectrum.json"
+      }
+    },
+    {
+      "address": "6gRHe25zz68N8ZDoF1tK1mssLfkecaBBuUe2ucoh58ZQYAZvgKE3iHrc7jQPDxEjDDQPXNPywM3WAos91UJTeUatw6ewyhekr43mWQsyXF7RanUnkuD4PosndtT8pJiSvzE2LDjCPHSzCwBL7sXoHGVyMR41qefqN4D3i1GGvye1PYKe3q9Htypn8acJ6Sh2hJ6QM2T92bTUjyEYvpKerz6pGi8GLZuFfagE8rU2FxyhKhEaHq6K2oaQ2hnpJmEq9A7cVhWGiMJB6TMDbjMPECGViU5vNJeARPzW1isR6djmfpYJL4o1YjBVPgnFKPtxgiTAwx9HdRNVDdQsR3Rm7BP5mcUrMcpp58eBGf5BAFtj4QryWyMS81p6fpWbpA6uQjbn9RQ7TbJ9QcCM6X18ykv2Vsppfjs5y9cd2b3QCAb2iQ4aQ13f5tNjYpSt877j3twxDstAfhzwWdDWKJ5vd39E",
+      "name": "USE LP Redeem",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "8D5yrk3J6uxm7L7dDs8py4NAigZYo4znAqEUx8kN3ERM4yDoRzKKUda5zY8vnjpCjx3bZFVYp4Cz8y4Gbkr7VhWgSXwtLZixzw4eB41FzqNFS3PM2Erf73kLLyyCf1BG5di7CY7RDW22KHQV3LNc9HFqtGVbNfmzf29XWTDGBiMhP5phBfRN4VfcUwTnUPMJ9bs4oa3D2LJZNRMVnccJvxmVUWSpwZuchX91Qv1B9a7zpS6dAed5WHyt5NzKZAgfUjxf8rHaTN6yT3QhekpxRqAa33CFbDMZLeuVqrS9B9CzLRttb8f6bmDTMfxpznmftsXRw9MjmbtxTNcNzu4u369Puga2J1ZcM6SGLeuwqvFQLeUgLHNKVNeFncfT1SW4FYCeZSXPBfQ75zgwE5csCPiM1vvvQ8d7j77XwoNnArjt19W23uk3Ki7vm1TV5p8Qcbu4YKA8CTZ8tSGQKB68KQrdavY7G5F7D8bC527AYhE2GdDSACS9MvZF2YWnrzepJNMyQbKU7diX3grR1bVaX6RA3NwTGtK6HiYZNSQWdXUmsbZ3xX7xjoqWkSDFw",
+      "name": "ErgoMixer Half Mix",
+      "kind": "contract",
+      "note": "ErgoMixer",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/ergomixer.json"
+      }
+    },
+    {
+      "address": "8LhYyrgcVuEvZ5vAi57J7MPr3kWNkrWKqbmEVo6AtxGqAzHSZMv1EREN9MDUfsvvRKPLEYJQzexVHkKQGFQ1kCx9TBcXhsNJVSUCXGnWizDsWQCZmLKq8vDGNpmLVKdfwrY5oCTs88qgfDBNiPtBtyQLQq6RiWpQPsjC4oF7GKZDoDSKJTmy3dj82LwWbzePT5AAcyFhxFbtd7Cau7EtA9JZgr4P4YnV3pTiCQLqUw2dnEUqmwynJv63akhCv4qzKNmpQZX85uhzVRxd1MNQj15KjomVdhBSP7asQVF4G8yDzYB4QLfh3GSh5giCeuZc1shLg6PEZPsXRk3ooiXnoEdgjdMoGHJwHVD7YWWz5HAfHLoSxio86TyEx3ijPTGnBJc5ABmbiCJtg417SGhu5UFo8bmaBjzinN7wiukYUTg9Nxki9FUhZzCGuyezJei1gtLZa5fnBmkduLruMkJYpVSePhrYyezFDyA5RkcgJ29WatiwFeCgGHP4Ky6SZ7N3TatKNJzXaQxbqFb7Rfbaozvp3NUyezzJtaNd2qbKMTd8RtzdjkpoMeLMqeMGdd7cZZVdBcBrEMSh7iJr1WRRvj9hemHPZSMd4eoyWyj68XNzwGudkYarq3cUPLfiE7rMzmd5KTKQ9jFYBH5svHMth4AMnmfckZDLXAD66VmsHwGRikGYprYiBEMdD2DchidcMoVCdnJGZBmXm6DsXnJQDCMrDCfJWFFoExu9yxkGPkVxbGAGLosHPk8nk6cKBUtzK1niXtE9bwgGDYKZL19Lmbqk6t6bQvCnt25sC37raMPHr4R7Q5MFvKeSj9TtLU61ZW2pWonrsCp7eTXVCg7mRENrRx3JFoSckB4gD7fEns4385Lzu6Y",
+      "name": "USE Intervention",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "8W5UV9yEpKMQLuKzk7oDmaFEBGqeC1RGauuADViEfYJcs8x55ySXMKUUnSni3itEbscEo4qT8X2GuWY9zNdbYWWCqZmJjsFdynhWPc3FBtE45nrPgf4gqVzqN7RX9LpWJBTj97b4tkMxqMEL8QFDmLb8UzWKpp79MD94AziQvArc33KCQ9nYz3MafjrV3YACCxKcNbwgsKH1AuNUWoRLbFYVJvqzCJRiDHPboNcVSWTFotKkrm3yHZafyifT9BTD6Rs62V6UbiWHi2U4njP84wVyLFE5PvJemVJKy3Bc2MHwXBaoKVuLqZXJMu62nbjANBzHoZZ1cVmA4y",
+      "name": "Dexy LP Swap",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "9g1ReLmsbGevkTjfPGMdRMoFRdrAVskZVmSBpaEdVW2DfG4HDWm",
+      "name": "EF Hot Wallet",
+      "kind": "wallet",
+      "note": "Ergo Foundation",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/ergo-foundation.json"
+      }
+    },
+    {
+      "address": "9hFmeUHVttZmgtq4DEosEzJb3bTjx9HMJVptmMgfaHH9tYyGYTE",
+      "name": "SigmaUSD Implementor",
+      "kind": "wallet",
+      "note": "SigmaUSD",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/sigmausd.json"
+      }
+    },
+    {
+      "address": "9Uw9EcVRC7BpZnGnn8rqoURpfheiLLf5jYAMUgg3MLbQfdsc1apAR8HANpTf3qQfA9oxdQUcYNdRhQgGwmuwP77UhrfeeLE8uFSGsqs3xYFmNgf4yc4nC7z3okDs5CYEGcK8hPmx7tUBiSFJdqfeg2ztd7CJeVEaihbvMiNZQAY1JpwJPEdCbuoJg1gZ7gQXNZxVy2auFLNDxgCC6nM94g6gwevxJXeJWZWS1ZVtckFgF34aJ3mgyE4CZ9FMkhQEdSmgzyPfBjU5dd9y1sYwhmrms6NT78gQTQfAj",
+      "name": "DexyGold LP Mint",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "AucEQEJ3Y5Uhmu4o8dsrHy28nRTgX5sVtXvjpMTqdMQzBR3uRVcvCFbv7SeGuPhQ16AXBP7XWdMShDdhRy4cayZgxHSkdAVuTiZRvj6WCfmhXJ4LY2E46CytRAnkiYubCdEroUUX2niMLhjNmDUn4KmXWSrKngrfGwHSaD8RJUMEp5AGADaChRU6kAnh9nstkDN3",
+      "name": "USD v1 Oracle Datapoints",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "CumBTcUofVg5SRyY9pi4CRuGfJtjiaQJkrPQhfQUQ4ndF4fMTD3XTUFkyg88NNC5xvXq6jCiL6aJPx43JTvyM76CJSV1WHnzKuNjzaMXi7QqaUMpKbfPc5vgLywaizFMacQ92N8gvXK6B2BJSsG1bGBtzZ6Z3WiFo31F6MX3P9ypeod7ogMMQnb4gCm5UBfjeuEtXtP19NSQj1SaGNkB46kd2JcZfx7PwAh13vCLuHbJiz6aFrpjVJ3NkaJhfyr7tEHDVKgfEAYtK2h2iGHyHpuKakMTdiZS55iWxr2LjnzjggFZiM6YhcWzcQopVPMgc32T1j9dWEFAupCnN5eQ7VchZKQXUX6ZfhQ1Cp6zxecqcSuWFwWQbpwLS8xenEKb7qS6aKpdLHPVKZLDiBbtre8g2SYm2peej4QrsNAsxkz172ztJSVxuWUzDqbsaqBGA4eZ595A6EroQC7oSiEqFbSan3pJBQ1g5a8Tt1X3sUCvaGW4owEaqmyHvL8UUtwXzkSDFhPDzsbm7KutXeB94porMoM4Zbh28hj9S7YxLytEDd75vf8YeiR2sRXsr4MSSmW7XWSmVKTYG3o67YVW1cEhzB3dUPhBFzw7LctGSHNbikhx5AVQLp6kG2DnxXyoXY68oJwcUqjA649xYMgdFykS5KwSDXySUL1kQr1kmXgCHwbtDgY3VhiTt8TRsXWsWPG3frYwrRSAhkznCNnTPbHaaU8nxy133x8micVCmHg9iapQA4WZTYDQne5n9eiSVqWbrDjtTfg4fsN8Ta7UwvaD2Cfu8iFeSRuVzS2EYbvkdo3TjhBmNaDsfzVinbN2omJuGyXNyrCFZpqN6nfLMsguCDZxgMQpctBougc1NskNXGerkjxnDjvRRBziAtCHRSZj3N",
+      "name": "USE Arbitrage Mint",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "DDTKN9vMK7RSrdT2K7zizFNXQMcMGThKjCMu7FpDFdRR4XPSy4aTNtRy7sMH8anWp1HH7BT5kBqQFfsVF151ZnTbsbhEBTVYJCo3ZMEpaNA96241bqLh4Q43REiW21pLbZNFb2RerqCXTsMWiMo5aPxdaVAaLgRqTvT2DEBjMmow3QEURRAuGo6SDmfHCYt6ZbqE94A3vrcgAJdMc2gCCFqnoEje1vQwNLsxkvGE3R3pxWbTQZLG8zUFkkPbPokTmbYRa52b8GuZPypsxGZvMriPQRjiBf7FQYtYyjVpM3HzbULzMbKiNf3759R1EgSyMGj4cebDP7o7oTMn5Aa5V7aqzZtbptdX6nzmicEx8wkCNRrkvbYg1bzWXVin73PHVyawJq5LT9jrnGvxNALHfwR4QXuEg7698PrUhZpVtxpxaYSp4BXuMxm6ZKDdAdWWjHYVnqWzz4ntJAckANYpZFntNyesHMVhUYKCCBVtQJhsdLEiKiVRdvQhwghoVZ1LAGWzYDR4fm2xMM4T2E9DyuSwgQDX9SpdTNB8shLMK11Gq8fUydVyGgWf1b5FGMhknMfrL6mQBXg7FTuq694TbkqmNn2D2vt6UknmFKqE1EtCYqTbSsgnCeSvUeEt2RydgydkAE7yhmTKFHhRBv6egiSKHB6Mw62R73GjjciSiRXQ21pLN4Lnvws3RLPziQCmgDoTHP3AskytDr5C8VDBChm9GW6iia1sHBCcndza2r3bgKpVjGKHigvk1VcK2mq6i1sw2PEUGNn6uAkW7tTb74pwWHHAHRZ1gKYpragDSuQ28NCrgDY5f2KnxqZh8WAhWnsWi2sdjr1jzMXngZMNwhQ35UxUF87ESCip269DDQvVj7sP6ZxG7Ks7AERDCsTkViLevnTMDMz4kCAi8opvaetvFqNQ9hFFwKEmWaD4G7si2y5CyAqfSpoHoUYMZicAhqatEUjnhX4Sh89k8PZEidHwx6ncKettTvLZUbHbePMqBaC14788YH68UetrVfeepfUYd",
+      "name": "USE Extract to Future",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "EfS5abyDe4vKFrJ48K5HnwTqa1ksn238bWFPe84bzVvCGvK1h2B7sgWLETtQuWwzVdBaoRZ1HcyzddrxLcsoM5YEy4UnqcLqMU1MDca1kLw9xbazAM6Awo9y6UVWTkQcS97mYkhkmx2Tewg3JntMgzfLWz5mACiEJEv7potayvk6awmLWS36sJMfXWgnEfNiqTyXNiPzt466cgot3GLcEsYXxKzLXyJ9EfvXpjzC2abTMzVSf1e17BHre4zZvDoAeTqr4igV3ubv2PtJjntvF2ibrDLmwwAyANEhw1yt8C8fCidkf3MAoPE6T53hX3Eb2mp3Xofmtrn4qVgmhNonnV8ekWZWvBTxYiNP8Vu5nc6RMDBv7P1c5rRc3tnDMRh2dUcDD7USyoB9YcvioMfAZGMNfLjWqgYu9Ygw2FokGBPThyWrKQ5nkLJvief1eQJg4wZXKdXWAR7VxwNftdZjPCHcmwn6ByRHZo9kb4Emv3rjfZE",
+      "name": "USD v1 Oracle Epoch Prep (until Oct 2024)",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "EfS5abyDe4vKFrJ48K5HnwTqa1ksn238bWFPe84bzVvCGvK1h2B7sgWLETtQuWwzVdBaoRZ1Hcz1i9w5sa4bkSPJMrkFSmcpLeKUEseNYQn3x57xGttnWFjXkLsyE7EDQuga6ic28tMpPrVokJ2d8ZHQhjddRgwxMfhcwvVtoTqjLbDc3YKJLAetd2DcaCWJB6XzHCM8ezDFpCWVVrFeu4SYGSoGJbgPDRvEAcJEN4qu1RwsmZ1MzBfWF2jBJLagWqu2GvevuDG5oTtJrkqwCHRaAshfoM2mQnjLBsajjPN426t3aRZVJVRHm8apmZstnh92kYBVMujvLA1BkR2tqTfYLtmX6ChFSMXSYejkkCQoLdog59iD66oEzAZtg9ZowqDCjfT8G8YLVpEkVd23QH2LhFtEie3R4etCuvzCSyC4UmMmLbvrnUg4LfuP6xv6jckLGH8HkNWeTuuqf2UmVCQfhMMndBciTXF2KfrPCrzmDXw",
+      "name": "USD v1 Oracle Epoch Prep",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "F7g4orQoAz4XPrvJVmqXx5RYkCQpkc4LPGucWXDDTcxnFGpVR3S8Hdx5nYFQprpwDV4sDXxUyM51fP2JukJjTeC3Wk2wi1JYeidfkb9zYUCPS7rLeFs4ru6Xo1qzy6ARZgLksyhx9fPXsEaSf24399ve4WxcHphzH4B2Enfesot1iT57N4LaCN2XNHR7WxCKhAtSUK3AqJpocRhrDwdkdaYwZCN61fWmsCiULoEeokmfp8wHfvEBfjd34bhsAYakvycjF88cuf1B4hzDWtW9iLJnrvGY6jFviTX1GiQWTPt9joFjk1rMH85zDN3hhxZLNGXz2DzjhyeP3RPrtiPnRwQoe2NTjdpr8g2jscNP5jaqSXhfKAbrePZGJHjUhjVsTrDRehoqfjLZKCFbVJKMacJyQMdAcUERjqQLoeRETkKFyacZdTXcFHB",
+      "name": "USE Payout",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "GAcYf419hptD3JU2y3dB1RYkDpWov3xyy26sQdMy6XTy85zBWZ4XfA3a2QcZM4GZngKnTjTkc8C7atWmFRdQukJaAsQDaVABV4hp8KNu1YugZuYQreB8EYE4QUuGq2ciQeg9ovSPzb4auxAmBHXFR23242nEf2Z7sWrbJr8iwvbcC1uBPd6dsnhSYo6toWX163LWYK1oSgC3sfdi8f5jFTvq4jBVNSQZn4nWtfJbtdPEAtqZ3Qo1GTSknnXhttAUBHvC2qjXDxS68GpWBQtozYPzgdB3beVD1vSJ3QNFzK7uwqoWgNJEtNm3w3cuc56Hi8HoiV2Fdzz327VnXqqscwkMt4yQ2XdxCD6ypGy2K3X46g1n2CWq278THp5TRRxgpnxY3cnA5jeEq9ab6szbS168Y2w7xTUkRuoZUCqaGsP7xwecYXjdiN6nvqyMXSbZstUG2wrnkvZTHizCtLBKrxyHd44g2WUvsRMN7oubsPtFN7LBwVGmbJ3B4XDmwRgY7zLSsdzUP9BeSVFGNVHoEhB9TxDdNz9dhoDLuwZMnubzmCpfMv9nyAf9CieXrNoandWnP6m7z4dg1oWgmNNksHvFc6dsDa2hyUEAeVuPY62qWYcCoC1Mwvx7fAKELocs3a5b3FZ4wQrNVfr2wHeeeH5qWY3Ef3JVpPwyiAqRku9jVn6FNtcy2nqmvyMrykzZdgZkNnbwKe7c5WRJoDkY7aJk7FJ8PgHtYw4nz4zbsFkpFkbq3ZGAeki6BHzaTq7rYEBAus9g8xYBnrYT1XDzDkrKPkqnEgnfNsPnS7XK7D4eGGQgHwKn4SwrdCcyenC7m717Q56WkZFtrPXw13woZ6fNVN8nVsXCU1oEpUXy14pJxoEhyJgEzVzZCYJ6RSQEg7HKdCvLbEBZR4GRtDhhjxZmVD4Mc7gUHo7ZoJ3CXdB6ooEz4NupZyBwS83SkH1Bcb7m3R2qz35E1MRPVA4W2YgpVjj9kvNTr8w6734bVUR2Wp1WYbu3GYDjP2LYteANmaymmGkN1YF799tRBr8mNLVfbdJyBquMmX1eSNg1QFXZNbDihJb5WVYSRNMfC2M9zZfzVN9YN8NbSGdzXg8Nu8UDEYTLJFCdX6hZfjDatNuKwKUi4k5QQY4fhqovHR6DHK9T7vYi9AQFv5AiKVSE7pVeQy7Xuus6zv1ZQTa2RDeFQLpsEXvniPKK5jZZQXNGNTXzawmJnXiRnsj8J3gFm4MydM6XeT3xYR3hTotR4Z6a8K7X1fkXw2ej8UPoR9HXDPJA8Xcapn3TRyd4uc88FHDjbtoc6mZ8d9hERdWvuuXJ1HGTxADfNkjzmnDbFYZ9zqyRWv7hMu7rcJnJNuDKvv5iWzKE8zXxCXBFXxTcoCkWhyz6UHtyEiGiLJ1xmV4dN2rct9NaUAvUZnX61h6xRny9NqKSM9EyvMMdqZWPCGa2JcZojFi5CPWmgwXvMnTDFZ1UfzVXsxjvB5e5tSh84b9k6Ay96SQ2DvDcUD3BGcTCUMQShaxUydSYS3T91J4qhaqZFaXQqe7dXk4XMEwHreTWwRcsnL4pTXtDcCVSfVhZ7GCyC3HEV5Hwb1KGbfhgWED2XD12R6UaDdgnDxjBj9FQ3sBHTFaH1PJwV1MC2ovFDoZJundrVb4hhyVD9GTsw9bmSHUdiB7S8mB",
+      "name": "Phoenix hodlComet10 Bank",
+      "kind": "contract",
+      "note": "Phoenix Finance",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/phoenix.json"
+      }
+    },
+    {
+      "address": "HNJiaJVyw1qtkiuQYxDTjaA8rmogotVzADinCt5qqavoyoREWM27WAp6f9Y79meFcMoJLt3yr8nsWC5xU5474ojCxE7VweGpd9sLz79VrSiyu7zBjBXPjgGLFZdJAEJhsH8A4y924MVZa7D9te6t3FUiLcpyTbrvTBhD7SpnD6hUjbGszCEGf1fRX1SmWZikeXcJEkfej42dPRimT6Fw423XAc9Tbeih8ZW8x7f5Y7y8frF5kxEdw998JdLU6UzPSwhrDjfKhySqmssQeQxCFwb19PMCB8ZZtx2mGwczr2H12Yi3hnEWn9ArqRqKWip24pJgm6e4Ky7n7BzGRRTmDtcA2EGH3zEVzpRH6aNSHE1MJ51dbCZSNFnRJfk3vxenkSevCfvEMfn5KyQP9wPU5foZACuHX8TQXvVUe1va3HXJFwCm74gxRssBy61GcYdwVbtxykPrw3t6aDX7c46BejsXvEaz5Ydcu7U8MJCoYia9pZ6zkjAj8d7Su12DMK1aLkBxw4vY2zQYc",
+      "name": "Rosen Cold",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "HNKGPk6y8bBTNmWNGd6zbFj1Tf2owA2iz4P4XpBBcBLctKgDC5PQxez8VNJFXwfTKFXatcKKUgscUg9Cce4M1XWPnWkYrJfrDuPZG5dqtSnc7Uk1TfJq5sGmGiT3r31PNaPCtmKL7gxpDwXTv9qDc4foH3Cee8waY4vbCfzeSHFL22MJ1DdNZ82AAfBfq4KESLJSNuz4mwPET8doZG9u89S3Rhm7vupXNy3YixDVjmZ7oGXjbHpqmYkcwa9zV7236sgzPeGXhwFBw78FLbjHMo8BtkoDvgw5DZ43tnAEx8gRALexCBG4FwVCttogkw3YtvsBK8zCJvjnBezTwahWLb4nhi4vA3XZDRaTzap6eKt8tkia2iPCJBZ2DPXFzMt4YMP5VFZDqyu7grhzs5SvpoNq9LMkTPHNtU3xpztCbeSosBck1yEQjZvCihuWYoZNW5MZ8LWkpmXEBXEXhqPB5wwBDTHD1qFpG17dKE1dps5YsmcSwibNUL9idgvQov3RAHpW2avck2zLy",
+      "name": "USE Tracking",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "K3e9Hb696pUHf7mkAmZR42Vim372mSz17fHbUPYnSHNtoJoBPVw53b79tKnw8UEeGq7u9F8KcePPQ5tEKDrv8utLfVL3JfN746w9SXcJXzhkPuYtKR1DgW9ZWCf1wuG4FcNbCbEMxrtLtmNoLJrGfFh7Ge7m2QG3xvJLJ8jqJv7gDZr5ZQ3dHh1Sk17vYn3VZS5Ddb2JG7qGexNqNGJv84KNzirZZbVkeomWNLzDiLiG8mgQJpJVJFYFpGVjx6S8yvvaFdhpA32s4PY2g4JPB7oxYr8fwhDX3emkbxEpqcuzbdBHSnuVPaWveLS4KGT7shHoGZUV4HRVxsMHtDbSxPB2BdQakS5vLqHym",
+      "name": "GORT Dev Emission",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "L7ttnK2Comjkxxhyykdat7cCYLN7yrMJz6jCYmQGd5nu8Ma9mHi1JEiCNsxgmxAvDd5vuDMRkjiwQU11JHsizheespaEu4AaH41a2NzR2JbUsaTWVEg7jCBeMXCUbetnrsSLPCqZUb4PhnvE2sGV21E8LGyZyMjtWQqcauyB297d8d7aUCgKsbgZocqRsKZdeH185yxERavMEsb9R8ifqpbD4FVTNwWV6kixAQrMrwzp1wvheEk9t931iQXH9A2X4SJ4JR3eByqcHbWWAHoNs2gL2tpWa6fkVdCs2Kqgd7LgH7u9VFGEzACibuFzanQfNNZsic6Q1ndG97ebFoGVArfMNdvFMbxo1raYuqg4oFEeTY3aNXhhtgCfZWgt2AKz1mtKdZNLRBsWt83LKTiTQLrqBVNBurD2ojUnTV4r5deV",
+      "name": "USE Bank",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "L7ttnK2Comjkxxhyykdat7cCYTJkNHjG7AxiKggp3AFxCkBDbi5o29egZacptbLXNXGQAKucR7kuifFVTeNBsFmnngcz9vqcoCC3xNZ6N8ZxRZYxQxQCa1mRdP7agaXy86QLVZVw5cYdWv8j4ZdfLHdtEUAbvSzZ8Q5MfAi7LdohcDZbPyv7krHJtRQsVWMEVJ5rGb5BesuhEi8ThqLFCuDwYDsHrPFfiSTZNoiAeDMAq5LbCp3JbrJrWMyCaM6avLAZw4hekfhGNN1dN1k1SZNJNc13qvDkjr2aE5JC78U9Ynre45GdQjF9H3dniDqCzBTY8dhrkQdh7haBcKTRe5uEcLpS5u4cRENNGf6fjt1uvyxdiLervnZq5RKQ9wcjwYDGSRjX4s3tu9czYY4X5LCxT5w7PxwWCmhSaw6fSGN5",
+      "name": "DexyGold Bank",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "MUbV38YgqHy7XbsoXWF5z7EZm524Ybdwe5p9WDrbhruZRtehkRPT92imXer2eTkjwPDfboa1pR3zb3deVKVq3H7Xt98qcTqLuSBSbHb7izzo5jphEpcnqyKJ2xhmpNPVvmtbdJNdvdopPrHHDBbAGGeW7XYTQwEeoRfosXzcDtiGgw97b2aqjTsNFmZk7khBEQywjYfmoDc9nUCJMZ3vbSspnYo3LarLe55mh2Np8MNJqUN9APA6XkhZCrTTDRZb1B4krgFY1sVMswg2ceqguZRvC9pqt3tUUxmSnB24N6dowfVJKhLXwHPbrkHViBv1AKAJTmEaQW2DN1fRmD9ypXxZk8GXmYtxTtrj3BiunQ4qzUCu1eGzxSREjpkFSi2ATLSSDqUwxtRz639sHM6Lav4axoJNPCHbY8pvuBKUxgnGRex8LEGM8DeEJwaJCaoy8dBw9Lz49nq5mSsXLeoC4xpTUmp47Bh7GAZtwkaNreCu74m9rcZ8Di4w1cmdsiK1NWuDh9pJ2Bv7u3EfcurHFVqCkT3P86JUbKnXeNxCypfrWsFuYNKYqmjsix82g9vWcGMmAcu5nagxD4iET86iE2tMMfZZ5vqZNvntQswJyQqv2Wc6MTh4jQx1q2qJZCQe4QdEK63meTGbZNNKMctHQbp3gRkZYNrBtxQyVtNLR8xEY8zGp85GeQKbb37vqLXxRpGiigAdMe3XZA4hhYPmAAU5hpSMYaRAjtvvMT3bNiHRACGrfjvSsEG9G2zY5in2YWz5X9zXQLGTYRsQ4uNFkYoQRCBdjNxGv6R58Xq74zCgt19TxYZ87gPWxkXpWwTaHogG1eps8WXt8QzwJ9rVx6Vu9a5GjtcGsQxHovWmYixgBU8X9fPNJ9UQhYyAWbjtRSuVBtDAmoV1gCBEPwnYVP5GCGhCocbwoYhZkZjFZy6ws4uxVLid3FxuvhWvQrVEDYp7WRvGXbNdCbcSXnbeTrPMey1WPaXX",
+      "name": "SigmaUSD Bank",
+      "kind": "contract",
+      "note": "SigmaUSD",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/sigmausd.json"
+      }
+    },
+    {
+      "address": "nB3L2PD3J4rMmyGk7nnNdESpPXxhPRQ4t1chF8LTXtceMQjKCEgL2pFjPY6cehGjyEFZyHEomBTFXZyqfonvxDozrTtK5JzatD8SdmcPeJNWPvdRb5UxEMXE4WQtpAFzt2veT8Z6bmoWN",
+      "name": "Rosen Lock",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "NTkuk55NdwCXkF1e2nCABxq7bHjtinX3wH13zYPZ6qYT71dCoZBe1gZkh9FAr7GeHo2EpFoibzpNQmoi89atUjKRrhZEYrTapdtXrWU4kq319oY7BEWmtmRU9cMohX69XMuxJjJP5hRM8WQLfFnffbjshhEP3ck9CKVEkFRw1JDYkqVke2JVqoMED5yxLVkScbBUiJJLWq9BSbE1JJmmreNVskmWNxWE6V7ksKPxFMoqh1SVePh3UWAaBgGQRZ7TWf4dTBF5KMVHmRXzmQqEu2Fz2yeSLy23sM3pfqa78VuvoFHnTFXYFFxn3DNttxwq3EU3Zv25SmgrWjLKiZjFcEcqGgH6DJ9FZ1DfucVtTXwyDJutY3ksUBaEStRxoUQyRu4EhDobixL3PUWRcxaRJ8JKA9b64ALErGepRHkAoVmS8DaE6VbroskyMuhkTo7LbrzhTyJbqKurEzoEfhYxus7bMpLTePgKcktgRRyB7MjVxjSpxWzZedvzbjzZaHLZLkWZESk1WtdM25My33wtVLNXiTvficEUbjA23sNd24pv1YQ72nY1aqUHa2",
+      "name": "USD v1 Oracle Live Epoch",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "NY4PEzZ7VfjxH2v4bXAdi6zEpHCTHia98VJ9niT31przEVppCK5aWeMJH71xSUHC6pN4psW6B2SDRydniQiEGZ7uAocVG4ERSoDxYyv4arAtDM9LdN9x6qzoFJn4YVtyPEUDCAzDefpVBTHvf5EWqJcikghaPc597yXuGcSemCTNrin3LXVhBBUPaf3QiE7NG5NYyDmPt8tgpAweKESv3YcsEQRxf3LEjPF38XFgg6nAmXFftGxDeSCPHQvLJosrv9LaWNK5yNsg3s2fvqE439KZpKJ1iUGrAd56TUkBVdUKykq1rJA27n87SrGrK1Y6aTdFRW3MUUHK82iK74qWeHwL126UQaoStf4UbKagskfs3mLBEekJ2tnw3hUQB1WamEKcTz36EYhFRjBuQaVUn4eRUmub3UXGb2edHZ33T6x8sSRuW1rLbxCwYvo9cyMTjueaD85f8yUMbzydzA1XkVa1YURS1SutBxfjY7Ejaw6jfbJYcQB15syRXtFR1pbAKHfMwQZ5WvcPZgjvTDFt6VKTcUh68CvtbxRcKKzY3sy9CdUgJUGyFUx2djkBkYJrSrNB6ngtN93GG39B3AY4wPV4QoTkv3JzP1KbbjxvivjLRrr6J1Tzs1y3ntFpkeScNrCzBL1bn2KMFigRNyTLLov3pkKGuh4b5HxitX9D1P2Kns5BLBu1EYB1WgHt8rmWGGEMHXQLgmEi5gtRuJptS2JX9QTKdVvcWyumpZKFkwPy5zdaUZuHozyG99KYLeQbtMpmURNwgedDfpTuiVaaTdEJkWYPGw3eyNXd8JubPWBHibXGwf3zJGzvimPkRPh8mPPgaV6zcmS9yJTTkVzGeJsepk5YC6FFDtz5okPA9KeChRqh168nycQYnNWtmvtNYXUdQYZ9XhzzN4f1yZtuSRiK4gmYcYYmMoR6UA1EDi1g7GKn1nW9gdcVsig3QMJsUzZ62XUf8MfjQ8xsMidHC4fWgeiP5wgMXdr6mYkyTSFtWk6fW6qiG9NFNeDHpuVdtfoZr5oJv5cLqB7MCJBxHiB4HAsBB39nvByqUGcagP5nZo2qoXzKeaYW8xAvs7AMNYfZ8WMHpjE1qDiadQ8jEwaYJXAwCj4z7p4dZfV1qYLpkr3BG15D7uVS5E73q7vfbd7hEthQ6U3Fi9XttkttU15nszWRNvt6Z4yyA8gY6FKN1YGN9EVzx78MD6dLv4VQCQTwh9sVg59KhJnG8xGkCv4WfrZsPB",
+      "name": "Rosen RWT Repo",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "oq3jULmmMxxmwrZ8cxcPUgHKvuyppYFNhhBZrQw3G6ws7CkstXE1EWWe8ykrfspHvqufzzvSkiDsu9SrkuydTwDoApLtr8F36fazW1uX85kBuDMqXJNjG88Gn1aDqKqVstY4b2qzNWqo6cvzWqk8jo5HUhvcDNktpzXzzeFcAmX2YUGnGT615byL1spZ4u2dstoGTRcPuuaXxbneNGPtMz7teZaZUsKS89i2LPeFwURwBiDKQHaFvq1HvbXfYcXc48NKTx6KQGb5zjbh84edfLnACxRZF16p1cSvwLpRVVSQySwBfzhgsu6Hn7B82Wn1sKLht7zZXMcsXuMxQEe8BkQ9L3xuQD9t5xGi6dSEuWNgD5hS4C6Md2RUwr2e88EY1avtxrYWiyAzJVj7jjx3jZonDNtHe8nVFh4soMYbNNd4GVMRnALSKtZVPDpERLXKduEUFEtPHpGG5sc16BQVAwH1u2y5YikBbh3NUUAsABxB8qVjzMW7V4bYDVuhdeCYpAPvQhHRXFQuCkqKCPoicQFucS7ez4zQsDwr6Me6snkP1DFd1fFkg8GvvuuqeUtufVyZ3jdKhf1b2ehKg5oQTguWyHeubPjs52b55hbBHhNJwoc582JPcTASXHkUviUg1Hgpq7E7oCaGFWEGq2vvCJRH6wjNVTTDxSdCvYznzecXjZcbYLWWvF7sZJbUjmatejxXidb6o9m58t8JR1EcYbqRzpeGapHip9uWjmNcmnRzynhXSAzMLg9cP",
+      "name": "USD v2 Oracle Refresh",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "oq3jWGvabYxVYtqxQnq48AGzkHkauktPxEzqECJ1iamBX19TBr3h442C4GzhnX4tGM9DmRpu7ZdWHhkeoxNUZ5EY5AdYCP9eJdbHTPXyM4eBFq8geUayCXMNu2BS7dv5fi26RR1GH5LEkPhzySfmUcZNG3AZGStJdpsu4Hsj1Cw53ccSn5pHmfczgTPJBeC3sg1s46DteezeauhuYqNjQoFtyeFkkDQHVpFisBD7r2PNF6ero5xEpdFKewoWp7QLY1JYKSoYyfBgD5PhSxRMTR7hDeFdpToEKHg9RjHngFKJjNPxBZYzVjotaZK3iZ7MFkbHji5j7wPNyhArUPtZ83TAF5BAMQ5jECzoZqoYHvwYJQ8FhuKo8PRmStKEyPJKZWyHf5yi9TnZZaBvfk3n77DXCQrgpiWFMFHo4NnraTw7xU27X3wKvocJNMWNbtE1xoWeU6UH5URxA4jmWuzneYDVJQ4QY5hcKWPVPu9dVp8T9YGe7V61y9pdKRiv7oQpvSpxGd5Pwyba5k83g1H5sLExFL7GJX5pqSmub1J53vzBEmkBPsaxcBgwiHtKDDAQAHWKxhDrFtA5GEFSNfxzC4KQWTUwXExVXCLV1MtCUEvquqtenp9vLKDbAcNXLARvgVej4JiskWWY8bbh53yhrnuVQATdsZ4tomGmSFwfkgUWUbNXkc4qEvpPrpq74JMKJpxXBYTZ31PH4ChPkbojj3G822VnKArHN66yNMuSjt9E3wygNCEFzQCzN",
+      "name": "XAU/ERG Oracle Refresh (2023)",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "oq3jWGvabYxVYtwQccW381u3uTDLg2Zbc3PSzLyPRqwFP37Shs61PchaqD7tEYrzcJzF498uLGKemB7jexeM3H6nYuNxd3sRLfuzspQFSc1jMimeZjnH7wbRXfTN6PWXjXbMTkW6R3EWHs4CwTEEbHwuDKoMME8DgX9SmJuLHL1QNKxEJEkFH5XRkbyWSUJqAroMG7jnyxucd3BbCfZQZrDjjs3iWprNdJw5ddj6D3v2AHRJmNsWvHEy2tu8mgD65isoPS8Xto7HSoBR6782n1qCQH4RPYhBeQZsq5LPqP6z5hAonp6C9CDe53fTWoDfAza5Rp2KGfwkWNuxf84KbVa78Nm3LS1GWzEaL6M7VA1ZBcTBXjfQrsp52qf9FM15dUL1Yv2NjcjmPhMy8RwPicafx91A2Rt4BWjBf1ehsXU6fPWEh7wF6ubqKPT1QaB7RhN3o8HwpvX1KGVrmE8ha3aCs9GRMVKejDU28YFTKcDv8bBykcdmQ9SYXQ1bVLhYJBA9UczBM9hUrYR9HT1DFgSpd14nb2YiHvWDtRP1rC5498YoB3dHikfSjpnPvFTXGHyJ6coZTCz33xdp5Qc4rZ4YFLJka8vANeMAfrHaQ6uCufyMZU6K2iRxg5kJcrtQQtXiEhkh5YwaeoYaHYxfTjwzkKhPU9q7jLr8gzWpZ43HRZUfYpsKQBHLBSPS67FCydsjJEcXJtYoBGGzXeP2CdP72xGb4LmS66a1SeSTyYHKS2tiENLDCyFbM",
+      "name": "XAU/ERG Oracle Refresh",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "prufxZid3SJMyUVhAPFAF4uLyCZbEMWCMXRSyuMEvDUHZf81JcGcmu1EW1U9hUuJerWer5vmjhiJMmjbCqDwPMKRy169SPaLTxDp5tZ2rCrKjiv7xVAsnmphxSNBpj6qqB8fs1rWJGn9dN7t74qvx6oVHZny8KNMrqfEDjcWRv7wP21sZFP4rie4YhWJs8Z6swQ3DA28B5bzMZkMqfR7",
+      "name": "Rosen Repo Config",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "PViBL5acX6PkLJoBTYFtvvdQ4r1g3RWoSywdGnhUjAJ1PZkEdmjCjTUPCE3xZkm5fT5kLQH28V1jdWQ6LP3T5rJVEs79deM2RYXfvPDx8bzV7XCJbvhtYdLb6LWQxkEwvoQfjP38nAt38CWqmCjJ",
+      "name": "XAU/ERG Oracle Pool (Nov-Dec 2023)",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "PViBL5acX6PkLJoBTYFtvvdQ4r1g3RWoSywdGnhUjAJ1PZkEdmjCjTUPCFL6sNBmovRNV8E8PMDFjFuN7V6T4RGbGkRZpfR17aUAXQWfwncceVAa9PMobY3snjHy5xUH8z8cxbBHt2QLhUkrJzJx",
+      "name": "XAU/ERG Oracle Pool (Sep-Nov 2023)",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "PViBL5acX6PkqWEyyvWWZcarUw3NNptqEThhWKbhYLpHAL3eBjPTR8G9NjpHmyiRQZvahkvg4b3oca5V8B4aHmHckrgbUftHE6Jt1LyPATTwwQYbCNrLtHDPNQedw53miVf6MCU2jArAYqZYgX55",
+      "name": "XAU/ERG Oracle Pool (Dec 2023)",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "PViBL5acX6Pm6nD3FJQ3fZXESZTq8imJ47LJLMWtrhqm2nP5cVwMfXoHoqhnfvxUUKenebtEbLwZFTWPFRXJNsqLYDNWMtYAbvmqWgxCCPeH1fECQYtdZksCMwJrcmpLtNgfeADVEnmcUCPeTee8",
+      "name": "USD v2 Oracle Pool",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "PViBL5acX6PmcLAsSXs28sVwRvGDWo54AFUenax4vGf7yNX58TXrAUQUcKAL3HuKz8Rhvzm3ZUGkuZAdtFcjehTV7To1EF8QKX2hCLm5ZUkDuB2zynJvTmzD7AqaH25ooDph189uGp4nRPtvs843",
+      "name": "MORACLE Pool",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "PViBL5acX6PqzhnRzKkXN48Rr2SNWspChGAVUHFtGjhNK7dzGm3VeJdkgvzySx5uSWsyekihaxdVpuvhz4MqNZjU8FkwYZUzUC8AL3pFNifisCSrLywNWehhxGz8EJpyuCdtofhUFVw6qNEsvCP2",
+      "name": "XAU/ERG Oracle Pool",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "PViBL5acX6Pua49BABHzjA3syWLhMTKBvaRZd35y1UGqou7abuELBoynthX8vnQa5crSMvL2p4fVqhxrcMssKEKtkBoAYt3oXYJdwLt3yWU2JgkZsPfC6dZeBS4zgzziBiticLZram6cfJQTsrck",
+      "name": "MORACLE Pool (old)",
+      "kind": "contract",
+      "note": "Oracle pools",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json"
+      }
+    },
+    {
+      "address": "QKZSUxDcovcP6AijdheVE6TWrg2mSrUKc5P9J9N4Mq6fY22KriiPFPq8oXSaP6zdhrEmJwFNF4nKpSHvf2mhjUNeFCyoAME2k7TPsqSpi5M1SMj15d3NXSJZ1tmiC1ikyXeGxWzfdnNEDaEuwxVPkA7dNz3upUG7VaaHh4mKN7itU4MgPZ2JU2skEueU2bsehUCYoQMYHn3qN9vFmJih14VuyWuvShGSruNhKJ8jhsxxTyhJZgXmY2qEZeunhc1SaDTZ5LTG2c1so7bAEQDip6G7rNfMjkCjj1eAwFRPVwvLmk1moZmR3v53PKMusDqyExbLyE4PruJgLtDYekq5ZT2Eja28PrcXzbBNBa88sth4riJ4huKog1kT3hGq1128xmVghW9EiXDgSJagPVJT9o9YJQW1VgMyzSt7PyXvWodFCQBKa6fvE5wY4Cij1xCsCCatRr7pLMH6upTswV6AsS5bqDKmzMg9v7RF5nfmQt87SbQDJjzWaE3JeXpVPUmJQVWJGp8gDz2yTfy4Q8ykyvEnXcSyBxKPukvcuLLcXTMxVh3G4h4VbCRwCokDphF2cM3kkMfNWbtw7d311MpDQvkbYTkza5ZXVNqLZt5hkpKvQGUhb1dKHyWY6ah2mH1CVsBKBDDPPycTeJ6JWrr4rktQAzfyQDdbD1gvVMhtrrZWLxdPqurZzzYNThD2MfmEG5CQV1CRjP5wFpbCqqrmJmiuBMQJ2uFES3HJ5y551kN4unGNB3LtLd7E6eqnP3uV",
+      "name": "USE FreeMint",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "SiDFfCzE1MKdUevq1vCRN1vA7ZWNQD3gPBXdGSJ3xxDbh6x1YHb9PRJgFM7kS9YUFNmP5giWuL9NLhsvhYLvvfwLQb8MZ3NM9yvLyYRixmVLnBS7QoiYSYj3ijuHVFnMtp538uGxXLfRF6bsaW68dbnjDuHMVtNccjHYgSTBiWNkWja8sDMSm635rvMeB61ARKpTQmR5Wf1T9NJnVutjazhX9nABq8L46d2jSYgtKVDiSv4cFZPZ4Y5S1fDDJYP2PLnKx3gRFqN89JWHhGWwh5SQgU73Dc2EbHQx3G39Ah6MSntJKc345LW6AnZjqqc2qg8xsNXtdxD6NcuWWnKnYrXABKPR6Tc7isRb4FoGxn7dWPaMDEhxCH2GsTNjM1CdYqdEEXauFkPiA2faRY6qDkVKdZ2G4wDdRcTUcyxK5KCciGi3UgCWpPxuXDp6b3YMBMqPan78xM2ttrDeS4ns1vq9rhPEyJG9Gj3m7epBMEXh6vdjLA5pCwnKMySyHNYviTv7nwCxG1A4bEzFNTxKqoJLHD1gUssBC2xrrkxj3ubgGz3YN6L5jVKmzce16XPVtqZfusiAC611kX34Hd4F9oCU",
+      "name": "Rosen Watcher Collateral",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "TZPn3oLcgqXcSLXXguTKqW6TXsMC9brGikXUrMfygBTPdeLgbKLkWj63EQ8rUQQodcVveRjDSigJ3CVd8yjeBwY4jQLr6ZMxDXTPn7V42zNTskCp18maQwN3p4S82tezBcJnTdWoSzeQVbqhARUyNNFjKdyKc6Z49XKkQL7jktSJcG4fnFayBqPZRhQMEB1ZZ12bU2rX5SkQj5jE65N2ZFCTi6WbNeNWWZQYPtZv8fGVLmNdhxgg968LYPLNLBJVa7rUo6Nyce4CszBYq44bD14rvKMZXq1zQ6ZjkFRfmXjDFg92MsXGuENuZdPnTgKJ7Cdct3EP4UFjgZx1PQSauX8own7pPEAf9MBRdF84WNqo9cbZhvrhUVvispD6bP2AoCZWKkrppi1atoV22RPxbouC1rkpsKW287HAXxfiwP8VKVDRUi1aVjRvFP13RpyrBf9cu1z44xnJwTC9ui38XPAUjz4DWp87mGh6JC54z2Mqyk2nEaai7nBP4fPW53XSExd5AK5JC9fVyfdrRtiR5ADkcc2yqXrF",
+      "name": "Phoenix hodlERG Bank",
+      "kind": "contract",
+      "note": "Phoenix Finance",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/phoenix.json"
+      }
+    },
+    {
+      "address": "USNVj4qoyg7U7C6EpdFGHNzicn48yVmMtDrGYvJMSNjVZF4nforamWoWCMttwKetR58XFDuCvzGdUm2FhzuRvq1MMjBvCfNvAmfBruJ6fuvpCQPmWL7wMndaPvuqW2YFAkrkt6X19YjwLukdV9DToWjcHonvQEiLtJokFGrei9ksNLG3dm3jWFyEGa8AViY5CKcKz7ibH45ZwZ6LGPLfy2GQbTYRUyemWbfjGCy8gdxEspymwCgVtpci1yHbeGs5BHye9snAwyDN16vTNm719EfSQqgu4zKDR99tnbhT12b8FPvwZkRfSwwyL4ghau6i4jzcA9Ghi8tA6Bgi6gEPJEnPSSteF9d6kabuUnbZmmA81QYeZUEToFhCWncjBViwfcYYnFsxcJvxnB4DVtD2oQDZr5z5TRywDWKD6YjnxwLqwF2TFbrbDLdQzu6ayJzAcPYpLxCThQ2EAMwkz8YP4EXCE2rU2ZqjJXgRbpE1",
+      "name": "Rosen Emission",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "uZt1ATbixuZUbFETdSVaYJsRchfjGZdVSNg4wXgex88vDTAPdrzVgQaeuJF5VsjCdsXtSoGtVdhELFYhjvVaw7ek4sp61vC8YVQjCqFvByJaFWxX28S4PpZR7zjyZf7DqYsCnN5gJku871FwDnQGSqSHn2Z7HJxSDkipHgEBvPLDKqsTBDf6yU3YchFA2GGFNBkHKJxA2sCoJYJCVyAhDg8oBeAYzRNXtJNsdVu2o2T3DEZZBRrdzBMnHd4uhUCDUv5jQfhKLafBzv6F8zHn1ezwdGn5QfWVVr7tGmYg5sjijJNBAeTu6vy45k3Azjp4Wgbk77oQLTdjdeSfZXFmodywTGejPR5WJe3sDgXvXqyYgZexZqmmvcqzp22PG2LEfsJrvkcg9hwU6UX17Y7HrcTnJuox3M7d2BEpBMwCaPZFwtiqCtr6XSmWyEr6Bx3jog931yRgPwCAtJvEfJTAk1ptDzhyUqZZvWr9zh1Z7khuCWF4GUKw2enWLcJRRze8qdzoGd5GzYb8QN75F2GreGHc42551DzzBqzLqcPYJad498eWGjFh9p8LkQywhqyZCbjmT4fY4DJefFp91sLApCAiBrTfjrzFVi3ekSCn7kFGxmX3L3BK23P1YzoXNxCdeZHAnF3Y8Dom5xEc3qtB4VcH9dE9GoKFja4EUWGjySBqw8LifWoVZroZT5zbMkz9zFHeNwknNbaBxSo97Ef8LMPeMteu3RzSXoahPgsCwo7i8SfYhbDLB5MDmadRmeBpC77dbZcTyXksg4yH6HG75QoBZ9gFmDgjFGexSHNW1RxB1ey1mak9rbByhPAfgJH8fay1t5Gfn11hcCUZ88k5HMRjTT7pJ8atsVVrE94UALBwVnVCE7cqCiBtgdLmNDybuiBMtHZ",
+      "name": "DexyGold Arbitrage Mint",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "vuyA4NNUewLhUoDCLZhAZ7ZXf2cEb3kjwYgUghnUdVijbjQNaqAkxba6wP6g8DBgnpdq1wTohmsUfzTcZWctn59iNoxncgtzo9C3DEEkaRvv97zpzkysTGzAby5CR9v1JXUzJ6PAA4fCBov7NTSaK4FtejZYCnzj19PUVJnr5xjHLxGisG2peNLNZb8stMPnX6Po2s4tKYj3t1LJAMAq8MruNMKgrBaRxPAirmBkCnojyKM6Df7JKdgnrgNmXv3pTetP8N53C9kF37dhAGjFQAwGaoPSMwrHVAhadQRNfx1y1Gph6hSA5xVBcPjMPvJC5e27woQGsXnvjnhfForippx9uQ73anxXVbiU75R6V8jSUazzVHtxaffwZT6Mm2raruLNa3JH2cHs5EtA3ci4CkDxXZcRk98CvoTEUckgvQz3aatpEFDh5xeoos3df3QXXKyo7rcCtZGt2BWqoXALbhbhgKKK94TzYHzA37MzqXmBBaKvA2enUh3fRNJmurg7xzyQNSCmmgW2wXo6vHcEwL6ShjjgMMY7Mnovb18c6DZD4Wqqbfqr1WgnENgqBnnYwKCadgTr2wexBMYTXamXS32z6gC5Bfkz9DFu1CbiAKq3kPeCCfkxgBqLC8XWZ8H2p8k8vAjzuUkbrXk6CodV9Ehd7CpCVKph2Qax6tfKxDMJJRU4LphwWMAq9kiYT78yCtFMk6cxYHZKWabvTC38bQ45NwiCszAkv36QzQ2kRVu5ba2DTJ33dibpvTphk6NTV8dgcB3tpUUbNZHFxVY8xdBjsdcMendRREiazUUWjorMMq3ogyDNr5ss2p7Z2fDUgacEACTSVTozV1jZeaFVEuz6e3Bg9YLrBRzEhMRnvkDUpMEHrBUUV7bbGYopd76AfhfKLARWiNKyuAuAKrpvsNZqVatuSTsoMEL2MkfzARWWgchhnfWAmH58JLs1qaAmicMohXS19ezZ6jT7FkqJP4qVhDWFQrpsWZwrJpJXEuh6Xwmm6BW7WxFQFXSycuj9tQb1hh",
+      "name": "DexyGold Extract to Future",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "xW3H9CwPJFuGjgMGQyFn2hhKth5ujF58cVcWtZA9UMfpNkPv8PsxToaBRfwU2HGfvRLRHhDmGut7T5FEHWBiaBQaMXz1C3XhhU43PnjgRTfGyj4zYbzzerVbtDnwv3G3KxpDXGmymn4YQwTDyJFAEDRWr8tfCn2qnaaNepWNwZWJBDgpS61FgudXtzk52qyRdrARpawM2YxHH84C4HcSBHmbdXmU1SW7M3dsGo9fiJXxh88r4qjv1gT7xHbE32z4oDtsWDycggg5SdUxstZq9KeENsq8PHVZtbZqPx8Mmn",
+      "name": "USE LP Mint",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "ZPwz9xHqgZaLNrBwyKRv8RHtT2KLox9pGsP9YQGrDQK65rK7Zcaev2hQCHPyEC55nr4vhZci8JW7dwH1FpYuWtyQx3Syrbx8tzYQTEGhZV3C6uAozMtGg91DgcgjYBhdvWmxRZ4t3DuhqDqY72RuwW2Fi67vPLZJyNBvJ5u2ttnCZ7fEDJswJYKv8tk2kbpJJ21ajmnwbyx7ZtYaEBL5kVMwojDVUsgJucE4A3U7Pefv3LHgRgf9HRSqoqkoTUuj8H9KvUEqiGivcg4jL1kMRCJy5oh19Zh8LSEscGFetszwbho8hWcMduJdpDcSHqxAtZzogZFhQwB67nqXHr2DhNs4c3Sht4U7ZQcTsQio7tsriN7SMDnVtaCw4AwLUdF6gR59sD37RjkHV6wUibodRaYsWv7EkzeH4oYjvXCJEY9rikthT5hUmCHBUGLFPSMXtjm5eZTsRrfocSgsyeyF47pGUvLCjprrdXA4PaYMz8MGVAuWKz2ZFiSk2Tj1oFhdbfoGejRhJZZxT75c4XArRBnGmo3JPBxntFyZaWrxWp5UKpcdVjub4rasQppeN69rG3H21aVWe4SVqi5jMJiBY25amPwnFrg746W8foispsDzVXyYP4z8Ghf72cP3PSac4CNaz5AKNe5sU8yhFdpgXETxEXp9vsjrQL2hMsvFZQasGUmLMM1Aq6CTkoFx5ZXgy8tRQfjpxSwEgb64sJGvEretHyDjEBZRS4ojDAYwEYj7ZmQzWis4EvvQNwVKoLtXzkFWNiwCm8qEEZZoHKmpqE2EnD16Fh3wDdFfmC6V4ZzGCAe19ysm8Rc4w892oigQRy1Pni1m46e62VpzFj5G7p8fR5DgNf6TAn7NudcWR1G1vpjTG4Yg",
+      "name": "DexyGold Intervention",
+      "kind": "contract",
+      "note": "Dexy",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "ZsPNMsGz8D8y11MAneZTVjJndCjgTUi7z4a5wHUoBWnMsQSGvGwwrADVqqRBAYgDm4QmAD5Qtf2T2NL4qbbCv25HSE7PdMR5AsFH4t7Zq5yF23X8ne4WjFsfYwzhtMG1EHhbJCzSmLMV9R5L3jU8p4aNY6uBDn7efCBnPcWEDfZF1vPwYit1rV1SapMW6fMg4v5MyJUNprD7YLwuyUaPx4Gp8wnpkghuXGwZhGasCNQodF7LDMWbTBECrrtYNtDNiddhFioxZdPCg9K5zyHm25zqoA4Keen8JuVtKe6dVHjn5RuvqeDgpUBNLqPQEb19yn9byLrFUEw1oMBF7CwoRRvkiobo4A3WqHrjv14dwcSeRidGJotxxj9EZzvgGMytPeYTsrWYXdTkP9NdjmkcSYw3cQ9PRaVaNYdBxito4DDfVzUVJxVf7JFXqrt3JJGre1WsGtZ3FrLQwTmfVcA2nSpdHLeNiLHuUhnoqMQKQEfiP6iiofVqiuVajyFdeysKpq1SNE",
+      "name": "Rosen Event Trigger",
+      "kind": "contract",
+      "note": "Rosen Bridge",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    }
+  ]
+}
