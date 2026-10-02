@@ -928,7 +928,8 @@ export const ru: Record<string, string> = {
   "addresses.book.empty": "Нет имён в книге по этому фильтру.",
   "addresses.book.all": "Все",
   "addresses.book.leftover": "Остаток",
-  "addresses.book.sourceNote": "Из нашей книги имён.",
+  "addresses.book.sourceNote": "Из нашей книги имён и открытого реестра ergo-names.",
+  "addresses.book.registryLink": "Добавить свой проект",
   "addresses.book.packHint": "По 25, А–Я по имени.",
   "names.tile.allCaption": "В книге",
   "names.tile.protocolCaption": "Консенсус",
@@ -1260,6 +1261,7 @@ export const ru: Record<string, string> = {
     "Индекс свой, с genesis. Страницы и публичный API читают снимки, а не ноду. Первый HTML уже с рядами. API на том же хосте, что проводник: бесплатно, без регистрации, без ключа.",
   "about.independent":
     "ErgoScan — независимый проект. Он не принадлежит Ergo Platform. Сейчас публичная бета.",
+  "about.names": "Имена контрактов — из открытого реестра ergo-names. Проекты добавляют свои контракты через GitHub, мы проверяем доказательства.",
   "about.next.title": "Что дальше",
   "about.next.body":
     "Это не готовый каталог. В планах очень многое и в самом проводнике — больше цепи, больше DeFi, больше API — и поверх него: кошельки, боты и продукты, которым не нужна своя нода. Индекс — это пол. Страницы, которые вы видите сейчас, — первый этаж.",
@@ -1327,6 +1329,9 @@ export const ru: Record<string, string> = {
   "address.type.pool": "Пул",
   "address.type.protocol": "Протокол",
   "address.type.contract": "Контракт",
+  "address.nameByProject": "Имя заявлено проектом",
+  "address.nameByErgoscan": "Имя проверено ErgoScan",
+  "address.suggestName": "Предложить имя",
   "address.type.miner": "Майнер",
   "address.type.unknown": "Адрес",
   "address.sent": "Отправлено",

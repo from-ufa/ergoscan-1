@@ -14,6 +14,7 @@ import {
   countBookKinds,
   directoryKind,
   listBookEntries,
+  NAMES_REGISTRY_URL,
   type BookDirectoryKind,
   type BookEntry,
 } from "@/lib/address-book";
@@ -199,7 +200,12 @@ export function NamesView() {
               onToggleFav={toggleFav}
             />
           ))}
-          <p className="px-3 py-2 text-[11px] text-[var(--muted-2)]">{t("addresses.book.sourceNote")}</p>
+          <p className="px-3 py-2 text-[11px] text-[var(--muted-2)]">
+            {t("addresses.book.sourceNote")}{" "}
+            <a href={NAMES_REGISTRY_URL} target="_blank" rel="noreferrer" className="text-accent hover:underline">
+              {t("addresses.book.registryLink")}
+            </a>
+          </p>
           </div>
           <RankWindow
             offset={offset}

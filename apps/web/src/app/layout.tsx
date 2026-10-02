@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Commissioner, Fira_Code, Fira_Sans, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { Providers } from "@/components/Providers";
+import { RegistryBook } from "@/components/RegistryBook";
+import { fetchRegistryRows } from "@/lib/names-registry";
 import { Shell } from "@/components/Shell";
 import {
   SITE_DESCRIPTION,
@@ -114,7 +116,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const registryRows = await fetchRegistryRows();
   return (
     <html
       lang="en"
@@ -132,7 +135,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="antialiased">
         <Providers>
-          <Shell>{children}</Shell>
+          <RegistryBook rows={registryRows}>
+            <Shell>{children}</Shell>
+          </RegistryBook>
         </Providers>
       </body>
     </html>

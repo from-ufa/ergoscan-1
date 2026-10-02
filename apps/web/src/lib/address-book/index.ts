@@ -28,7 +28,26 @@ export type BookEntry = {
   url?: string;
   note?: string;
   source?: string;
+  registry?: { by: "project" | "ergoscan"; fileUrl: string };
 };
+
+/** One named address from the ergo-names registry (gateway `/v1/names/book`). */
+export type RegistryBookRow = {
+  address: string;
+  name: string;
+  kind: string;
+  category: string;
+  projectName: string;
+  by: "project" | "ergoscan";
+  current: boolean;
+  fileUrl: string;
+};
+
+export const NAMES_REGISTRY_URL = "https://github.com/kayolo-ergoscan/ergo-names";
+
+export function suggestNameUrl(address: string): string {
+  return `${NAMES_REGISTRY_URL}/issues/new?template=name-request.yml&address=${encodeURIComponent(address)}`;
+}
 
 type BookFile = { entries?: BookEntry[] };
 
@@ -153,6 +172,43 @@ function buildMap(): Map<string, BookEntry> {
 }
 
 export const ADDRESS_BOOK = buildMap();
+
+const BUNDLED = new Set(ADDRESS_BOOK.keys());
+const fromRegistry = new Set<string>();
+
+function registryKind(row: RegistryBookRow): BookKind {
+  if (row.category === "exchange") return "exchange";
+  if (row.category === "mining-pool") return "pool";
+  if (row.category === "protocol") return "protocol";
+  return row.kind === "wallet" ? "wallet" : "contract";
+}
+
+/** Registry rows the bundled book does not already name. Only these travel to the client. */
+export function registryRowsMissingFromBook(rows: RegistryBookRow[]): RegistryBookRow[] {
+  return rows.filter((r) => !BUNDLED.has(r.address));
+}
+
+/** Fill gaps from the registry. Bundled entries always win; a name dropped from the registry goes away. */
+export function mergeRegistryBook(rows: RegistryBookRow[]): void {
+  const next = new Set<string>();
+  for (const r of rows) {
+    if (BUNDLED.has(r.address)) continue;
+    next.add(r.address);
+    ADDRESS_BOOK.set(r.address, {
+      address: r.address,
+      name: r.current ? r.name : `${r.name} (old)`,
+      kind: registryKind(r),
+      note: r.projectName,
+      source: "registry",
+      registry: { by: r.by, fileUrl: r.fileUrl },
+    });
+  }
+  for (const a of fromRegistry) {
+    if (!next.has(a)) ADDRESS_BOOK.delete(a);
+  }
+  fromRegistry.clear();
+  for (const a of next) fromRegistry.add(a);
+}
 
 /** Live CEX mains. Dead venues are named on the card but omitted here. */
 export const CEX_LIVE = CEX_LIVE_SET;

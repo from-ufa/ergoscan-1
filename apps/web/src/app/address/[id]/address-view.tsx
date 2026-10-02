@@ -44,7 +44,9 @@ import {
   laterEpochMs,
   toEpochMs,
 } from "@/lib/format";
-import { describeParty, isFeeAddress } from "@/lib/address-labels";
+import { describeParty, isFeeAddress, isP2pkAddress } from "@/lib/address-labels";
+import { suggestNameUrl } from "@/lib/address-book";
+import type { AddressRegistryName } from "@/lib/list-snapshots";
 import { useFavorite } from "@/lib/favorites";
 import { NameMarquee } from "@/components/NameMarquee";
 import { tokenDecimals, tokenSymbol, tokenTickerInk } from "@/lib/token-meta";
@@ -123,6 +125,7 @@ type AddrActivityJson = {
 
 interface AddrData {
   address: string;
+  name?: AddressRegistryName | null;
   balance: {
     confirmedNanoErg: number | string;
     unconfirmedNanoErg: number | string;
@@ -1078,7 +1081,7 @@ export function AddressView({
   }, [data?.balance.tokens]);
   const typeLabel = t(`address.type.${party.kind}`);
 
-  const name = party.known ?? address;
+  const name = party.known ?? data?.name?.name ?? address;
   const tokensFirstWait =
     !tokensSettled && tokenRows.length === 0 && !tokensFailed;
   const nftsFirstWait =
@@ -1131,7 +1134,7 @@ export function AddressView({
                 <h1
                   className={clsx(
                     "mt-0.5 min-w-0 text-[17px] font-semibold leading-[1.15] tracking-tight",
-                    !party.known && "font-mono"
+                    !(party.known || data.name) && "font-mono"
                   )}
                 >
                   <NameMarquee text={name} fade />
@@ -1148,6 +1151,12 @@ export function AddressView({
                     onToggle={fav.toggle}
                   />
                 </p>
+                <AddressNameSource
+                  address={address}
+                  name={data.name ?? null}
+                  named={Boolean(party.known)}
+                  t={t}
+                />
               </AddrFactCard>
               <SegBar cols={4} className="shrink-0">
                 {ADDR_TABS.map((idTab) => (
@@ -2309,6 +2318,39 @@ function FlowMark({ kind }: { kind?: AddrFlowKind }) {
         )}
       </svg>
     </span>
+  );
+}
+
+/** Where the name came from, or a way to suggest one. Personal wallets get no suggest link. */
+function AddressNameSource({
+  address,
+  name,
+  named,
+  t,
+}: {
+  address: string;
+  name: AddressRegistryName | null;
+  named: boolean;
+  t: (k: string) => string;
+}) {
+  if (name) {
+    return (
+      <p className="mt-1 min-w-0 truncate text-[11px] leading-[1.2] text-[var(--muted-2)]">
+        {t(name.by === "project" ? "address.nameByProject" : "address.nameByErgoscan")}
+        {" · "}
+        <a href={name.fileUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline">
+          ergo-names
+        </a>
+      </p>
+    );
+  }
+  if (named || isP2pkAddress(address)) return null;
+  return (
+    <p className="mt-1 text-[11px] leading-[1.2]">
+      <a href={suggestNameUrl(address)} target="_blank" rel="noreferrer" className="text-accent hover:underline">
+        {t("address.suggestName")}
+      </a>
+    </p>
   );
 }
 

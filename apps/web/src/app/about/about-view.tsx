@@ -4,6 +4,7 @@ import { useEffect, type CSSProperties } from "react";
 import { AddrFactCard } from "@/components/AddrFactCard";
 import { Shell } from "@/components/Shell";
 import { ABOUT_DEV, ABOUT_KUSHTI, ABOUT_LINKS, ABOUT_SUPPORT, type AboutCredit } from "@/lib/about-credits";
+import { NAMES_REGISTRY_URL } from "@/lib/address-book";
 import { INK } from "@/lib/palette";
 import { useT } from "@/lib/i18n/I18nProvider";
 import { useKeepFresh, usePageSync } from "@/lib/page-sync";
@@ -57,6 +58,12 @@ export function AboutView() {
           </p>
           <p className="mt-3 max-w-3xl text-[13px] leading-relaxed text-[var(--muted)]">
             {t("about.independent")}
+          </p>
+          <p className="mt-3 max-w-3xl text-[13px] leading-relaxed text-[var(--muted)]">
+            {t("about.names")}{" "}
+            <a href={NAMES_REGISTRY_URL} target="_blank" rel="noreferrer" className="text-accent hover:underline">
+              ergo-names
+            </a>
           </p>
         </section>
 

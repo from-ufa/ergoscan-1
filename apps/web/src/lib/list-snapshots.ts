@@ -1541,8 +1541,22 @@ export async function fetchAddressesList(opts?: {
   };
 }
 
+/** Name from the ergo-names registry: exact address, NFT anchor, or ErgoTree template. */
+export type AddressRegistryName = {
+  name: string;
+  kind: string;
+  project: { id: string; name: string; category: string };
+  by: "project" | "ergoscan";
+  via: "address" | "token" | "template";
+  current: boolean;
+  until: number | null;
+  file: string;
+  fileUrl: string;
+};
+
 export type AddressPageData = {
   address: string;
+  name?: AddressRegistryName | null;
   balance: {
     confirmedNanoErg: number | string;
     unconfirmedNanoErg: number | string;

@@ -551,8 +551,20 @@ export const DOCS_ROUTES: DocsRoute[] = [
     source: "index",
     title: { en: "Address", ru: "Адрес" },
     blurb: {
-      en: "Address summary for the address page. Balances: /balance/confirmed and /balance/total.",
-      ru: "Сводка для страницы адреса. Балансы: /balance/confirmed и /balance/total.",
+      en: "Address summary for the address page. Balances: /balance/confirmed and /balance/total. Additive name: from the open ergo-names registry by exact address, NFT anchor or ErgoTree template, with the project, who submitted it and a link to its file; null when unnamed.",
+      ru: "Сводка для страницы адреса. Балансы: /balance/confirmed и /balance/total. Additive name: из открытого реестра ergo-names по точному адресу, NFT-якорю или шаблону ErgoTree — проект, кто заявил и ссылка на файл; null, если имени нет.",
+    },
+  },
+  {
+    id: "names-book",
+    tab: "chain",
+    method: "GET",
+    path: "/names/book",
+    source: "index",
+    title: { en: "Names registry", ru: "Реестр имён" },
+    blurb: {
+      en: "Every named address from github.com/kayolo-ergoscan/ergo-names: exact entries and NFT anchors resolved to the contracts that held them (current false for an earlier version). Template names are not listed; read name on /addresses/{address}. Loaded hourly; commit and syncedAt tell which registry state you see.",
+      ru: "Все адреса с именами из github.com/kayolo-ergoscan/ergo-names: точные записи и NFT-якоря, разрешённые в контракты, которые их держали (current false — прежняя версия). Имена по шаблону здесь не перечислены — смотрите name в /addresses/{address}. Загрузка раз в час; commit и syncedAt показывают, какое состояние реестра вы видите.",
     },
   },
   {

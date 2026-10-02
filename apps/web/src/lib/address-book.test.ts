@@ -1,6 +1,39 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { lookupAddress, searchAddressBook, listBookEntries, countBookKinds } from "./address-book";
+import {
+  lookupAddress,
+  searchAddressBook,
+  listBookEntries,
+  countBookKinds,
+  mergeRegistryBook,
+  registryRowsMissingFromBook,
+  suggestNameUrl,
+  type RegistryBookRow,
+} from "./address-book";
+
+test("registry names fill gaps only, mark old versions, and leave when the registry drops them", () => {
+  const bank = listBookEntries({ q: "SigmaUSD Bank" })[0]!;
+  const row = (address: string, name: string, current = true): RegistryBookRow => ({
+    address,
+    name,
+    kind: "contract",
+    category: "oracle",
+    projectName: "Oracle pools",
+    by: "ergoscan",
+    current,
+    fileUrl: "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/oracle-pools.json",
+  });
+  const fresh = row("PViBL5acX6Pua49Bexampleexampleexample", "MORACLE Pool", false);
+  const clash = row(bank.address, "Not the bank");
+  assert.deepEqual(registryRowsMissingFromBook([fresh, clash]), [fresh]);
+  mergeRegistryBook([fresh, clash]);
+  assert.equal(lookupAddress(fresh.address)?.name, "MORACLE Pool (old)");
+  assert.equal(lookupAddress(fresh.address)?.registry?.by, "ergoscan");
+  assert.equal(lookupAddress(bank.address)?.name, "SigmaUSD Bank");
+  mergeRegistryBook([]);
+  assert.equal(lookupAddress(fresh.address), null);
+  assert.match(suggestNameUrl("2vTH a"), /issues\/new\?template=name-request\.yml&address=2vTH%20a$/);
+});
 
 test("Rosen Cold is the unnamed leftover we sourced from their release JSON", () => {
   const hit = lookupAddress(

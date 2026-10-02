@@ -60,6 +60,7 @@ import {
   type AddrTxActivity,
 } from "../lib/indexDb.js";
 import { rentWriterHealth } from "../lib/rentIndex.js";
+import { addressName } from "../lib/names.js";
 import { BLOCK_TX_PACK, getAddressesPage, getBlockCard, getBlocksList, getHolderBands, getHomePage, getRentPage, getStatusSnapshot, parseBlockHeightCursor, peekChainTip, rentTapeMarks } from "../lib/snapshots.js";
 import { publicIndexerStatus } from "../lib/public-health.js";
 import { holderFilterTotal } from "../lib/addressListFilter.js";
@@ -1054,6 +1055,7 @@ export function registerChainRoutes(app: Express, deps: ChainDeps) {
         ? addressUnspentBoxesCursor(address, boxCursor, boxLimit, boxOffset)
         : Promise.resolve({ items: [], hasMore: false, nextCursor: null });
     const summaryP = getAddressSummary(address);
+    const nameP = addressName(address);
     const tokensP =
       wantLists && wantTokens
         ? addressTokensConfirmed(address)
@@ -1188,11 +1190,13 @@ export function registerChainRoutes(app: Express, deps: ChainDeps) {
 
     const confirmedNanoErg = amountStr(summary?.nanoerg ?? "0");
     const unconfirmedNanoErg = activityNanoSum(mempoolPack.activity);
+    const name = await nameP;
 
     return {
       status: 200 as const,
       body: {
         address,
+        name,
         balance: {
           confirmedNanoErg,
           unconfirmedNanoErg,

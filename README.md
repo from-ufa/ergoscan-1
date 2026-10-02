@@ -38,6 +38,7 @@ There is no API key and no plan to apply for.
 | Amounts | decimal strings |
 | Time | unix milliseconds, UTC |
 | Pages | keyset `cursor` (`hasMore`, `nextCursor`). Wallet lists also take `limit` ≤ 100 and `offset` ≤ 500 |
+| Names | [`kayolo-ergoscan/ergo-names`](https://github.com/kayolo-ergoscan/ergo-names) — open registry of contract names (CC0), `GET /v1/names/book` |
 
 ```text
 https://ergoscan.me/api/v1/health
@@ -46,6 +47,8 @@ https://ergoscan.me/api/v1/tokens/bySymbol/SigUSD
 ```
 
 Every claim painted on a page has a class: on-chain, rule-decoded, telemetry, live mempool, estimate, or an external source. The same classes are on [`/status`](https://ergoscan.me/status) and [`/learn`](https://ergoscan.me/learn).
+
+Contract names come from the open [ergo-names](https://github.com/kayolo-ergoscan/ergo-names) registry. Projects add their own contracts with a pull request; a merge is the approval, and ErgoScan loads it within the hour.
 
 ## Pages
 

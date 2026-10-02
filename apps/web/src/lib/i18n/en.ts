@@ -926,7 +926,8 @@ export const en: Record<string, string> = {
   "addresses.book.empty": "No names in the book for this filter.",
   "addresses.book.all": "All",
   "addresses.book.leftover": "Leftover",
-  "addresses.book.sourceNote": "From our address book.",
+  "addresses.book.sourceNote": "From our address book and the open ergo-names registry.",
+  "addresses.book.registryLink": "Add your project",
   "addresses.book.packHint": "25 at a time, A–Z by name.",
   "names.tile.allCaption": "In the book",
   "names.tile.protocolCaption": "Consensus",
@@ -1258,6 +1259,7 @@ export const en: Record<string, string> = {
     "The index is ours, from genesis. Pages and the public API read snapshots, not the node. The first HTML already has the rows. The API sits on the same host as the explorer: free, no signup, no key.",
   "about.independent":
     "ErgoScan is an independent project. It is not owned by Ergo Platform. It is in public beta.",
+  "about.names": "Contract names come from the open ergo-names registry. Projects add their own contracts on GitHub; we check the evidence.",
   "about.next.title": "What comes next",
   "about.next.body":
     "This is not a finished catalog. A lot is still on the map for the explorer itself — more of the chain, more of DeFi, more of the API — and a lot on top of it: wallets, bots, and products that should not have to run their own node. The index is the floor. The pages you see now are the first floor.",
@@ -1325,6 +1327,9 @@ export const en: Record<string, string> = {
   "address.type.pool": "Pool",
   "address.type.protocol": "Protocol",
   "address.type.contract": "Contract",
+  "address.nameByProject": "Name submitted by the project",
+  "address.nameByErgoscan": "Name checked by ErgoScan",
+  "address.suggestName": "Suggest a name",
   "address.type.miner": "Miner",
   "address.type.unknown": "Address",
   "address.sent": "Sent",
