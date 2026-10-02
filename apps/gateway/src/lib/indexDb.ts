@@ -232,7 +232,7 @@ async function qSlow<T extends pg.QueryResultRow>(
     const r = await c.query<T>(sql, params);
     await c.query("COMMIT");
     return r.rows;
-  } catch {
+  } catch (e) {
     if (c) {
       try {
         await c.query("ROLLBACK");
@@ -3013,7 +3013,9 @@ export async function addressTxParties(
          FROM p
          JOIN packed.boxes b ON b.spent_tx_id = p.tx_id
          JOIN packed.addr ad ON ad.id = b.addr_id
-         LEFT JOIN packed.box_assets ba ON ba.box_id = b.box_id
+         LEFT JOIN LATERAL (
+           SELECT x.token_id, x.amount FROM packed.box_assets x WHERE x.box_id = b.box_id OFFSET 0
+         ) ba ON true
        UNION ALL
        SELECT encode(p.tx_id, 'hex'), encode(b.box_id, 'hex'),
               'out', ad.address, b.value_nano::text,
@@ -3021,7 +3023,9 @@ export async function addressTxParties(
          FROM p
          JOIN packed.boxes b ON b.creation_tx_id = p.tx_id
          JOIN packed.addr ad ON ad.id = b.addr_id
-         LEFT JOIN packed.box_assets ba ON ba.box_id = b.box_id`,
+         LEFT JOIN LATERAL (
+           SELECT x.token_id, x.amount FROM packed.box_assets x WHERE x.box_id = b.box_id OFFSET 0
+         ) ba ON true`,
       [ids],
       4000
     ),
