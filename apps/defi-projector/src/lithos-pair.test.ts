@@ -51,8 +51,9 @@ test("Lithos pending is subtracted from N2T TVL", () => {
 
 test("unspent hunt matches token_id so box_assets_token_idx hits", () => {
   const src = readFileSync(fileURLToPath(new URL("./lithos-registry.ts", import.meta.url)), "utf8");
-  assert.match(src, /ba\.token_id = \$1/);
+  assert.match(src, /ba\.token_id = packed\.hex32\(\$1\)/);
   assert.doesNotMatch(src, /lower\(ba\.token_id\)/);
+  assert.doesNotMatch(src, /hex32\(ba\.token_id\)/);
 });
 
 test("detect pairs the new pool box by creation_tx_id, not creation_height", () => {

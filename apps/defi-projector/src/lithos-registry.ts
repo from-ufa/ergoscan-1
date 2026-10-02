@@ -61,8 +61,8 @@ export async function seedLithosFromEnv(db: Db): Promise<number> {
 
 /**
  * Unspent 3-asset box holding LIT with Lithos register bank (R4/R6/R7/R8).
- * `box_assets.token_id = $1` (ids stored lowercase) so `box_assets_token_idx` hits.
- * `lower(token_id)` seq-scans the table and times out.
+ * `ba.token_id = packed.hex32($1)` converts the parameter once, so `packed_box_assets_token_idx` hits.
+ * Any function on the column side (lower, hex32 of the column) seq-scans the table and times out.
  */
 export async function seedLithosFromUnspent(db: Db): Promise<number> {
   const lit = lithosTokenYFromEnv();
