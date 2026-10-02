@@ -2891,8 +2891,9 @@ export async function addressTxActivity(
   const hexIds = packed ? ids.filter(isHex64) : ids;
   if (!hexIds.length) return out;
 
-  // This address's boxes only. `creation_height IS NOT NULL` is required:
-  // the address index on packed.boxes is partial, and addr_id alone seq-scans (~10s).
+  // Start from the page's tx ids. Walking this address's own boxes
+  // reads the whole history of a contract like emission (~2M txs) and
+  // the 8s timeout comes back as an empty tape.
   const [rows, feeRows] = await Promise.all([
     qSlow<{
       box_id: string;
@@ -2905,7 +2906,7 @@ export async function addressTxActivity(
       token_amount: string | null;
     }>(
       packed
-        ? `WITH a AS (SELECT decode(lower(x), 'hex') AS tx_id FROM unnest($1::text[]) AS x),
+        ? `WITH p AS (SELECT decode(lower(x), 'hex') AS tx_id FROM unnest($1::text[]) AS x),
             self AS (
               SELECT id FROM packed.addr
                WHERE addr_md5 = md5($2) AND address = $2
@@ -2918,16 +2919,22 @@ export async function addressTxActivity(
               encode(ba.token_id, 'hex') AS token_id, ba.amount::text AS token_amount
        FROM (
          SELECT b.box_id, b.value_nano, b.creation_tx_id, b.spent_tx_id, 'out' AS side
-           FROM packed.boxes b
-          WHERE b.addr_id = (SELECT id FROM self)
-            AND b.creation_height IS NOT NULL
-            AND b.creation_tx_id IN (SELECT tx_id FROM a)
+           FROM p
+           JOIN LATERAL (
+             SELECT b.box_id, b.value_nano, b.creation_tx_id, b.spent_tx_id
+               FROM packed.boxes b
+              WHERE b.creation_tx_id = p.tx_id
+                AND b.addr_id = (SELECT id FROM self)
+           ) b ON true
          UNION ALL
          SELECT b.box_id, b.value_nano, b.creation_tx_id, b.spent_tx_id, 'in'
-           FROM packed.boxes b
-          WHERE b.addr_id = (SELECT id FROM self)
-            AND b.creation_height IS NOT NULL
-            AND b.spent_tx_id IN (SELECT tx_id FROM a)
+           FROM p
+           JOIN LATERAL (
+             SELECT b.box_id, b.value_nano, b.creation_tx_id, b.spent_tx_id
+               FROM packed.boxes b
+              WHERE b.spent_tx_id = p.tx_id
+                AND b.addr_id = (SELECT id FROM self)
+           ) b ON true
        ) b
        LEFT JOIN LATERAL (
          SELECT x.token_id, x.amount FROM packed.box_assets x WHERE x.box_id = b.box_id OFFSET 0
