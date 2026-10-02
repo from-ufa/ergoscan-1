@@ -326,9 +326,21 @@ export async function detectFeed(
   };
 }
 
+/** A refresh rebuilds every seat it collects. The fee that seat paid sits on its own post, one box back. */
+export function seatFee(
+  op: { creationTxId: string | null; address: string | null },
+  creationFee: string | null,
+  refreshPosts: Map<string, Map<string, string | null>>
+): string | null {
+  const posts = op.creationTxId ? refreshPosts.get(op.creationTxId) : undefined;
+  if (!posts) return creationFee;
+  return op.address ? posts.get(op.address) ?? null : null;
+}
+
 export async function enrichOperators(
   db: Queryable,
-  ops: DetectedBox[]
+  ops: DetectedBox[],
+  feed: { poolNft: string; oracleToken: string }
 ): Promise<
   Map<
     string,
@@ -363,6 +375,34 @@ export async function enrichOperators(
             [txs]
           )
         ).rows;
+  const postRows =
+    txs.length === 0
+      ? []
+      : (
+          await db.query<{ tx_id: string; additional_registers: unknown; fee: string | null }>(
+            `SELECT encode(d.spent_tx_id, 'hex') AS tx_id, d.additional_registers, p.fee::text AS fee
+               FROM packed.boxes d
+               JOIN packed.box_assets da
+                 ON da.box_id = d.box_id AND da.token_id = decode(lower($2), 'hex') AND da.amount = 1
+               JOIN packed.transactions p ON p.id = d.creation_tx_id
+              WHERE d.spent_tx_id IN (SELECT decode(lower(x), 'hex') FROM unnest($1::text[]) AS x)
+                AND EXISTS (
+                  SELECT 1
+                    FROM packed.boxes o
+                    JOIN packed.box_assets a
+                      ON a.box_id = o.box_id AND a.token_id = decode(lower($3), 'hex')
+                   WHERE o.creation_tx_id = d.spent_tx_id
+                )`,
+            [txs, feed.oracleToken, feed.poolNft]
+          )
+        ).rows;
+  const refreshPosts = new Map<string, Map<string, string | null>>();
+  for (const r of postRows) {
+    const posts = refreshPosts.get(r.tx_id) ?? new Map<string, string | null>();
+    const who = oracleOperatorFromRegisters(r.additional_registers).address;
+    if (who) posts.set(who, r.fee);
+    refreshPosts.set(r.tx_id, posts);
+  }
   const byAddr = new Map(addrRows.map((r) => [r.address, r.nanoerg]));
   const byTx = new Map(
     txRows.map((r) => [
@@ -374,7 +414,7 @@ export async function enrichOperators(
     const tx = op.creationTxId ? byTx.get(op.creationTxId) : undefined;
     out.set(op.boxId, {
       addressErgNano: op.address ? byAddr.get(op.address) ?? null : null,
-      feeNano: tx?.fee ?? null,
+      feeNano: seatFee(op, tx?.fee ?? null, refreshPosts),
       tsMs: op.tsMs ?? (tx?.ts != null && Number.isFinite(tx.ts) ? tx.ts : null),
     });
   }

@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { classifyOracleTokenAmount, isOracleSeatBox, uniqueOracleSeats } from "./detect.js";
+import { classifyOracleTokenAmount, isOracleSeatBox, seatFee, uniqueOracleSeats } from "./detect.js";
+
+test("a seat rebuilt by a refresh shows its own post fee, not the refresh fee", () => {
+  const posts = new Map([["refresh", new Map([["9a", "1100000"], ["9b", "1500000"]])]]);
+  assert.equal(seatFee({ creationTxId: "refresh", address: "9a" }, "1500000", posts), "1100000");
+  assert.equal(seatFee({ creationTxId: "refresh", address: "9b" }, "1500000", posts), "1500000");
+  assert.equal(seatFee({ creationTxId: "refresh", address: "9c" }, "1500000", posts), null);
+  assert.equal(seatFee({ creationTxId: "post", address: "9a" }, "2462610", posts), "2462610");
+  assert.equal(seatFee({ creationTxId: null, address: "9a" }, null, posts), null);
+});
 
 test("oracle token amount=1 is a seat, stacks are stock", () => {
   assert.equal(classifyOracleTokenAmount(1), "seat");

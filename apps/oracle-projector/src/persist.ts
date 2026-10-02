@@ -41,7 +41,7 @@ export async function persistFeed(
 ): Promise<{ ticks: number }> {
   const def = ORACLE_FEEDS[found.slug];
   const pool = found.pool;
-  const extra = await enrichOperators(db, found.operators);
+  const extra = await enrichOperators(db, found.operators, def);
   let poolEpoch = pool?.epoch ?? null;
   let poolHeight = pool?.height ?? null;
   if (!pool) {
