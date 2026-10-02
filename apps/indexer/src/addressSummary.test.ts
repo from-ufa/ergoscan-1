@@ -9,6 +9,8 @@ test("address_tx last is LIMIT 1, not MAX over the whole history", () => {
   assert.match(ADDR_TX_LAST_HEIGHT_SQL, /ORDER BY x\.height DESC/);
   assert.match(ADDR_TX_LAST_HEIGHT_SQL, /LIMIT 1/);
   assert.doesNotMatch(ADDR_TX_LAST_HEIGHT_SQL, /\bMAX\s*\(/i);
+  assert.doesNotMatch(ADDR_TX_LAST_HEIGHT_SQL, /JOIN packed\.address_tx/);
+  assert.match(ADDR_TX_LAST_HEIGHT_SQL, /x\.addr_id = \(SELECT ad\.id FROM packed\.addr ad/);
 });
 
 test("address_tx bump GREATEST/LEAST heights with tx_count", () => {

@@ -102,7 +102,9 @@ export async function fatSummaryRows(
  * ~1.8M rows) seq-scans under load and blows the 3s tip slot; `LIMIT 1`
  * uses address_tx_addr_height_idx.
  */
-export const ADDR_TX_LAST_HEIGHT_SQL = `(SELECT x.height FROM packed.addr ad JOIN packed.address_tx x ON x.addr_id = ad.id WHERE ad.addr_md5 = md5(a.address) AND ad.address = a.address ORDER BY x.height DESC, x.tx_id LIMIT 1)`;
+// addr_id as a scalar subquery, not a JOIN: only then does LIMIT 1 stop on the (addr_id, height DESC, tx_id)
+// index. With the JOIN the fee contract sorted all 9.5M of its rows on every block (2.4 s).
+export const ADDR_TX_LAST_HEIGHT_SQL = `(SELECT x.height FROM packed.address_tx x WHERE x.addr_id = (SELECT ad.id FROM packed.addr ad WHERE ad.addr_md5 = md5(a.address) AND ad.address = a.address) ORDER BY x.height DESC, x.tx_id LIMIT 1)`;
 
 /** Recount last from LIMIT 1. first_height stays on the address_tx bump (ASC on a fat P2S still times out). */
 const KEEP_HEIGHTS_SQL = `
