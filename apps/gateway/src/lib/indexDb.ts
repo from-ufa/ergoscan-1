@@ -3529,11 +3529,13 @@ async function tokenSwapTransactions(
 } | null> {
   const packed = packedReadEnabled();
   const moveFrom = packed ? "packed.token_tx_move" : "token_tx_move";
+  // defi.trades ids are lowercase hex: decode() is built in, hex32() is PL/pgSQL and ran twice
+  // per trade in the count (1.5 s for SigUSD's 86k trades on every page).
   const moveOnT = packed
-    ? "m.token_id = packed.hex32(t.token_id) AND m.tx_id = packed.hex32(t.tx_id)"
+    ? "m.token_id = decode(t.token_id, 'hex') AND m.tx_id = decode(t.tx_id, 'hex')"
     : "m.token_id = t.token_id AND m.tx_id = t.tx_id";
   const moveOnS = packed
-    ? "m.token_id = packed.hex32(s.token_id) AND m.tx_id = packed.hex32(s.tx_id)"
+    ? "m.token_id = decode(s.token_id, 'hex') AND m.tx_id = decode(s.tx_id, 'hex')"
     : "m.token_id = s.token_id AND m.tx_id = s.tx_id";
   const moveGroupKey = packed
     ? "CASE WHEN t.token_amount = 0 THEN encode(m.tx_id, 'hex') ELSE t.token_amount::text END"

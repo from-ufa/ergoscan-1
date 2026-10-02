@@ -147,6 +147,17 @@ CREATE INDEX IF NOT EXISTS address_summary_last_height_idx
   ON address_summary (last_height DESC NULLS LAST, address)
 `;
 
+/**
+ * /addresses tokens:asc and txs:asc. The DESC indexes leave the 0/1 group (100k+ holders) to a
+ * full sort by balance: 9 s for the first page of tokens:asc.
+ */
+const HOLDER_ASC_INDEX_SQL = `
+CREATE INDEX IF NOT EXISTS address_summary_holder_tokens_asc_idx
+  ON address_summary (token_count, nanoerg DESC, address DESC) WHERE nanoerg > 0;
+CREATE INDEX IF NOT EXISTS address_summary_holder_txs_asc_idx
+  ON address_summary (tx_count, nanoerg DESC, address DESC) WHERE nanoerg > 0
+`;
+
 export async function ensureAddressSummarySchema(db: Queryable): Promise<void> {
   await db.query(SCHEMA_SQL);
   await db.query(RANK_INDEX_SQL);
@@ -154,6 +165,7 @@ export async function ensureAddressSummarySchema(db: Queryable): Promise<void> {
   await db.query(TX_INDEX_SQL);
   await db.query(FIRST_HEIGHT_INDEX_SQL);
   await db.query(LAST_HEIGHT_INDEX_SQL);
+  await db.query(HOLDER_ASC_INDEX_SQL);
 }
 
 const PACKED_UNSPENT = `
