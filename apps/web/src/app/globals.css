@@ -3150,7 +3150,9 @@ html[data-ink="day"] .mcap-vol {
   .hover-stamp,
   .activity-when,
   .search-caret,
-  .search-slash {
+  .search-slash,
+  .addr-pending-blink,
+  .addr-pending-mark {
     animation: none;
     transition: none;
   }

@@ -1289,7 +1289,7 @@ export const en: Record<string, string> = {
   "address.noNfts": "No NFTs on this address.",
   "empty.oops": "Oops, nothing here",
   "address.confirmed": "Confirmed balance",
-  "address.unconfirmed": "Unconfirmed Δ",
+  "address.unconfirmed": "Unconfirmed",
   "address.txs": "Transactions",
   "address.boxes": "Boxes",
   "address.tokens": "Tokens",

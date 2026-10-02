@@ -1225,7 +1225,7 @@ export function AddressView({
                   </p>
                 )}
                 {unconfirmed !== 0n && (
-                  <p className="mt-2 text-[12px] text-[var(--muted-2)]">
+                  <p className="addr-pending-blink mt-2 text-[12px] text-[var(--muted-2)]">
                     {t("address.unconfirmed")}{" "}
                     <ErgFigure
                       nano={unconfirmed}
@@ -1986,13 +1986,10 @@ function HistoryRow({
             href={`/tx/${tx.id}`}
             className="addr-tx-mark"
             title={String(tx.id)}
-            aria-label={String(tx.id)}
+            aria-label={tx.mempool ? `${String(tx.id)} ${t("address.pending")}` : String(tx.id)}
           >
             <KpiMarkWorkflow className="!h-[18px] !w-[18px]" />
           </Link>
-          {tx.mempool ? (
-            <span className="addr-pending-mark shrink-0">{t("address.pending")}</span>
-          ) : null}
         </div>
         <div className="addr-when-pair">
           <div className="px-3 text-right">

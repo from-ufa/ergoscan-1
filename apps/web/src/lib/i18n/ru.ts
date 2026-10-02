@@ -1291,7 +1291,7 @@ export const ru: Record<string, string> = {
   "address.noNfts": "На адресе нет NFT.",
   "empty.oops": "Упс, тут ничего",
   "address.confirmed": "Подтверждённый баланс",
-  "address.unconfirmed": "Неподтверждённый Δ",
+  "address.unconfirmed": "Неподтверждённый",
   "address.txs": "Транзакции",
   "address.boxes": "Boxes",
   "address.tokens": "Токены",
