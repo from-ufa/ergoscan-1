@@ -59,6 +59,7 @@ import {
   ensureTokenStatsSchema,
   invertTokenStatsAtHeight,
   maybeCatchupTokenStats,
+  maybeRecountTokenTapeCounts,
   syncTokenBalancesUtxoPage,
 } from "./tokenStats.js";
 import {
@@ -2593,6 +2594,7 @@ async function loop(pool: Pool): Promise<boolean> {
   void maybeBackfillAddressTokenCounts(pool);
   void maybeFillTokenBalanceHeights(pool);
   void maybeFillTokenBalanceTxCounts(pool);
+  void maybeRecountTokenTapeCounts(pool);
 
   const skipListsSnap = tipLag > MAX_LAG_FOR_BACKFILL;
   const snapNow = async () => {

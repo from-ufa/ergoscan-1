@@ -3,6 +3,10 @@
  * already-indexed window. Catalog KPIs are unique addresses and unique txs
  * (AdaStat), not SUM(tokens.holders).
  *
+ * `tokens.tx_count` is the #txs tape: a row in token_tx_move that is not a
+ * mint, a burn, or a swap. A box rewrite that carries the token unchanged
+ * is token_tx_seen only and does not move this counter.
+ *
  * Seed window is [minHeight, tip] captured at first catch-up tick so deepen
  * (lower) and new tip (higher) never overlap the seed inserts.
  */
@@ -822,6 +826,117 @@ function addCount(map: Map<string, number>, key: string, n: number) {
   map.set(key, (map.get(key) ?? 0) + n);
 }
 
+/**
+ * Same shape as the gateway tape (`TOKEN_MINTBURN_SQL`, swap excluded).
+ * Alias the move row as `m`.
+ */
+export const TAPE_NOT_MINTBURN_SQL = `NOT (
+  (m.spent = 0 AND m.created > 0)
+  OR (
+    m.spent > m.created
+    AND NOT (
+      GREATEST(m.created, m.spent) > 9007199254740991
+      AND abs(m.created - m.spent) <= CASE
+        WHEN GREATEST(m.created, m.spent) > 0
+        THEN 4 * power(2::numeric, floor(log(2::numeric, GREATEST(m.created, m.spent))) - 52)
+        ELSE -1
+      END
+    )
+  )
+)`;
+
+export const TAPE_NOT_SWAP_PACKED_SQL = `NOT EXISTS (
+  SELECT 1 FROM defi.trades tr
+  WHERE tr.tx_id = encode(m.tx_id, 'hex')
+    AND tr.token_id = encode(m.token_id, 'hex')
+    AND tr.side IN ('buy', 'sell')
+)`;
+
+const TAPE_NOT_SWAP_TEXT_SQL = `NOT EXISTS (
+  SELECT 1 FROM defi.trades tr
+  WHERE tr.tx_id = m.tx_id
+    AND tr.token_id = m.token_id
+    AND tr.side IN ('buy', 'sell')
+)`;
+
+/** +1 when a tx joins the #txs tape, -1 when it leaves, 0 when it stays. */
+export function transferCountDelta(wasOnTape: boolean, isOnTape: boolean): number {
+  return (isOnTape ? 1 : 0) - (wasOnTape ? 1 : 0);
+}
+
+const TAPE_TX_COUNT_KEY = "token_tx_count_tape_v1";
+let tokenTapeRecountRunning = false;
+
+async function tapeTransferIds(
+  client: Queryable,
+  txId: string,
+  tokenIds: string[]
+): Promise<Set<string>> {
+  const ids = [...new Set(tokenIds.map((id) => id.toLowerCase()).filter(Boolean))];
+  if (!txId || !ids.length) return new Set();
+  const packed = packedWriteEnabled();
+  const r = await client.query<{ token_id: string }>(
+    packed
+      ? `SELECT encode(m.token_id, 'hex') AS token_id
+           FROM packed.token_tx_move m
+          WHERE m.tx_id = decode(lower($1), 'hex')
+            AND m.token_id IN (
+              SELECT decode(lower(x), 'hex')
+                FROM unnest($2::text[]) AS x
+               WHERE x ~ '^[0-9a-fA-F]{64}$'
+            )
+            AND m.height IS NOT NULL
+            AND ${TAPE_NOT_MINTBURN_SQL}
+            AND ${TAPE_NOT_SWAP_PACKED_SQL}`
+      : `SELECT m.token_id
+           FROM token_tx_move m
+          WHERE m.tx_id = $1
+            AND m.token_id = ANY($2::text[])
+            AND m.height IS NOT NULL
+            AND ${TAPE_NOT_MINTBURN_SQL}
+            AND ${TAPE_NOT_SWAP_TEXT_SQL}`,
+    [txId, ids]
+  );
+  return new Set(r.rows.map((row) => row.token_id.toLowerCase()));
+}
+
+async function tapeTransferDeltasAtTxs(
+  client: Queryable,
+  txIds: string[]
+): Promise<Map<string, number>> {
+  const delta = new Map<string, number>();
+  const ids = [...new Set(txIds.filter(Boolean))];
+  if (!ids.length) return delta;
+  const packed = packedWriteEnabled();
+  const r = await client.query<{ token_id: string; n: string }>(
+    packed
+      ? `SELECT encode(m.token_id, 'hex') AS token_id, count(*)::text AS n
+           FROM packed.token_tx_move m
+          WHERE m.tx_id IN (
+                  SELECT decode(lower(x), 'hex')
+                    FROM unnest($1::text[]) AS x
+                   WHERE x ~ '^[0-9a-fA-F]{64}$'
+                )
+            AND m.height IS NOT NULL
+            AND ${TAPE_NOT_MINTBURN_SQL}
+            AND ${TAPE_NOT_SWAP_PACKED_SQL}
+          GROUP BY m.token_id`
+      : `SELECT m.token_id, count(*)::text AS n
+           FROM token_tx_move m
+          WHERE m.tx_id = ANY($1::text[])
+            AND m.height IS NOT NULL
+            AND ${TAPE_NOT_MINTBURN_SQL}
+            AND ${TAPE_NOT_SWAP_TEXT_SQL}
+          GROUP BY m.token_id`,
+    [ids]
+  );
+  for (const row of r.rows) {
+    if (!row.token_id) continue;
+    addCount(delta, row.token_id.toLowerCase(), -Number(row.n || 0));
+  }
+  return delta;
+}
+
 async function bumpTokenInts(
   client: Queryable,
   col: "holders" | "unspent_boxes" | "tx_count",
@@ -867,26 +982,27 @@ async function noteTokenTxs(
   const uniq = [...new Set(tokenIds.filter(Boolean))];
   if (!uniq.length || !txId) return;
   const txIds = uniq.map(() => txId);
-  const seen = packedWriteEnabled()
-    ? await client.query<{ token_id: string }>(
-        `INSERT INTO packed.token_tx_seen (token_id, tx_id, height)
-         SELECT packed.hex32(t.token_id), packed.hex32(t.tx_id), pt.height
-           FROM unnest($1::text[], $2::text[]) AS t(token_id, tx_id)
-           LEFT JOIN packed.transactions pt ON pt.id = packed.hex32(t.tx_id)
-          WHERE t.token_id ~ '^[0-9a-fA-F]{64}$'
-            AND t.tx_id ~ '^[0-9a-fA-F]{64}$'
-         ON CONFLICT (token_id, tx_id) DO NOTHING
-         RETURNING encode(token_id, 'hex') AS token_id`,
-        [uniq, txIds]
-      )
-    : await client.query<{ token_id: string }>(
-        `INSERT INTO token_tx_seen (token_id, tx_id)
-         SELECT t.token_id, t.tx_id
+  const before = await tapeTransferIds(client, txId, uniq);
+  if (packedWriteEnabled()) {
+    await client.query(
+      `INSERT INTO packed.token_tx_seen (token_id, tx_id, height)
+       SELECT packed.hex32(t.token_id), packed.hex32(t.tx_id), pt.height
          FROM unnest($1::text[], $2::text[]) AS t(token_id, tx_id)
-         ON CONFLICT DO NOTHING
-         RETURNING token_id`,
-        [uniq, txIds]
-      );
+         LEFT JOIN packed.transactions pt ON pt.id = packed.hex32(t.tx_id)
+        WHERE t.token_id ~ '^[0-9a-fA-F]{64}$'
+          AND t.tx_id ~ '^[0-9a-fA-F]{64}$'
+       ON CONFLICT (token_id, tx_id) DO NOTHING`,
+      [uniq, txIds]
+    );
+  } else {
+    await client.query(
+      `INSERT INTO token_tx_seen (token_id, tx_id)
+       SELECT t.token_id, t.tx_id
+       FROM unnest($1::text[], $2::text[]) AS t(token_id, tx_id)
+       ON CONFLICT DO NOTHING`,
+      [uniq, txIds]
+    );
+  }
   // Spend path records the pair before outputs exist, so the first call
   // often stores nothing. Refresh after every note, including conflicts.
   await client.query(
@@ -894,8 +1010,11 @@ async function noteTokenTxs(
      FROM unnest($1::text[], $2::text[]) AS t(token_id, tx_id)`,
     [uniq, txIds]
   );
+  const after = await tapeTransferIds(client, txId, uniq);
   const txDelta = new Map<string, number>();
-  for (const row of seen.rows) addCount(txDelta, row.token_id, 1);
+  for (const id of new Set([...before, ...after])) {
+    addCount(txDelta, id, transferCountDelta(before.has(id), after.has(id)));
+  }
   await bumpTokenInts(client, "tx_count", txDelta);
   const idIns = await client.query(
     `INSERT INTO token_tx_ids (tx_id) VALUES ($1) ON CONFLICT DO NOTHING`,
@@ -1238,37 +1357,23 @@ async function forgetTokenTxsAtHeight(
     txIds = packed.rows.map((r) => r.id).filter(Boolean);
   }
   if (!txIds.length) return;
-  const packedGone = packedWriteEnabled()
-    ? await client.query<{ token_id: string }>(
-        `DELETE FROM packed.token_tx_seen
-          WHERE tx_id IN (
-            SELECT decode(lower(x), 'hex')
-              FROM unnest($1::text[]) AS x
-             WHERE x ~ '^[0-9a-fA-F]{64}$'
-          )
-          RETURNING encode(token_id, 'hex') AS token_id`,
-        [txIds]
-      )
-    : { rows: [] as { token_id: string }[] };
-  const textGone = packedWriteEnabled()
-    ? { rows: [] as { token_id: string }[] }
-    : await client.query<{ token_id: string }>(
-        `DELETE FROM token_tx_seen
-          WHERE tx_id = ANY($1::text[])
-          RETURNING token_id`,
-        [txIds]
-      );
-  const txDelta = new Map<string, number>();
-  const seenIds = new Set<string>();
-  for (const row of packedGone.rows) {
-    if (!row.token_id || seenIds.has(row.token_id)) continue;
-    seenIds.add(row.token_id);
-    addCount(txDelta, row.token_id, -1);
-  }
-  for (const row of textGone.rows) {
-    if (!row.token_id || seenIds.has(row.token_id)) continue;
-    seenIds.add(row.token_id);
-    addCount(txDelta, row.token_id, -1);
+  const txDelta = await tapeTransferDeltasAtTxs(client, txIds);
+  if (packedWriteEnabled()) {
+    await client.query(
+      `DELETE FROM packed.token_tx_seen
+        WHERE tx_id IN (
+          SELECT decode(lower(x), 'hex')
+            FROM unnest($1::text[]) AS x
+           WHERE x ~ '^[0-9a-fA-F]{64}$'
+        )`,
+      [txIds]
+    );
+  } else {
+    await client.query(
+      `DELETE FROM token_tx_seen
+        WHERE tx_id = ANY($1::text[])`,
+      [txIds]
+    );
   }
   await bumpTokenInts(client, "tx_count", txDelta);
   const gone = await client.query(
@@ -1448,17 +1553,105 @@ async function recountUnspent(client: Queryable): Promise<void> {
   );
 }
 
-async function recountTxs(client: Queryable): Promise<void> {
+/** One pass: tokens.tx_count = #txs tape. Caller owns the transaction. */
+export async function recountTokenTapeCounts(client: Queryable): Promise<number> {
+  const packed = packedWriteEnabled();
+  const moveFrom = packed ? "packed.token_tx_move" : "token_tx_move";
+  const tokenExpr = packed ? "encode(m.token_id, 'hex')" : "lower(m.token_id)";
+  const swapJoin = packed
+    ? "m.token_id = decode(lower(tr.token_id), 'hex') AND m.tx_id = decode(lower(tr.tx_id), 'hex')"
+    : "m.token_id = tr.token_id AND m.tx_id = tr.tx_id";
   await client.query(`
-    WITH s AS (
-      SELECT token_id, COUNT(*)::int AS n
-      FROM token_tx_seen
-      GROUP BY token_id
-    )
-    UPDATE tokens t SET tx_count = COALESCE(s.n, 0)
-    FROM s WHERE t.token_id = s.token_id
+    CREATE TEMP TABLE token_tape_n ON COMMIT DROP AS
+    SELECT ${tokenExpr} AS token_id,
+           count(*) FILTER (WHERE ${TAPE_NOT_MINTBURN_SQL})::int AS n
+      FROM ${moveFrom} m
+     WHERE m.height IS NOT NULL
+     GROUP BY m.token_id
   `);
-  await client.query(`UPDATE tokens SET tx_count = 0 WHERE tx_count IS NULL`);
+  await client.query(`
+    CREATE TEMP TABLE token_swap_n ON COMMIT DROP AS
+    SELECT lower(tr.token_id) AS token_id,
+           count(DISTINCT lower(tr.tx_id))::int AS n
+      FROM defi.trades tr
+      JOIN ${moveFrom} m ON ${swapJoin}
+     WHERE tr.side IN ('buy', 'sell')
+       AND tr.token_id ~ '^[0-9a-fA-F]{64}$'
+       AND tr.tx_id ~ '^[0-9a-fA-F]{64}$'
+       AND m.height IS NOT NULL
+       AND ${TAPE_NOT_MINTBURN_SQL}
+     GROUP BY lower(tr.token_id)
+  `);
+  const updated = await client.query(`
+    UPDATE tokens t
+       SET tx_count = u.n
+      FROM (
+        SELECT t2.token_id,
+               GREATEST(0, COALESCE(p.n, 0) - COALESCE(s.n, 0)) AS n
+          FROM tokens t2
+          LEFT JOIN token_tape_n p ON p.token_id = t2.token_id
+          LEFT JOIN token_swap_n s ON s.token_id = t2.token_id
+      ) u
+     WHERE t.token_id = u.token_id
+       AND t.tx_count IS DISTINCT FROM u.n
+  `);
+  return updated.rowCount ?? 0;
+}
+
+/**
+ * Once: rewrite tokens.tx_count from the tape. A second pass catches a
+ * transfer that landed during the first write. Does not touch the tip loop.
+ */
+export async function maybeRecountTokenTapeCounts(pool: pg.Pool): Promise<void> {
+  if (tokenTapeRecountRunning) return;
+  const done = await pool.query<{ value: string }>(
+    `SELECT value FROM indexer_state WHERE key = $1`,
+    [TAPE_TX_COUNT_KEY]
+  );
+  if (done.rows[0]?.value) return;
+  tokenTapeRecountRunning = true;
+  void (async () => {
+    const t0 = Date.now();
+    try {
+      let updated = 0;
+      for (let pass = 0; pass < 3; pass++) {
+        const client = await pool.connect();
+        try {
+          await client.query("BEGIN");
+          await client.query("SET LOCAL statement_timeout = 0");
+          updated = await recountTokenTapeCounts(client);
+          await client.query("COMMIT");
+        } catch (e) {
+          try {
+            await client.query("ROLLBACK");
+          } catch {
+            /* ignore */
+          }
+          throw e;
+        } finally {
+          client.release();
+        }
+        if (updated === 0) break;
+      }
+      await pool.query(
+        `INSERT INTO indexer_state (key, value, updated_at)
+         VALUES ($1, $2, now())
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
+        [TAPE_TX_COUNT_KEY, String(Date.now())]
+      );
+      console.log(
+        `[indexer] token tx_count tape recount updated=${updated} ${Date.now() - t0}ms`
+      );
+    } catch (e) {
+      console.warn("[indexer] token tx_count tape recount", String(e).slice(0, 300));
+    } finally {
+      tokenTapeRecountRunning = false;
+    }
+  })();
+}
+
+async function recountTxs(client: Queryable): Promise<void> {
+  await recountTokenTapeCounts(client);
   const u = await client.query<{ n: string }>(
     `SELECT COUNT(*)::text AS n FROM token_tx_ids`
   );
@@ -1562,7 +1755,7 @@ async function seedTxsBatch(
   if (!boxes.rows.length) return { n: 0, lastH: curH, lastId: curId };
   const ids = boxes.rows.map((b) => b.box_id);
   const last = boxes.rows[boxes.rows.length - 1]!;
-  const seen = await client.query<{ token_id: string }>(
+  await client.query(
     `INSERT INTO token_tx_seen (token_id, tx_id)
      SELECT token_id, tx_id FROM (
        SELECT a.token_id, b.creation_tx_id AS tx_id
@@ -1575,13 +1768,9 @@ async function seedTxsBatch(
        JOIN boxes b ON b.box_id = a.box_id
        WHERE a.box_id = ANY($1::text[]) AND b.spent_tx_id IS NOT NULL
      ) s
-     ON CONFLICT DO NOTHING
-     RETURNING token_id`,
+     ON CONFLICT DO NOTHING`,
     [ids]
   );
-  const txDelta = new Map<string, number>();
-  for (const row of seen.rows) addCount(txDelta, row.token_id, 1);
-  await bumpTokenInts(client, "tx_count", txDelta);
   const idIns = await client.query<{ tx_id: string }>(
     `INSERT INTO token_tx_ids (tx_id)
      SELECT DISTINCT tx_id FROM (

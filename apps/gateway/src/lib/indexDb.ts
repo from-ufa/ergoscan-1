@@ -3598,8 +3598,9 @@ export async function tokenTransactions(
   if (packed && !isHex64(tokenId)) return { items: [], total: 0, hasMore: false, nextCursor: null, source: "indexer:packed" };
   const supply =
     flow === "mintburn" ? TOKEN_MINTBURN_SQL : `NOT ${TOKEN_MINTBURN_SQL}`;
-  // Packed tape: the page walks (token_id, height, tx_id) and stops at LIMIT.
-  // A COUNT of the whole history hits the 4s timeout and then blanks the list.
+  // Packed #txs total is tokens.tx_count: moves that are not a mint, a burn,
+  // or a swap. A box rewrite that only carries the token is not included.
+  // A COUNT of the history hits the 4s timeout and then blanks the list.
   const pageP = tokenTxMovePage(tokenId, cursor, take, flow);
   const [totMove, totSwap, page] = packed
     ? await (async () => {

@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mergeActivityHeights, encodeTokenBalanceTxCountCursor, parseTokenBalanceTxCountCursor } from "./tokenStats.js";
+import {
+  mergeActivityHeights,
+  encodeTokenBalanceTxCountCursor,
+  parseTokenBalanceTxCountCursor,
+  transferCountDelta,
+  TAPE_NOT_MINTBURN_SQL,
+  TAPE_NOT_SWAP_PACKED_SQL,
+} from "./tokenStats.js";
 
 test("credit sets first once and always advances last", () => {
   assert.deepEqual(mergeActivityHeights(null, null, 100, "credit"), { first: 100, last: 100 });
@@ -16,6 +23,17 @@ test("debit does not move first", () => {
 test("null height leaves the row alone", () => {
   assert.deepEqual(mergeActivityHeights(10, 20, null, "credit"), { first: 10, last: 20 });
   assert.deepEqual(mergeActivityHeights(10, 20, -1, "debit"), { first: 10, last: 20 });
+});
+
+test("tile tx count follows the tape, not a ride-along", () => {
+  assert.equal(transferCountDelta(false, false), 0);
+  assert.equal(transferCountDelta(false, true), 1);
+  assert.equal(transferCountDelta(true, true), 0);
+  assert.equal(transferCountDelta(true, false), -1);
+  assert.match(TAPE_NOT_MINTBURN_SQL, /m\.spent = 0 AND m\.created > 0/);
+  assert.match(TAPE_NOT_MINTBURN_SQL, /9007199254740991/);
+  assert.match(TAPE_NOT_SWAP_PACKED_SQL, /defi\.trades/);
+  assert.match(TAPE_NOT_SWAP_PACKED_SQL, /encode\(m\.tx_id, 'hex'\)/);
 });
 
 test("token_balances tx_count cursor is token_id TAB address", () => {
