@@ -2804,11 +2804,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 }
 
 .plane-drop {
-  animation:
-    addr-tile-drop 400ms linear backwards,
-    addr-tile-in 400ms linear backwards;
-  animation-delay: 0ms, 0ms;
-  transform-origin: center center;
+  animation: none;
 }
 
 .addr-drop .home-tile-enter {
