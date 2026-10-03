@@ -193,6 +193,7 @@ export function OracleFeedView({
     return () => obs.disconnect();
   }, [pack.operators.length, listReady]);
 
+  const battle = Boolean(def.refreshNft);
   const answer = fmtQuote(slug, pack.quote, locale);
   const seated = pack.operators.length;
   const posting = liveOps.length;
@@ -370,14 +371,25 @@ export function OracleFeedView({
             <div
               className={clsx(
                 "addr-head addr-lane addr-lane-x oracle-lane text-[12px] font-medium",
+                battle && "is-battle",
                 stuck && "is-stuck"
               )}
             >
               <div className="oracle-col-name">{t("oracles.colName")}</div>
+              {battle ? (
+                <>
+                  <div className="oracle-col-crown">{t("oracles.colWinner")}</div>
+                  <div className="oracle-col-wins">{t("oracles.colWins")}</div>
+                  <div className="oracle-col-id">{t("oracles.colAddress")}</div>
+                  <div className="oracle-col-num">{t("oracles.colPrice")}</div>
+                  <div className="oracle-col-num">{t("oracles.colEpoch")}</div>
+                </>
+              ) : (
               <div className="oracle-col-answer">
                 <span>{t("oracles.colAddress")}</span>
                 <span>{t("oracles.colPrice")}</span>
               </div>
+              )}
               <div className="oracle-col-num">{t("oracles.colWhen")}</div>
               <div className="oracle-col-num">{t("oracles.colFeeder")}</div>
               <div className="oracle-col-num">{t("oracles.colFee")}</div>
@@ -400,6 +412,8 @@ export function OracleFeedView({
                       locale={locale}
                       tipHeight={tipH}
                       ancient={t("oracles.whenAncient")}
+                      battle={battle}
+                      wonLastLabel={t("oracles.wonLast")}
                       enterClass={enter.enterClass(row.id) ?? ""}
                     />
                   ))
@@ -430,12 +444,42 @@ export function OracleFeedView({
   );
 }
 
+function OracleCrown({ label }: { label: string }) {
+  return (
+    <span className="oracle-crown" role="img" aria-label={label}>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
+        <defs>
+          <linearGradient id="oracle-crown-metal" x1="4" y1="3" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#fff6d0" />
+            <stop offset="0.42" stopColor="#f0c14a" />
+            <stop offset="1" stopColor="#b8860b" />
+          </linearGradient>
+        </defs>
+        <path
+          fill="url(#oracle-crown-metal)"
+          stroke="#8a5a12"
+          strokeWidth="0.7"
+          strokeLinejoin="round"
+          d="M3.2 16.3 5.15 8.2 9.25 12.15 12 4.35 14.75 12.15 18.85 8.2 20.8 16.3Z"
+        />
+        <path fill="#ffe7a8" d="M3.15 16.45h17.7v2.15c0 .62-.5 1.12-1.12 1.12H4.27c-.62 0-1.12-.5-1.12-1.12Z" />
+        <circle cx="5.15" cy="7.85" r="1.15" fill="#fff8dc" />
+        <circle cx="12" cy="4.05" r="1.28" fill="#fffdf6" />
+        <circle cx="18.85" cy="7.85" r="1.15" fill="#fff8dc" />
+      </svg>
+      <i className="oracle-crown-gleam" aria-hidden />
+    </span>
+  );
+}
+
 function OracleTapeRow({
   row,
   slug,
   locale,
   tipHeight,
   ancient,
+  battle,
+  wonLastLabel,
   enterClass,
 }: {
   row: OracleOperator;
@@ -443,6 +487,8 @@ function OracleTapeRow({
   locale: string;
   tipHeight: number | null;
   ancient: string;
+  battle: boolean;
+  wonLastLabel: string;
   enterClass: string;
 }) {
   const seed = oracleOperatorSeed(row);
@@ -454,6 +500,7 @@ function OracleTapeRow({
       id={`oracle-op-${row.id}`}
       className={clsx(
         "addr-lane addr-lane-x oracle-lane border-t border-[var(--border-soft)] text-[13px]",
+        battle && "is-battle",
         enterClass
       )}
     >
@@ -477,6 +524,42 @@ function OracleTapeRow({
           </Link>
         )}
       </div>
+      {battle ? (
+        <>
+          <div className="oracle-col-crown">
+            {row.wonLast ? <OracleCrown label={wonLastLabel} /> : null}
+          </div>
+          <div
+            className="oracle-col-wins tabular-nums"
+            style={row.wins ? { color: INK.gold } : undefined}
+          >
+            <span className={row.wins ? undefined : "text-[var(--muted)]"}>
+              {(row.wins ?? 0).toLocaleString(loc(locale))}
+            </span>
+          </div>
+        </>
+      ) : null}
+      {battle ? (
+        <>
+          <div className="oracle-col-id">
+            {row.address ? (
+              <Link
+                href={`/address/${row.address}`}
+                className="min-w-0 truncate font-mono text-[12px] text-accent hover:underline"
+                title={row.address}
+              >
+                {shortId(row.address, 5)}
+              </Link>
+            ) : (
+              <span className="text-[var(--muted)]">—</span>
+            )}
+          </div>
+          <div className="oracle-col-num tabular-nums">{fmtQuote(slug, row.quote, locale)}</div>
+          <div className="oracle-col-num tabular-nums">
+            {row.postedEpoch != null ? String(row.postedEpoch) : "—"}
+          </div>
+        </>
+      ) : (
       <div className="oracle-col-answer">
         {row.address ? (
           <Link
@@ -491,6 +574,7 @@ function OracleTapeRow({
         )}
         <span className="min-w-0 truncate tabular-nums">{fmtQuote(slug, row.quote, locale)}</span>
       </div>
+      )}
       <div className="oracle-col-num tabular-nums text-[var(--muted)]">
         {oracleWhenLabel({
           tsMs: row.tsMs,

@@ -19,6 +19,12 @@ export type OracleOperator = {
   live: boolean | null;
   addressErgNano: string | null;
   feeNano: string | null;
+  /** Refresh slots this address won. Only v2 USD and gold. */
+  wins?: number;
+  /** This row won the newest refresh. */
+  wonLast?: boolean;
+  /** Epoch number on the oracle's latest datapoint. */
+  postedEpoch?: number | null;
 };
 
 export type OracleTick = {

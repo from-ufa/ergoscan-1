@@ -46,4 +46,5 @@ export * from "./ergo-decimals.js";
 export * from "./rosen-event.js";
 export * from "./addr-flow.js";
 export * from "./oracle-pools.js";
+export * from "./oracle-leader.js";
 export * from "./market-cg.js";

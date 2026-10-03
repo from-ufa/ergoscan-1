@@ -2005,6 +2005,53 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
+/* One grid for the head and every row, so the gaps stay equal and the columns line up. */
+.addr-pan:has(> .oracle-lane.is-battle) {
+  display: grid;
+  /* Winner stays on the operator. The other columns share the remaining width. */
+  grid-template-columns: max-content max-content repeat(7, minmax(4.75rem, 1fr));
+  justify-content: start;
+  column-gap: 1.25rem;
+  align-items: center;
+  width: 100%;
+}
+.addr-pan:has(> .oracle-lane.is-battle) > :not(.oracle-lane) {
+  display: contents;
+}
+.addr-pan:has(> .oracle-lane.is-battle) > :not(.oracle-lane) > div {
+  display: contents;
+}
+.addr-pan:has(> .oracle-lane.is-battle) .oracle-lane.is-battle {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  column-gap: 1.25rem;
+  align-items: center;
+}
+.addr-pan:has(> .oracle-lane.is-battle) p {
+  grid-column: 1 / -1;
+}
+.addr-lane.oracle-lane.is-battle > *,
+.addr-head.oracle-lane.is-battle > * {
+  padding-left: 0;
+  padding-right: 0;
+}
+.addr-lane.oracle-lane.is-battle > :first-child,
+.addr-head.oracle-lane.is-battle > :first-child {
+  padding-left: 0.75rem;
+}
+.addr-lane.oracle-lane.is-battle > :last-child,
+.addr-head.oracle-lane.is-battle > :last-child {
+  padding-right: 0.75rem;
+}
+.addr-lane.oracle-lane.is-battle > .oracle-col-id,
+.addr-head.oracle-lane.is-battle > .oracle-col-id {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  overflow: hidden;
+}
 .addr-lane.oracle-lane > .oracle-col-name,
 .addr-head.oracle-lane > .oracle-col-name {
   display: flex;
@@ -2034,6 +2081,32 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   overflow: hidden;
   text-align: right;
 }
+.addr-lane.oracle-lane > .oracle-col-crown,
+.addr-head.oracle-lane > .oracle-col-crown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+.addr-lane.oracle-lane.is-battle > .oracle-col-crown,
+.addr-head.oracle-lane.is-battle > .oracle-col-crown {
+  justify-content: flex-start;
+  margin-left: -0.6rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+.addr-lane.oracle-lane > .oracle-col-wins,
+.addr-head.oracle-lane > .oracle-col-wins {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  padding-right: 0.7rem;
+  padding-left: 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
 .addr-head.oracle-lane > .oracle-col-name,
 .addr-head.oracle-lane > .oracle-col-num {
   padding-top: 0;
@@ -2056,9 +2129,56 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 .oracle-live-pip {
   animation: oracle-live-pip 1.15s ease-in-out infinite;
 }
+.oracle-crown {
+  position: relative;
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  filter:
+    drop-shadow(0 1px 0 rgba(122, 78, 12, 0.55))
+    drop-shadow(0 0 5px rgba(240, 193, 74, 0.55));
+  animation: oracle-crown-lift 2.6s ease-in-out infinite;
+}
+.oracle-crown-gleam {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 3px;
+}
+.oracle-crown-gleam::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: -60%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 252, 235, 0.92), transparent);
+  animation: oracle-crown-gleam 2.8s ease-in-out infinite;
+}
+@keyframes oracle-crown-lift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+@keyframes oracle-crown-gleam {
+  0% {
+    transform: translateX(0);
+  }
+  62%,
+  100% {
+    transform: translateX(320%);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .oracle-erg-low,
-  .oracle-live-pip {
+  .oracle-live-pip,
+  .oracle-crown,
+  .oracle-crown-gleam::after {
     animation: none;
   }
 }
@@ -2070,6 +2190,20 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     max-width: 100%;
     min-width: 0;
     white-space: normal;
+  }
+  .addr-pan:has(> .oracle-lane.is-battle) {
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
+    grid-template-columns: max-content max-content repeat(7, max-content);
+    column-gap: 1.5rem;
+  }
+  .addr-pan .addr-lane.oracle-lane.is-battle,
+  .addr-pan .addr-head.oracle-lane.is-battle {
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    white-space: nowrap;
   }
 }
 
@@ -2419,6 +2553,16 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   justify-content: flex-end;
   padding-right: 0.75rem;
   padding-left: 0.5rem;
+}
+.addr-head.oracle-lane > .oracle-col-crown {
+  justify-content: center;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+.addr-head.oracle-lane > .oracle-col-wins {
+  justify-content: flex-end;
+  padding-right: 0.7rem;
+  padding-left: 0.25rem;
 }
 .addr-head.token-lane {
   align-items: stretch;

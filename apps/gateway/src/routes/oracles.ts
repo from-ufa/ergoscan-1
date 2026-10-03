@@ -203,6 +203,34 @@ export function registerOracleRoutes(app: Express): void {
       [slug, since]
     );
 
+    const battle = Boolean(def.refreshNft);
+    const winMap = new Map<string, number>();
+    const epochMap = new Map<string, number>();
+    let lastWinner: string | null = null;
+    if (battle) {
+      const posts = await q<{ address: string; epoch: number }>(
+        `SELECT address, epoch FROM oracle.last_post WHERE slug = $1`,
+        [slug]
+      );
+      for (const row of posts ?? []) {
+        if (row.address && row.epoch != null) epochMap.set(row.address, Number(row.epoch));
+      }
+      const tally = await q<{ address: string; wins: number }>(
+        `SELECT address, wins FROM oracle.leader_wins WHERE slug = $1`,
+        [slug]
+      );
+      for (const row of tally ?? []) {
+        if (row.address) winMap.set(row.address, Number(row.wins) || 0);
+      }
+      const last = await q<{ address: string }>(
+        `SELECT address FROM oracle.leader WHERE slug = $1 ORDER BY height DESC LIMIT 1`,
+        [slug]
+      );
+      lastWinner = last?.[0]?.address ?? null;
+    }
+    const listed = new Set((ops ?? []).map((o) => o.address).filter((a): a is string => Boolean(a)));
+    if (lastWinner && !listed.has(lastWinner)) lastWinner = null;
+
     const operators = (ops ?? []).map((o) => ({
       id: o.box_id,
       boxId: o.box_id,
@@ -214,6 +242,13 @@ export function registerOracleRoutes(app: Express): void {
       live: o.live,
       addressErgNano: o.address_erg_nano,
       feeNano: o.fee_nano,
+      ...(battle
+        ? {
+            wins: o.address ? winMap.get(o.address) ?? 0 : 0,
+            wonLast: o.address != null && o.address === lastWinner,
+            postedEpoch: (o.address ? epochMap.get(o.address) : undefined) ?? o.epoch ?? null,
+          }
+        : {}),
     }));
     const liveKnown = operators.some((o) => o.live != null);
     const idle = Number(idleRow?.[0]?.idle ?? 0);

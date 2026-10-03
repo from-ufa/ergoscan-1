@@ -76,4 +76,32 @@ export async function ensureOracleSchema(db: Queryable): Promise<void> {
     `CREATE INDEX IF NOT EXISTS oracle_ticks_slug_h
        ON oracle.ticks (slug, height DESC, box_id)`
   );
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS oracle.leader (
+      slug TEXT NOT NULL,
+      height INT NOT NULL,
+      tx_id TEXT NOT NULL,
+      address TEXT NOT NULL,
+      PRIMARY KEY (slug, height)
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS oracle.last_post (
+      slug TEXT NOT NULL,
+      address TEXT NOT NULL,
+      epoch INT NOT NULL,
+      height INT NOT NULL,
+      ts_ms BIGINT,
+      PRIMARY KEY (slug, address)
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS oracle.leader_wins (
+      slug TEXT NOT NULL,
+      address TEXT NOT NULL,
+      wins INT NOT NULL,
+      PRIMARY KEY (slug, address)
+    )
+  `);
 }

@@ -19,6 +19,8 @@ import { resolveAndWriteMarket, upsertMarketSnap } from "./cgMarket.js";
 import { ADVISORY_LOCK, createPool, getState, setState, type Queryable } from "./db.js";
 import { detectFeed, readMarket } from "./detect.js";
 import { startHealthServer, type HealthSnap } from "./health.js";
+import { advanceLastPosts } from "./last-post.js";
+import { advanceLeaders } from "./leader.js";
 import { persistFeed } from "./persist.js";
 import {
   enabledFromEnv,
@@ -180,6 +182,18 @@ async function loop(): Promise<void> {
         }
         if (HISTORY && plan.includeSpent) {
           await setState(client, "history_done", "1");
+        }
+        try {
+          const leaders = await advanceLeaders(client, tip);
+          if (leaders) console.log(JSON.stringify({ type: "leader", wrote: leaders }));
+        } catch (e) {
+          console.error(JSON.stringify({ type: "leader_err", err: String(e).slice(0, 240) }));
+        }
+        try {
+          const posts = await advanceLastPosts(client, tip);
+          if (posts) console.log(JSON.stringify({ type: "last_post", wrote: posts }));
+        } catch (e) {
+          console.error(JSON.stringify({ type: "last_post_err", err: String(e).slice(0, 240) }));
         }
         cursor = plan.nextCursor;
         health.scanHeight = cursor;

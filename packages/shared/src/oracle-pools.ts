@@ -62,10 +62,32 @@ export type OracleFeedDef = {
   maxDeviationPercent: number;
   issued: number;
   market: boolean;
+  /** Refresh NFT. v2 USD and gold only. The v1 feed has no leader tape. */
+  refreshNft?: string;
 };
 
 /** Nominal Ergo block time used for oracle “ago” / heartbeat copy. */
 export const ORACLE_BLOCK_MS = 120_000;
+
+/** A seat goes silent after an hour without a new box. */
+export const ORACLE_SILENT_AFTER_MS = 60 * 60 * 1000;
+
+/** Live while the seat box is younger than an hour. Clock first, height if the block time is missing. */
+export function oraclePostingLive(input: {
+  tsMs: number | null;
+  nowMs: number;
+  opHeight: number | null;
+  tipHeight: number | null;
+}): boolean {
+  if (input.tsMs != null && Number.isFinite(input.tsMs) && Number.isFinite(input.nowMs)) {
+    return input.nowMs - input.tsMs <= ORACLE_SILENT_AFTER_MS;
+  }
+  if (input.opHeight == null || input.tipHeight == null) return false;
+  if (!Number.isFinite(input.opHeight) || !Number.isFinite(input.tipHeight)) return false;
+  const ageBlocks = Math.floor(input.tipHeight) - Math.floor(input.opHeight);
+  if (ageBlocks < 0) return true;
+  return ageBlocks * ORACLE_BLOCK_MS <= ORACLE_SILENT_AFTER_MS;
+}
 
 /** Official Erg-USD + cooperative USD + official gold. Writer owns all three. */
 export const ORACLE_FEEDS: Record<OracleFeedSlug, OracleFeedDef> = {
@@ -92,6 +114,7 @@ export const ORACLE_FEEDS: Record<OracleFeedSlug, OracleFeedDef> = {
     maxDeviationPercent: 5,
     issued: 30,
     market: true,
+    refreshNft: "19b7f2e2f11052c020800c8b620660f9f0b5fd5b3f2beacc8b44af960477a694",
   },
   "xau-erg": {
     slug: "xau-erg",
@@ -104,6 +127,7 @@ export const ORACLE_FEEDS: Record<OracleFeedSlug, OracleFeedDef> = {
     maxDeviationPercent: 5,
     issued: 32,
     market: true,
+    refreshNft: "97ad159235d25d05d7efc5863b5d360f89d7d668409502058be3e7aac177b9cb",
   },
 };
 
@@ -187,8 +211,10 @@ export function oracleCurrentRound(
 }
 
 /**
- * A known round id must match the current round.
- * A box with no round id falls back to the heartbeat height window.
+ * Live means this seat posted a datapoint for the round.
+ * A refresh output has no round at all: that is silent, not a fresh post.
+ * A numeric post one epoch behind still counts when it landed inside the
+ * heartbeat window. The refresh often increments the pool in the same block.
  */
 export function oracleSeatLive(
   round: string | null,
@@ -201,8 +227,28 @@ export function oracleSeatLive(
     epochLength: number;
   }
 ): boolean | null {
-  if (round) return current != null && round === current;
-  return oracleOperatorLive(fallback);
+  if (round?.startsWith("h:")) return current != null && round === current;
+  if (round?.startsWith("n:")) {
+    if (current != null && round === current) return true;
+    const posted = Number(round.slice(2));
+    const pool = fallback.poolEpoch;
+    const opHeight = fallback.opHeight;
+    const poolHeight = fallback.poolHeight;
+    const window = Math.max(1, Math.floor(fallback.epochLength) || 1);
+    if (
+      pool == null ||
+      !Number.isFinite(posted) ||
+      posted !== pool - 1 ||
+      opHeight == null ||
+      poolHeight == null ||
+      !Number.isFinite(opHeight) ||
+      !Number.isFinite(poolHeight)
+    ) {
+      return false;
+    }
+    return Math.floor(opHeight) >= Math.floor(poolHeight) - window;
+  }
+  return false;
 }
 
 /** Epoch match when both sides have it. Else: posted inside the pool's heartbeat window. */

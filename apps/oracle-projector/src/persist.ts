@@ -1,4 +1,4 @@
-import { ORACLE_FEEDS, oracleCurrentRound, oracleSeatLive, type OracleFeedSlug } from "@ergoscan/shared";
+import { ORACLE_FEEDS, oraclePostingLive, type OracleFeedSlug } from "@ergoscan/shared";
 import type { Queryable } from "./db.js";
 import { setState } from "./db.js";
 import type { DetectedBox, DetectedFeed, MarketSnap, OracleCensus } from "./detect.js";
@@ -43,35 +43,21 @@ export async function persistFeed(
   const pool = found.pool;
   const extra = await enrichOperators(db, found.operators, def);
   let poolEpoch = pool?.epoch ?? null;
-  let poolHeight = pool?.height ?? null;
   if (!pool) {
-    const prev = await db.query<{
-      epoch: number | null;
-      creation_height: string | number | null;
-    }>(
-      `SELECT epoch, creation_height FROM oracle.pool_snap WHERE slug = $1 LIMIT 1`,
+    const prev = await db.query<{ epoch: number | null }>(
+      `SELECT epoch FROM oracle.pool_snap WHERE slug = $1 LIMIT 1`,
       [found.slug]
     );
-    const row = prev.rows[0];
-    if (row) {
-      if (poolEpoch == null && row.epoch != null) {
-        const n = Number(row.epoch);
-        if (Number.isFinite(n)) poolEpoch = n;
-      }
-      if (poolHeight == null && row.creation_height != null) {
-        const n = Number(row.creation_height);
-        if (Number.isFinite(n)) poolHeight = n;
-      }
-    }
+    const n = Number(prev.rows[0]?.epoch);
+    if (poolEpoch == null && Number.isFinite(n)) poolEpoch = n;
   }
-  const currentRound = oracleCurrentRound(found.operators, poolEpoch);
+  const nowMs = Date.now();
   const liveOf = (op: DetectedBox) =>
-    oracleSeatLive(op.round, currentRound, {
-      opEpoch: op.epoch,
-      poolEpoch,
+    oraclePostingLive({
+      tsMs: op.tsMs,
+      nowMs,
       opHeight: op.height,
-      poolHeight,
-      epochLength: def.epochLength,
+      tipHeight: scanHeight,
     });
   const live = found.operators.filter((o) => liveOf(o) === true).length;
   const overlay = overlayMarketQuote(found.slug, market);

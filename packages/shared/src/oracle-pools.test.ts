@@ -11,6 +11,7 @@ import {
   oracleOperatorLive,
   oracleRoundKey,
   oracleSeatLive,
+  oraclePostingLive,
   oracleQuoteFromR4,
   oracleQuoteFromRegisters,
   oracleWindowLeft,
@@ -153,6 +154,16 @@ test("numeric pool epoch still marks only that epoch live", () => {
       poolHeight: 1883457,
       epochLength: 6,
     }),
+    false
+  );
+  assert.equal(
+    oracleSeatLive("n:30222", current, {
+      opEpoch: 30222,
+      poolEpoch: 30223,
+      opHeight: 1883457,
+      poolHeight: 1883457,
+      epochLength: 6,
+    }),
     true
   );
   assert.equal(
@@ -206,6 +217,30 @@ test("live follows epoch, then the heartbeat height window", () => {
       poolHeight: 1875319,
       epochLength: 30,
     }),
+    false
+  );
+});
+
+test("silent is an hour without a post", () => {
+  const now = 1_700_000_000_000;
+  assert.equal(
+    oraclePostingLive({ tsMs: now - 30 * 60_000, nowMs: now, opHeight: 1, tipHeight: 100 }),
+    true
+  );
+  assert.equal(
+    oraclePostingLive({ tsMs: now - 61 * 60_000, nowMs: now, opHeight: 100, tipHeight: 100 }),
+    false
+  );
+  assert.equal(
+    oraclePostingLive({ tsMs: null, nowMs: now, opHeight: 90, tipHeight: 100 }),
+    true
+  );
+  assert.equal(
+    oraclePostingLive({ tsMs: null, nowMs: now, opHeight: 50, tipHeight: 100 }),
+    false
+  );
+  assert.equal(
+    oraclePostingLive({ tsMs: null, nowMs: now, opHeight: null, tipHeight: 100 }),
     false
   );
 });
