@@ -1639,7 +1639,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   html[data-ink="day"] {
     --toolbar: calc(3.5rem + 0.85rem + env(safe-area-inset-top, 0px));
     --tabbar: calc(4.25rem + env(safe-area-inset-bottom, 0px));
-    --glass-fill: rgb(var(--module-rgb) / 0.58);
+    --glass-fill: rgb(var(--module-rgb) / 0.48);
   }
 
   .addr-foot {
@@ -1651,7 +1651,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 
   /*
    * Liquid glass — phone chrome only. Tiles and lg+ sheets stay paper.
-   * Specular edge + saturate/blur; no neon glow.
+   * Blur + quiet fill; no specular wash, inset rim, or glow.
    */
   .stage-col > header.sticky {
     isolation: isolate;
@@ -1703,14 +1703,12 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   .nav-drawer,
   html[data-float="ada"] .nav-drawer {
     position: relative;
-    border: 1px solid rgb(var(--border-rgb) / 0.22);
+    border: 1px solid rgb(var(--border-rgb) / 0.14);
     border-radius: 1.35rem;
     background: var(--glass-fill);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.2),
-      inset 0 -1px 0 rgb(0 0 0 / 0.12);
-    -webkit-backdrop-filter: saturate(1.85) blur(28px);
-    backdrop-filter: saturate(1.85) blur(28px);
+    box-shadow: none;
+    -webkit-backdrop-filter: saturate(1.12) blur(24px);
+    backdrop-filter: saturate(1.12) blur(24px);
   }
   .phone-tabbar {
     position: fixed;
@@ -1733,42 +1731,24 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     left: 0.75rem;
     bottom: calc(var(--tabbar) + 0.35rem);
     overflow: hidden;
-    border-right-color: rgb(var(--border-rgb) / 0.22);
+    border-right-color: rgb(var(--border-rgb) / 0.14);
   }
   .nav-drawer .nav-brand {
     height: 3.5rem;
     padding-inline: 0.85rem;
   }
-  .phone-tabbar::before,
-  .phone-toolbar::before,
-  .nav-drawer::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(180deg, rgb(255 255 255 / 0.16), transparent 46%);
-  }
-  .phone-tabbar > div,
-  .phone-toolbar > * {
-    position: relative;
-    z-index: 1;
-  }
-
   .search-panel-inner,
   html[data-float="ada"] .search-panel-inner {
     background: var(--glass-fill);
-    border-color: rgb(var(--border-rgb) / 0.22);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.16),
-      0 18px 48px rgb(0 0 0 / 0.32);
-    -webkit-backdrop-filter: saturate(1.85) blur(32px);
-    backdrop-filter: saturate(1.85) blur(32px);
+    border-color: rgb(var(--border-rgb) / 0.14);
+    box-shadow: none;
+    -webkit-backdrop-filter: saturate(1.12) blur(24px);
+    backdrop-filter: saturate(1.12) blur(24px);
   }
 }
 
 html[data-ink="day"] {
-  --glass-fill: rgb(255 255 255 / 0.68);
+  --glass-fill: rgb(255 255 255 / 0.52);
 }
 
 @media (max-width: 1023px) and (prefers-reduced-transparency: reduce) {
