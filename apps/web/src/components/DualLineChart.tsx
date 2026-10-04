@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts/core";
 import { EffectScatterChart, LineChart, ScatterChart } from "echarts/charts";
 import { AxisPointerComponent, GridComponent, TooltipComponent } from "echarts/components";
@@ -142,6 +142,7 @@ export function DualLineChart({
   yRight = false,
   fillPlot = false,
   tipPulse = false,
+  revealKey,
   series = "both",
   glow = false,
   showTip = true,
@@ -167,6 +168,8 @@ export function DualLineChart({
   fillPlot?: boolean;
   /** Pulsing dots on the latest stroke. */
   tipPulse?: boolean;
+  /** When this changes, the old plot blinks out and the next one draws in from the left. */
+  revealKey?: string;
   /** Home split tiles draw one series; oracles/DEX keep both. */
   series?: "both" | "txs" | "fees";
   /** Neon halo on the stroke, plus a short fade under it. Home txs and fees. */
@@ -188,6 +191,51 @@ export function DualLineChart({
   labels.current = { nameTxs, nameFees };
   loc.current = locale;
   const ink = useInk();
+  const incoming = useRef(points);
+  incoming.current = points;
+  const [shown, setShown] = useState(points);
+  const [veil, setVeil] = useState<"idle" | "out" | "hold" | "in">("idle");
+  const revealSeen = useRef(revealKey);
+  const shownKey = useRef(revealKey);
+  const snap = useRef(false);
+  const frozen = useRef(false);
+
+  useEffect(() => {
+    if (revealKey != null && revealKey !== shownKey.current) return;
+    if (!frozen.current) setShown(points);
+  }, [points, revealKey]);
+
+  useEffect(() => {
+    if (revealKey == null || revealKey === revealSeen.current) return;
+    revealSeen.current = revealKey;
+    const reduce =
+      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      frozen.current = false;
+      snap.current = true;
+      shownKey.current = revealKey;
+      setShown(incoming.current);
+      setVeil("idle");
+      return;
+    }
+    frozen.current = true;
+    setVeil("out");
+    const outId = window.setTimeout(() => {
+      snap.current = true;
+      shownKey.current = revealKey;
+      setShown(incoming.current);
+      frozen.current = false;
+      setVeil("hold");
+    }, 380);
+    const drawId = window.setTimeout(() => setVeil("in"), 430);
+    const doneId = window.setTimeout(() => setVeil("idle"), 430 + 720);
+    return () => {
+      window.clearTimeout(outId);
+      window.clearTimeout(drawId);
+      window.clearTimeout(doneId);
+      frozen.current = false;
+    };
+  }, [revealKey]);
 
   useEffect(() => {
     const node = el.current;
@@ -213,8 +261,8 @@ export function DualLineChart({
     const chrome = chartChrome();
     const day = ink === "day";
     const wall = binMs > 0 ? binMs : HOME_TX_CHART_BIN_MS;
-    const binned = skipBin ? points : dropOpenActivityBin(binTxActivity(points, wall), wall);
-    const seriesPts = binned.length >= 2 ? binned : points;
+    const binned = skipBin ? shown : dropOpenActivityBin(binTxActivity(shown, wall), wall);
+    const seriesPts = binned.length >= 2 ? binned : shown;
     const windowMs = skipBin ? (binMs > 0 ? wall : 0) : binned.length >= 2 ? wall : 0;
     if (seriesPts.length < 2) {
       c.clear();
@@ -232,6 +280,8 @@ export function DualLineChart({
     ) as [number, number | null][];
     const reduced =
       typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const quiet = snap.current;
+    if (quiet) snap.current = false;
     const xTicks = utcDayTicks(
       seriesPts[0]!.t,
       seriesPts[seriesPts.length - 1]!.t,
@@ -256,7 +306,7 @@ export function DualLineChart({
     c.setOption(
       {
         useUTC: true,
-        animationDuration: reduced ? 0 : 420,
+        animationDuration: reduced || quiet ? 0 : 420,
         animationEasing: "cubicOut",
         grid,
         tooltip: {
@@ -454,12 +504,21 @@ export function DualLineChart({
       quietMove.current = onMove;
       node.addEventListener("mousemove", onMove);
     }
-  }, [points, compact, colorTxs, colorFees, locale, binMs, skipBin, yRight, fillPlot, tipPulse, series, glow, showTip, ink]);
+  }, [shown, compact, colorTxs, colorFees, locale, binMs, skipBin, yRight, fillPlot, tipPulse, series, glow, showTip, ink]);
 
   return (
     <div
       ref={el}
-      className="h-full min-h-0 w-full"
+      className={
+        "h-full min-h-0 w-full" +
+        (veil === "out"
+          ? " chart-range-out"
+          : veil === "hold"
+            ? " chart-range-hold"
+            : veil === "in"
+              ? " chart-range-in"
+              : "")
+      }
       style={height != null ? { height } : series === "both" ? { minHeight: 168 } : undefined}
     />
   );

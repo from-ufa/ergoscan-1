@@ -10,7 +10,7 @@ import {
   oracleAgeBlocks,
 } from "@ergoscan/shared";
 import { Shell } from "@/components/Shell";
-import { KpiGrid, Segmented } from "@/components/KpiGrid";
+import { KpiGrid } from "@/components/KpiGrid";
 import {
   KpiMarkBell,
   KpiMarkMetronome,
@@ -283,9 +283,9 @@ export function OracleFeedView({
             ]}
           />
 
-        <div className="grid grid-cols-1 items-stretch gap-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 items-start gap-2 lg:grid-cols-2 lg:items-stretch">
           <section
-            className="home-tile-enter mod flex min-w-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-4 lg:col-span-3"
+            className="home-tile-enter mod flex min-w-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-4"
             style={{ "--enter": 5 } as CSSProperties}
           >
             <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
@@ -311,11 +311,28 @@ export function OracleFeedView({
                   ) : null}
                 </div>
               </div>
-              <Segmented
-                value={rangeId}
-                onChange={setRangeId}
-                options={CHART_RANGES.map((r) => ({ id: r.id, label: t(r.labelKey) }))}
-              />
+              <div className="inline-grid grid-cols-2 gap-1">
+                {CHART_RANGES.map((r) => {
+                  const on = rangeId === r.id;
+                  return (
+                    <button
+                      key={r.id}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setRangeId(r.id)}
+                      className={clsx(
+                        "chip-press inline-flex h-6 w-full items-center justify-center rounded-[9px] px-2.5 text-[12px] font-medium tabular-nums",
+                        "transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+                        on
+                          ? "is-pressed bg-[var(--panel-hover)] text-[var(--text)]"
+                          : "text-[var(--muted)] hover:bg-[var(--wash)] hover:text-[var(--text)]"
+                      )}
+                    >
+                      {t(r.labelKey)}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             {ticksForChart(pack.ticks, rangeId).length >= 2 ? (
               <div className="min-h-[168px] flex-1">
@@ -326,6 +343,7 @@ export function OracleFeedView({
                   yRight
                   fillPlot
                   tipPulse
+                  revealKey={rangeId}
                   nameTxs={t("oracles.chartOracle")}
                   nameFees={t("oracles.chartMarket")}
                   formatTxs={(v) => fmtQuote(slug, v, locale)}
@@ -333,7 +351,6 @@ export function OracleFeedView({
                     fmtQuote(slug === "xau-erg" ? "xau-erg" : "erg-usd", v, locale)
                   }
                   locale={loc(locale)}
-                  height={168}
                 />
               </div>
             ) : (
@@ -344,7 +361,7 @@ export function OracleFeedView({
           </section>
 
           <section
-            className="home-tile-enter mod flex min-w-0 flex-col self-start rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-4 lg:col-span-2"
+            className="home-tile-enter mod flex min-w-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-4"
             style={{ "--enter": 6 } as CSSProperties}
           >
             <OracleCouncil
@@ -444,30 +461,23 @@ export function OracleFeedView({
   );
 }
 
-function OracleCrown({ label }: { label: string }) {
+function OracleWon({ label }: { label: string }) {
   return (
-    <span className="oracle-crown" role="img" aria-label={label}>
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
-        <defs>
-          <linearGradient id="oracle-crown-metal" x1="4" y1="3" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="#fff6d0" />
-            <stop offset="0.42" stopColor="#f0c14a" />
-            <stop offset="1" stopColor="#b8860b" />
-          </linearGradient>
-        </defs>
-        <path
-          fill="url(#oracle-crown-metal)"
-          stroke="#8a5a12"
-          strokeWidth="0.7"
-          strokeLinejoin="round"
-          d="M3.2 16.3 5.15 8.2 9.25 12.15 12 4.35 14.75 12.15 18.85 8.2 20.8 16.3Z"
-        />
-        <path fill="#ffe7a8" d="M3.15 16.45h17.7v2.15c0 .62-.5 1.12-1.12 1.12H4.27c-.62 0-1.12-.5-1.12-1.12Z" />
-        <circle cx="5.15" cy="7.85" r="1.15" fill="#fff8dc" />
-        <circle cx="12" cy="4.05" r="1.28" fill="#fffdf6" />
-        <circle cx="18.85" cy="7.85" r="1.15" fill="#fff8dc" />
+    <span className="oracle-won inline-flex" style={{ color: INK.gold }} role="img" aria-label={label}>
+      <svg
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        aria-hidden
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="6.25" />
+        <circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none" />
       </svg>
-      <i className="oracle-crown-gleam" aria-hidden />
     </span>
   );
 }
@@ -527,7 +537,7 @@ function OracleTapeRow({
       {battle ? (
         <>
           <div className="oracle-col-crown">
-            {row.wonLast ? <OracleCrown label={wonLastLabel} /> : null}
+            {row.wonLast ? <OracleWon label={wonLastLabel} /> : null}
           </div>
           <div
             className="oracle-col-wins tabular-nums"

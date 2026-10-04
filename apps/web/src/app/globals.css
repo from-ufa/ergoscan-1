@@ -2285,6 +2285,9 @@ html[data-ink="day"] {
   padding-left: 0;
   padding-right: 0;
 }
+.addr-sheet .addr-lane.addr-lane-x:not(.addr-head) > .oracle-col-crown {
+  overflow: visible;
+}
 .addr-lane.oracle-lane > .oracle-col-wins,
 .addr-head.oracle-lane > .oracle-col-wins {
   display: flex;
@@ -2317,56 +2320,23 @@ html[data-ink="day"] {
 .oracle-live-pip {
   animation: oracle-live-pip 1.15s ease-in-out infinite;
 }
-.oracle-crown {
-  position: relative;
-  display: inline-flex;
-  width: 18px;
-  height: 18px;
-  filter:
-    drop-shadow(0 1px 0 rgba(122, 78, 12, 0.55))
-    drop-shadow(0 0 5px rgba(240, 193, 74, 0.55));
-  animation: oracle-crown-lift 2.6s ease-in-out infinite;
+.oracle-won {
+  transform-origin: center;
+  animation: oracle-won 1.6s ease-in-out infinite;
 }
-.oracle-crown-gleam {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  border-radius: 3px;
-}
-.oracle-crown-gleam::after {
-  content: "";
-  position: absolute;
-  top: -40%;
-  bottom: -40%;
-  left: -60%;
-  width: 45%;
-  background: linear-gradient(100deg, transparent, rgba(255, 252, 235, 0.92), transparent);
-  animation: oracle-crown-gleam 2.8s ease-in-out infinite;
-}
-@keyframes oracle-crown-lift {
+@keyframes oracle-won {
   0%,
   100% {
-    transform: translateY(0);
+    transform: scale(1);
   }
   50% {
-    transform: translateY(-1.5px);
-  }
-}
-@keyframes oracle-crown-gleam {
-  0% {
-    transform: translateX(0);
-  }
-  62%,
-  100% {
-    transform: translateX(320%);
+    transform: scale(2);
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .oracle-erg-low,
   .oracle-live-pip,
-  .oracle-crown,
-  .oracle-crown-gleam::after {
+  .oracle-won {
     animation: none;
   }
 }
@@ -3157,6 +3127,52 @@ html[data-ink="day"] {
   .fav-kayolo-line {
     --scratch: 1;
     clip-path: none;
+  }
+}
+
+.chart-range-out {
+  animation: chart-range-out 380ms var(--ease) forwards;
+  pointer-events: none;
+}
+.chart-range-hold {
+  opacity: 0;
+  pointer-events: none;
+}
+.chart-range-in {
+  animation: chart-range-in 720ms var(--ease) both;
+  pointer-events: none;
+}
+@keyframes chart-range-out {
+  0% {
+    opacity: 1;
+  }
+  28% {
+    opacity: 0.08;
+  }
+  52% {
+    opacity: 0.62;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes chart-range-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 1;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chart-range-out,
+  .chart-range-in {
+    animation: none;
+  }
+  .chart-range-hold {
+    opacity: 1;
   }
 }
 

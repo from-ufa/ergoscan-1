@@ -340,7 +340,7 @@ export function OracleCouncil({
     <div className="flex flex-col">
       <div className="mb-1 flex h-[22px] items-center justify-between gap-3">
         <h2 className="m-0 text-[17px] font-semibold leading-none tracking-tight">{title}</h2>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="inline-grid shrink-0 grid-cols-2 items-stretch gap-1">
           <LensChip
             pressed={lens === "live"}
             disabled={cinematic}
@@ -657,7 +657,7 @@ function LensChip({
       disabled={disabled}
       onClick={onClick}
       className={clsx(
-        "chip-press rounded-[9px] px-2.5 py-1 text-[12px] font-medium tabular-nums",
+        "chip-press inline-flex h-6 w-full items-center justify-center rounded-[9px] px-2.5 text-[12px] font-medium tabular-nums",
         "transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
         "disabled:pointer-events-none disabled:opacity-50",
         pressed
