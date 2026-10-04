@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Mix pit (block / tx aside): quiet cluster, no speed floor.
+ * Mix pit (block / tx aside): quiet cluster, same sphere stack as the home well.
  * Seal well (`well`): balls wait, then arc to the left edge and dissolve. Own canvas 2D.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -156,13 +156,6 @@ function mixWalls(b: MixBody, w: number, h: number) {
   }
 }
 
-function hexFill(color: string, a: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(color.trim());
-  if (!m) return color;
-  const n = parseInt(m[1], 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-}
-
 function hexPath(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
   ctx.beginPath();
   for (let i = 0; i < 6; i++) {
@@ -176,34 +169,24 @@ function hexPath(ctx: CanvasRenderingContext2D, x: number, y: number, r: number)
 }
 
 function paintMix(ctx: CanvasRenderingContext2D, bodies: MixBody[], hover: string | null, now: number) {
-  for (const b of bodies) {
+  const ordered = bodies.slice().sort((a, b) => a.y - b.y);
+  for (const b of ordered) {
     const age = Math.min(1, (now - b.born) / 400);
     const hoverOn = hover === b.id;
     const r = b.r * (hoverOn ? 1.12 : 1);
-    ctx.globalAlpha = 0.55 + age * 0.4;
-    ctx.fillStyle = hexFill(b.color, hoverOn ? 0.95 : 0.82);
-    if (b.kind === "hex") hexPath(ctx, b.x, b.y, r);
-    else {
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
-    }
-    ctx.fill();
-    ctx.globalAlpha = 0.28 * age;
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(b.x - r * 0.28, b.y - r * 0.3, r * (b.kind === "hex" ? 0.22 : 0.32), 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 0.45;
-    ctx.strokeStyle = hexFill(b.color, 0.7);
-    ctx.lineWidth = 1;
-    if (b.kind === "hex") hexPath(ctx, b.x, b.y, r);
-    else {
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
-    }
-    ctx.stroke();
+    const alpha = 0.55 + age * 0.4;
+    paintBallShadow(ctx, b.x, b.y + r * 0.82, r * 0.72, r * 0.72, 0.22 * alpha);
+    paintSphere(
+      ctx,
+      b.x,
+      b.y,
+      r,
+      b.color,
+      alpha,
+      hoverOn ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.32)",
+      b.kind === "hex" ? "hex" : "circle"
+    );
   }
-  ctx.globalAlpha = 1;
 }
 
 function hexRgb(color: string): [number, number, number] | null {
@@ -252,7 +235,8 @@ function paintSphere(
   r: number,
   color: string,
   alpha: number,
-  rim: string
+  rim: string,
+  kind: "circle" | "hex" = "circle"
 ) {
   if (alpha <= 0 || r < 0.35) return;
   ctx.save();
@@ -263,8 +247,11 @@ function paintSphere(
   g.addColorStop(0.62, color);
   g.addColorStop(1, shadeHex(color, 0.22, 16));
   ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  if (kind === "hex") hexPath(ctx, 0, 0, r);
+  else {
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+  }
   ctx.fill();
   ctx.lineWidth = Math.max(0.6, r * 0.06);
   ctx.strokeStyle = rim;

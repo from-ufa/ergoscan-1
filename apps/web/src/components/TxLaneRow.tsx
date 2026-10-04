@@ -51,10 +51,10 @@ export function TxLaneRow({
     >
       <div className="block-lane-pair">
         <div className="min-w-0 px-3">
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex items-center gap-2">
             <Link
               href={`/tx/${row.id}`}
-              className="min-w-0 truncate font-mono text-accent hover:underline"
+              className="whitespace-nowrap font-mono text-accent hover:underline"
             >
               {shortId(row.id, 8)}
             </Link>

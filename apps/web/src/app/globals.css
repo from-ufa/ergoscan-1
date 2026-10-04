@@ -1524,7 +1524,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 }
 .addr-lane.block-tx-pairs > .block-lane-pair:first-child,
 .addr-head.block-tx-pairs > .block-lane-pair:first-child {
-  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-columns: max-content minmax(0, 1fr);
 }
 .addr-lane.block-tx-pairs > .block-lane-pair:nth-child(-n + 2) {
   grid-column: 1 / -1;
@@ -1620,7 +1620,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   }
   .kpi-tape .addr-lane.block-tx-pairs:not(.addr-list):not(.holder-tape) > .block-lane-pair:first-child,
   .kpi-tape .addr-head.block-tx-pairs:not(.addr-list):not(.holder-tape) > .block-lane-pair:first-child {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: max-content minmax(0, 1fr);
   }
   .kpi-tape .block-lane-pair.is-triple {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -2115,41 +2115,8 @@ html[data-ink="day"] {
     stroke-dashoffset: -28;
   }
 }
-.block-hop[data-dir="back"] {
-  --hop-from: -52px;
-}
-.block-hop[data-dir="fwd"] {
-  --hop-from: 52px;
-}
 .block-hop-mark {
   display: block;
-  overflow: visible;
-}
-.block-hop-run,
-.block-hop-tile,
-.block-hop-arrow {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-.block-hop:hover:not(.is-go) .block-hop-run {
-  transform: translateX(calc(var(--hop-from) * 0.18));
-  transition: transform 400ms var(--ease);
-}
-.block-hop.is-go .block-hop-tile {
-  animation: block-hop-arrive 400ms var(--ease) both;
-}
-.block-hop.is-go .block-hop-arrow {
-  animation: block-hop-arrive 400ms var(--ease) 70ms both;
-}
-@keyframes block-hop-arrive {
-  from {
-    transform: translateX(var(--hop-from));
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
 }
 
 .block-lane-pair {
@@ -4755,9 +4722,7 @@ html[data-ink="day"] .epoch-left {
   .ui-mark--waiting .um-q,
   .ui-mark--txtotal .um-stack,
   .ui-mark--perblock .um-pb,
-  .block-size-waves,
-  .block-hop.is-go .block-hop-tile,
-  .block-hop.is-go .block-hop-arrow {
+  .block-size-waves {
     animation: none !important;
   }
   .kpi-mark.entity-mark .em-spin {
