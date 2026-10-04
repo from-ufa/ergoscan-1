@@ -260,7 +260,7 @@ export function RosenView({
           onSelect={() => onFilter("")}
         >
           <h1 className="mt-0.5 truncate text-[17px] font-semibold leading-[1.15] tracking-tight">
-            Rosen
+            {t("nav.rosen")}
           </h1>
           <p className="mt-0.5 truncate text-[12px] leading-[1.15] text-[var(--muted-2)]">
             {scanCaption ??

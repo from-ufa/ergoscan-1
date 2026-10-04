@@ -168,7 +168,7 @@ export function TokenAvatar({
 }) {
   const meta = useMemo(() => resolveTokenMeta(tokenId, symbol), [tokenId, symbol]);
   return (
-    <span title={meta.symbol}>
+    <span title={meta.symbol} className="token-logo">
       <TokenMark tokenId={meta.tokenId} src={meta.logoUrl} size={size} />
     </span>
   );

@@ -5,7 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
 import { Shell } from "@/components/Shell";
-import { KpiGrid, Segmented } from "@/components/KpiGrid";
+import { KpiGrid } from "@/components/KpiGrid";
 import {
   KpiMarkHandshake,
   KpiMarkScrollText,
@@ -96,7 +96,7 @@ export function LithosView({
   const [rangeId, setRangeId] = useState<VolRangeId>("7d");
   const [volRows, setVolRows] = useState<DefiVolPoint[]>(initialVolume);
   const [shownRange, setShownRange] = useState<VolRangeId>("7d");
-  const [chartPending, setChartPending] = useState(false);
+  const [, setChartPending] = useState(false);
   const volCache = useRef<Partial<Record<VolRangeId, DefiVolPoint[]>>>({
     "7d": initialVolume,
   });
@@ -308,7 +308,7 @@ export function LithosView({
               alt=""
               width={36}
               height={36}
-              className="h-9 w-9 rounded-[8px]"
+              className="h-9 w-9 shrink-0 object-contain"
             />
             <span className="text-[14px] font-semibold">Lithos</span>
           </div>
@@ -349,27 +349,37 @@ export function LithosView({
                 </span>
               </div>
             </div>
-            <Segmented<VolRangeId>
-              value={rangeId}
-              onChange={setRangeId}
-              options={VOL_RANGES.map((r) => ({
-                id: r.id,
-                label: t(`defi.range.${r.id}`),
-              }))}
-            />
+            <div className="inline-grid grid-cols-3 gap-1">
+              {VOL_RANGES.map((r) => {
+                const on = rangeId === r.id;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setRangeId(r.id)}
+                    className={clsx(
+                      "chip-press inline-flex h-6 w-full items-center justify-center rounded-[9px] px-2.5 text-[12px] font-medium tabular-nums",
+                      "transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+                      on
+                        ? "is-pressed bg-[var(--panel-hover)] text-[var(--text)]"
+                        : "text-[var(--muted)] hover:bg-[var(--wash)] hover:text-[var(--text)]"
+                    )}
+                  >
+                    {t(`defi.range.${r.id}`)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <div
-            className={clsx(
-              "min-h-[168px] min-w-0 flex-1 overflow-hidden transition-opacity duration-[400ms] ease-[var(--ease)]",
-              chartPending && "opacity-60"
-            )}
-          >
+          <div className="min-h-[168px] min-w-0 flex-1">
             {showVolChart ? (
               <DualLineChart
                 points={volPts}
                 compact
                 skipBin
                 binMs={range.binMs}
+                revealKey={shownRange}
                 colorTxs={VOL_LINE}
                 colorFees={SWAP_LINE}
                 nameTxs={t("defi.chartVol")}

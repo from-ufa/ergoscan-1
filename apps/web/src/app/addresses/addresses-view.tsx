@@ -207,7 +207,6 @@ export function AddressesView({ initial }: { initial: AddressesPageData }) {
   tipRef.current = tip;
   const seed = seedFilter(initial);
   const [items, setItems] = useState<AddressListItem[]>(initial.items);
-  const [source, setSource] = useState(initial.source);
   const [offset, setOffset] = useState(0);
   const [pending, setPending] = useState(false);
   const [ready, setReady] = useState(initial.items.length > 0);
@@ -273,7 +272,6 @@ export function AddressesView({ initial }: { initial: AddressesPageData }) {
 
       const mode = silent ? "soft" : "page";
       const take = (j: AddressesPageData) => {
-        if (j.source) setSource(j.source);
         if (j.bands) setBands(j.bands);
         if (typeof j.total === "number") setFilterTotal(j.total);
         else setFilterTotal(null);
@@ -607,9 +605,6 @@ export function AddressesView({ initial }: { initial: AddressesPageData }) {
                 />
               ))}
             </div>
-            <p className="px-3 py-2 text-[11px] text-[var(--muted-2)]">
-              {t("addresses.sourceNote").replace("{s}", source)}
-            </p>
           </div>
 
           <RankWindow

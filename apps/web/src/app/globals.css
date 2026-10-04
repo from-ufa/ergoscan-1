@@ -293,60 +293,12 @@ html[data-float="ada"] a.mod.kpi-tile--press.is-pressed {
  * Chip press: the same inset well, for tabs sitting in a wash strip
  * (SegBar, docs, Segmented, rent periods, ink/locale, oracle lens, hops).
  */
-.set-tumbler {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr));
-  width: min(100%, 16.5rem);
-  height: 40px;
-  padding: 3px;
-  border-radius: 14px;
-  background: var(--wash-faint);
-  box-shadow: var(--float-shadow-press);
-}
-.set-tumbler-thumb {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
-  width: calc((100% - 6px) / var(--n, 2));
-  border-radius: 11px;
-  background: var(--panel-hover);
-  box-shadow: var(--float-shadow-press);
-  transform: translateX(calc(var(--i, 0) * 100%));
-  transition: transform 400ms var(--ease);
-}
-.set-tumbler-opt {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-width: 0;
-  padding: 0 8px;
-  border-radius: 11px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-}
-.set-tumbler-opt.is-on {
-  color: var(--text);
-}
 .set-tumbler-swatch {
   width: 12px;
   height: 12px;
   flex: none;
   border-radius: 4px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
-}
-@media (prefers-reduced-motion: reduce) {
-  .set-tumbler-thumb {
-    transition: none;
-  }
 }
 
 .token-seal-mark {
@@ -860,6 +812,16 @@ html[data-stamp="rail"] .kpi-tile-mark > span,
   width: auto !important;
   align-items: center;
   justify-content: center;
+}
+html[data-stamp="rail"] .kpi-tile-mark .token-logo,
+html[data-stamp="rail"] .kpi-tile-mark .token-logo > span,
+[data-stamp-demo="rail"] .kpi-tile-mark .token-logo,
+[data-stamp-demo="rail"] .kpi-tile-mark .token-logo > span {
+  height: 1.75rem !important;
+  width: 1.75rem !important;
+  overflow: visible;
+  border-radius: 0 !important;
+  background: transparent;
 }
 html[data-stamp="old"] .kpi-tile:not(.kpi-tile--aside),
 [data-stamp-demo="old"] .kpi-tile:not(.kpi-tile--aside) {
@@ -3895,14 +3857,14 @@ html[data-ink="day"] .epoch-left {
   animation-duration: 18s;
 }
 
-/* Lucide kind glyphs sit inside the same 24 box as the holder spiral, but their
-   line art leaves a wider margin, so they read smaller. Scale the orbit only. */
+/* Lucide kind glyphs fill the 24 box more than the overlord spiral (long side
+   20 vs 18.1). Scale the orbit so that side, stroke included, matches it. */
 @keyframes em-orbit-kind {
   from {
-    transform: scale(1.15) rotate(0deg);
+    transform: scale(0.912) rotate(0deg);
   }
   to {
-    transform: scale(1.15) rotate(360deg);
+    transform: scale(0.912) rotate(360deg);
   }
 }
 
@@ -4780,7 +4742,7 @@ html[data-ink="day"] .epoch-left {
     animation: none !important;
   }
   .kpi-mark.entity-mark .em-spin {
-    transform: scale(1.15);
+    transform: scale(0.912);
   }
 }
 

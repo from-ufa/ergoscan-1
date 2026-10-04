@@ -86,15 +86,8 @@ function Tumbler<T extends string>({
   options: { id: T; label: string; title?: string; swatch?: string }[];
   onChange: (id: T) => void;
 }) {
-  const index = Math.max(0, options.findIndex((o) => o.id === value));
   return (
-    <div
-      className="set-tumbler"
-      role="radiogroup"
-      aria-label={label}
-      style={{ "--n": options.length, "--i": index } as CSSProperties}
-    >
-      <span className="set-tumbler-thumb" aria-hidden />
+    <div className="flex flex-wrap justify-end gap-1" role="radiogroup" aria-label={label}>
       {options.map((o) => {
         const on = o.id === value;
         return (
@@ -104,7 +97,13 @@ function Tumbler<T extends string>({
             role="radio"
             aria-checked={on}
             title={o.title ?? o.label}
-            className={clsx("set-tumbler-opt", on && "is-on")}
+            className={clsx(
+              "chip-press inline-flex h-8 w-[6.75rem] items-center justify-center gap-1.5 rounded-[9px] px-2.5 text-[13px] font-medium",
+              "transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+              on
+                ? "is-pressed bg-[var(--panel-hover)] text-[var(--text)]"
+                : "text-[var(--muted)] hover:bg-[var(--wash)] hover:text-[var(--text)]"
+            )}
             onClick={() => onChange(o.id)}
           >
             {o.swatch ? <span className="set-tumbler-swatch" style={{ background: o.swatch }} aria-hidden /> : null}

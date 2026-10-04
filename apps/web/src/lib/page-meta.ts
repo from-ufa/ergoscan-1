@@ -129,7 +129,7 @@ export const LIST_PAGES: Record<
     description: "AgeUSD bank on Ergo: SigUSD, SigRSV, reserve, and bank-box history.",
   },
   "/rosen": {
-    title: "Rosen",
+    title: "Rosen bridge",
     description: "Rosen bridge events on Ergo: processing, completed, fraud.",
   },
   "/oracles": {

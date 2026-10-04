@@ -290,13 +290,29 @@ export function PoolCardView({
           <p className="mt-0.5 text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight">
             <KpiNum>{pool && pool.tvlErg > 0 ? fmtErgFull(pool.tvlErg) : miss}</KpiNum>
           </p>
-          <div className="h-[17px]" aria-hidden />
           <p className="truncate text-[13px] font-normal uppercase leading-[1.15]">FEE</p>
           <p
             className="mt-0.5 text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight"
             style={{ color: "var(--up)" }}
           >
             <KpiNum>{pool?.feePct != null ? fmtPct(pool.feePct) : miss}</KpiNum>
+          </p>
+          <p className="mt-3 truncate text-[13px] font-normal uppercase leading-[1.15]">
+            {t("defi.price")}
+          </p>
+          <p
+            className="mt-0.5 truncate text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight"
+            style={{ color: INK.violet }}
+          >
+            <KpiNum>
+              {pool?.priceErg != null && pool.priceErg > 0 ? (
+                <>
+                  <PrettyPrice n={pool.priceErg} /> ERG
+                </>
+              ) : (
+                miss
+              )}
+            </KpiNum>
           </p>
         </AddrFactCard>
 
