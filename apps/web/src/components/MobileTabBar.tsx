@@ -9,9 +9,9 @@ import { NavIcon, type NavIconId } from "./nav-icons";
 
 const TAB_ICON: Record<string, NavIconId> = {
   "/": "home",
+  "/blocks": "blocks",
   "/mempool": "mempool",
   "/transactions": "txs",
-  "/tokens": "tokens",
 };
 
 export function MobileTabBar({ onMore }: { onMore: () => void }) {

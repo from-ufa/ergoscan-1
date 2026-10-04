@@ -386,6 +386,7 @@ export function NftsView({ initial }: { initial: NftHomeSnap }) {
         />
         <CatalogSearchTile
           enter={2}
+          className="max-lg:hidden"
           q={searchQ}
           onQ={onSearchQ}
           searchLabel={t("nfts.tab.search")}

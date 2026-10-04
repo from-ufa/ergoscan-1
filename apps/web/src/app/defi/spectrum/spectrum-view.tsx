@@ -326,9 +326,9 @@ export function SpectrumView({
     <Shell>
       <KpiGrid items={kpis} dense className="mb-4 sm:grid-cols-4" />
 
-      <div className="mb-4 grid items-stretch gap-3 md:grid-cols-3">
+      <div className="mb-4 grid min-w-0 items-stretch gap-3 md:grid-cols-3">
         <article
-          className="home-tile-enter rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3 md:min-h-0"
+          className="home-tile-enter min-w-0 max-w-full overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3 md:min-h-0"
           style={{ "--enter": 4 } as CSSProperties}
         >
           <h2 className="text-[13px] font-medium text-[var(--muted)]">{t("spectrum.protocol")}</h2>
@@ -360,7 +360,7 @@ export function SpectrumView({
           </div>
         </article>
         <article
-          className="home-tile-enter flex min-h-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3"
+          className="home-tile-enter flex min-h-0 min-w-0 max-w-full flex-col overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3"
           style={{ "--enter": 5 } as CSSProperties}
         >
           <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
@@ -390,7 +390,7 @@ export function SpectrumView({
           </div>
           <div
             className={clsx(
-              "min-h-[168px] flex-1 transition-opacity duration-[400ms] ease-[var(--ease)]",
+              "min-h-[168px] min-w-0 flex-1 overflow-hidden transition-opacity duration-[400ms] ease-[var(--ease)]",
               chartPending && "opacity-60"
             )}
           >
@@ -423,7 +423,7 @@ export function SpectrumView({
           </div>
         </article>
         <article
-          className="home-tile-enter flex max-h-[22rem] min-h-0 flex-col overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3 md:h-0 md:max-h-none md:min-h-full"
+          className="home-tile-enter flex max-h-[22rem] min-h-0 min-w-0 max-w-full flex-col overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3 md:h-0 md:max-h-none md:min-h-full"
           style={{ "--enter": 6 } as CSSProperties}
         >
           <h2 className="shrink-0 text-[13px] font-medium text-[var(--muted)]">{t("spectrum.pools")}</h2>
@@ -486,7 +486,7 @@ export function SpectrumView({
         </div>
       ) : null}
 
-      <div className="grid items-start gap-3 lg:grid-cols-4">
+      <div className="grid min-w-0 items-start gap-3 lg:grid-cols-4">
         <div className="min-w-0 lg:col-span-3">
           {!listReady ? null : !rows.length ? (
             <p className="text-[var(--muted)]">
@@ -555,7 +555,7 @@ export function SpectrumView({
               <div className={tradersPack.enterClass("pack")}>
               <div
                 className={clsx(
-                  "addr-pan transition-opacity duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+                  "addr-pan side-list transition-opacity duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
                   pending && "opacity-60"
                 )}
               >

@@ -19,6 +19,14 @@ const KIND_MARK: Record<ListEntityId, ReactNode> = {
   contract: <KpiMarkFileCode className="h-9 w-9 shrink-0" />,
 };
 
+/** Phone 2-col: Scripts sits beside Overlord. sm+ keeps All → … → Scripts. */
+const KIND_PHONE_ORDER: Record<ListEntityId, string> = {
+  contract: "max-sm:order-6",
+  protocol: "max-sm:order-8",
+  exchange: "max-sm:order-9",
+  pool: "max-sm:order-10",
+};
+
 export function AddressKindKey({
   raw,
   t,
@@ -46,6 +54,7 @@ export function AddressKindKey({
     <>
       <AddressStatTile
         enter={enterFrom}
+        className="max-sm:order-7"
         label={t("addresses.tileAll")}
         n={allN}
         caption={t("addresses.allCaption")}
@@ -61,6 +70,7 @@ export function AddressKindKey({
         <AddressStatTile
           key={b.id}
           enter={enterFrom + 1 + i}
+          className={KIND_PHONE_ORDER[b.id]}
           label={t(`addresses.pip.${b.id}`)}
           n={b.n}
           caption={t(`addresses.kind.${b.id}Range`)}

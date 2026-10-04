@@ -268,6 +268,11 @@ export function NamesView() {
           <div className={packEnter.enterClass("pack")}>
           <div
             className={clsx(
+              "addr-pan transition-opacity duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+            )}
+          >
+          <div
+            className={clsx(
               "addr-head addr-lane addr-lane-x book-lane text-[12px] font-medium",
               stuck && "is-stuck"
             )}
@@ -292,6 +297,7 @@ export function NamesView() {
               onToggleFav={toggleFav}
             />
           ))}
+          </div>
           <p className="px-3 py-2 text-[11px] text-[var(--muted-2)]">
             {t("addresses.book.sourceNote")}{" "}
             <a href={NAMES_REGISTRY_URL} target="_blank" rel="noreferrer" className="text-accent hover:underline">
@@ -412,7 +418,6 @@ function NameTapeRow({
         </div>
         <p className="mt-1 truncate pl-[26px] text-[11px] leading-none text-[var(--muted)]">
           {sub}
-          <span className="font-mono sm:hidden"> · {shortId(row.address, 4)}</span>
         </p>
       </div>
       <div className="book-addr min-w-0 items-center gap-1 px-3">

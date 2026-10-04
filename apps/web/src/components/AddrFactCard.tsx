@@ -21,6 +21,7 @@ export function AddrFactCard({
   onSelect,
   enter,
   beacon,
+  end,
 }: {
   label: string;
   ink: string;
@@ -35,6 +36,8 @@ export function AddrFactCard({
   enter?: number;
   /** Radio rings from the top-right — storage rent on the balance tile. */
   beacon?: boolean;
+  /** Extra slot (phone QR in the balance tile). */
+  end?: ReactNode;
 }) {
   const pressable = Boolean(onSelect);
   const { armed, arm, disarm, bind } = usePaperPress(pressable);
@@ -110,6 +113,7 @@ export function AddrFactCard({
           {mark}
         </div>
       ) : null}
+      {end}
     </article>
   );
 }

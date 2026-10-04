@@ -20,6 +20,7 @@ export function AddressStatTile({
   selected,
   onSelect,
   enter,
+  className,
 }: {
   label: string;
   n: number;
@@ -33,6 +34,7 @@ export function AddressStatTile({
   onSelect?: () => void;
   /** Home-style sheet enter. Omit on pages that should stay still. */
   enter?: number;
+  className?: string;
 }) {
   const tileRef = useRef<HTMLElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -95,7 +97,8 @@ export function AddressStatTile({
         enter != null && "home-tile-enter",
         onSelect && "kpi-tile--press",
         armed && "is-armed",
-        selected && "is-pressed"
+        selected && "is-pressed",
+        className
       )}
       style={{
         ["--kpi-ink" as string]: ink,

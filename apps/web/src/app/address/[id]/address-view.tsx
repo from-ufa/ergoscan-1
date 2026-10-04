@@ -1211,6 +1211,16 @@ export function AddressView({
               label={t("address.card.balance")}
               ink={INK.cyan}
               mark={<KpiMarkWalletMinimal className="h-9 w-9" />}
+              end={
+                <AddressQr
+                  embed
+                  enter={6}
+                  address={address}
+                  label={t("address.card.qr")}
+                  copyLabel={t("address.qrCopy")}
+                  copiedLabel={t("address.qrCopied")}
+                />
+              }
             >
               <div className="mt-2 min-w-0">
                 <KpiNum className="max-w-none">

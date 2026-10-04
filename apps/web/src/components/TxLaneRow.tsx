@@ -54,7 +54,7 @@ export function TxLaneRow({
           <div className="flex min-w-0 items-center gap-2">
             <Link
               href={`/tx/${row.id}`}
-              className="whitespace-nowrap font-mono text-accent hover:underline"
+              className="min-w-0 truncate font-mono text-accent hover:underline"
             >
               {shortId(row.id, 8)}
             </Link>

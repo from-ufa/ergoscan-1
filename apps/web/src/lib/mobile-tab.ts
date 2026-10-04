@@ -8,9 +8,9 @@ export type MobileTab = {
 
 export const MOBILE_TABS: readonly MobileTab[] = [
   { href: "/", key: "nav.home" },
+  { href: "/blocks", key: "nav.blocks", match: ["/blocks", "/block/"] },
   { href: "/mempool", key: "nav.mempool", match: ["/mempool"] },
   { href: "/transactions", key: "nav.txs", match: ["/transactions", "/tx/"] },
-  { href: "/tokens", key: "nav.tokens", match: ["/tokens", "/token/"] },
 ];
 
 export function pathActive(path: string, item: { href: string; match?: readonly string[] }): boolean {

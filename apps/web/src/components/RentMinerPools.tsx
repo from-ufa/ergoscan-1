@@ -27,6 +27,44 @@ const DonutChart = dynamic(() => import("@/components/DonutChart"), {
 
 const PERIODS: RentMinerPeriod[] = ["day", "month", "all"];
 
+function PeriodTabs({
+  className,
+  period,
+  t,
+  onPeriod,
+}: {
+  className?: string;
+  period: RentMinerPeriod;
+  t: (k: string) => string;
+  onPeriod: (id: RentMinerPeriod) => void;
+}) {
+  return (
+    <div
+      className={clsx("rounded-[9px] bg-[var(--wash)] p-0.5", className)}
+      role="tablist"
+      aria-label={t("rent.pools")}
+    >
+      {PERIODS.map((id) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          aria-selected={period === id}
+          className={clsx(
+            "chip-press rounded-[7px] px-2.5 py-1 text-[12px] font-medium leading-none transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+            period === id
+              ? "is-pressed bg-[var(--wash-strong)] text-[var(--text)]"
+              : "text-[var(--muted)] hover:text-[var(--text)]"
+          )}
+          onClick={() => onPeriod(id)}
+        >
+          {t(`rent.poolsPeriod.${id}`)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function formatPoolErg(nano: string, locale: string): string {
   const erg = rentNanoToErg(nano);
   if (!Number.isFinite(erg) || erg <= 0) return "0";
@@ -117,56 +155,51 @@ export function RentMinerPools({
   return (
     <section
       className={clsx(
-        "mod flex h-full min-h-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)]",
+        "mod flex h-full min-h-0 min-w-0 max-w-full flex-col overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)]",
         sheet != null && "home-tile-enter"
       )}
       style={sheet != null ? ({ "--enter": sheet } as CSSProperties) : undefined}
       aria-labelledby="rent-pools-title"
     >
-      <div className="flex flex-col overflow-hidden rounded-[20px] px-4 py-3 sm:px-5">
-        <div className="mb-3 flex items-start justify-between gap-3">
+      <div className="flex min-w-0 flex-col overflow-hidden rounded-[20px] px-4 py-3 sm:px-5">
+        <div className="mb-3 flex min-w-0 items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex h-[22px] min-w-0 items-center gap-3">
               <h2
                 id="rent-pools-title"
-                className="m-0 text-[17px] font-semibold leading-[1.15] tracking-tight"
+                className="m-0 shrink-0 text-[17px] font-semibold leading-[1.15] tracking-tight"
               >
                 {t("rent.pools")}
               </h2>
-              <span className="truncate text-[13px] leading-[1.15] text-[var(--muted)]">
+              <span className="hidden min-w-0 truncate text-[13px] leading-[1.15] text-[var(--muted)] lg:block">
                 {t(hintKey)}
               </span>
             </div>
             <p className="mt-2 truncate text-[12px] leading-[1.15] text-[var(--muted)]">{caption}</p>
+            {canPick ? (
+              <PeriodTabs
+                className="mt-2 flex lg:hidden"
+                period={period}
+                t={t}
+                onPeriod={(id) => {
+                  if (id === period) return;
+                  setHover(null);
+                  setPeriod(id);
+                }}
+              />
+            ) : null}
           </div>
           {canPick ? (
-            <div
-              className="flex shrink-0 self-center rounded-[9px] bg-[var(--wash)] p-0.5"
-              role="tablist"
-              aria-label={t("rent.pools")}
-            >
-              {PERIODS.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={period === id}
-                  className={clsx(
-                    "chip-press rounded-[7px] px-2.5 py-1 text-[12px] font-medium leading-none transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
-                    period === id
-                      ? "is-pressed bg-[var(--wash-strong)] text-[var(--text)]"
-                      : "text-[var(--muted)] hover:text-[var(--text)]"
-                  )}
-                  onClick={() => {
-                    if (id === period) return;
-                    setHover(null);
-                    setPeriod(id);
-                  }}
-                >
-                  {t(`rent.poolsPeriod.${id}`)}
-                </button>
-              ))}
-            </div>
+            <PeriodTabs
+              className="hidden shrink-0 self-center lg:flex"
+              period={period}
+              t={t}
+              onPeriod={(id) => {
+                if (id === period) return;
+                setHover(null);
+                setPeriod(id);
+              }}
+            />
           ) : null}
           <div
             className="relative h-[4.5rem] w-[4.5rem] shrink-0"

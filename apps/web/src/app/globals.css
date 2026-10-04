@@ -1119,6 +1119,43 @@ header button:hover {
   height: 100%;
 }
 
+/* Phone: QR sits in the balance tile, same height as the numbers — not a third block. */
+@media (max-width: 1023px) {
+  .addr-facts > .addr-facts-qr {
+    display: none;
+  }
+  .addr-fact-balance.kpi-tile {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    column-gap: 0.5rem;
+  }
+  .addr-fact-balance .kpi-tile-body {
+    grid-column: 1;
+    min-width: 0;
+  }
+  .addr-fact-balance .kpi-tile-mark {
+    display: none;
+  }
+  .addr-qr-embed {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: stretch;
+    box-sizing: border-box;
+    height: 0;
+    min-height: 100%;
+    width: auto;
+    aspect-ratio: 1 / 1;
+    padding: 0.3rem;
+    border-radius: 14px;
+  }
+}
+@media (min-width: 1024px) {
+  .addr-qr-embed {
+    display: none;
+  }
+}
+
 /* Storage rent: radio rings from the top-right, dead by mid-tile. */
 .addr-rent-waves {
   position: absolute;
@@ -1599,6 +1636,10 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   :root {
     --tabbar: calc(3.5rem + env(safe-area-inset-bottom, 0px));
   }
+
+  .addr-foot {
+    bottom: calc(var(--tabbar) + 8px);
+  }
 }
 
 /*
@@ -1614,6 +1655,9 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   overflow: visible;
 }
 @media (max-width: 1023px) {
+  .addr-sheet {
+    overflow-x: clip;
+  }
   .addr-pan {
     display: block;
     width: 100%;
@@ -1689,9 +1733,31 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
 
   .addr-pan .addr-lane.block-tx-pairs,
   .addr-pan .addr-head.block-tx-pairs {
-    width: 64.5rem;
-    min-width: 64.5rem;
-    grid-template-columns: 10rem 7.5rem 5.5rem 7.5rem 7.5rem 8rem 4.5rem 6.5rem 7.5rem;
+    width: 67.5rem;
+    min-width: 67.5rem;
+    grid-template-columns: 13rem 7.5rem 5.5rem 7.5rem 7.5rem 8rem 4.5rem 6.5rem 7.5rem;
+  }
+
+  /* /rent upcoming: 7 cells after flatten (address pair is one tile). */
+  .addr-pan .addr-lane.block-tx-pairs.rent-tape,
+  .addr-pan .addr-head.block-tx-pairs.rent-tape {
+    width: 60rem;
+    min-width: 60rem;
+    grid-template-columns: 12rem 8rem 7rem 10.5rem 7rem 8rem 7.5rem;
+  }
+
+  /* Pool trades keep desktop `pool-tape`; phone flattens splits into a swipe tape. */
+  .addr-pan .addr-lane.pool-tape,
+  .addr-pan .addr-head.pool-tape {
+    width: 64rem;
+    min-width: 64rem;
+    max-width: none;
+    column-gap: 0;
+    white-space: nowrap;
+    grid-template-columns: 9.5rem 5.5rem 7.5rem 7rem 7.5rem 8.5rem 10rem 8.5rem;
+  }
+  .addr-pan .pool-tape .pool-split {
+    display: contents;
   }
 
   .addr-pan .addr-lane.addr-token-tape,
@@ -1716,27 +1782,24 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   .addr-pan .addr-head.buyback-lane {
     width: 78rem;
     min-width: 78rem;
+    max-width: none;
+    column-gap: 0;
     grid-template-columns: 6.5rem 7rem 5.5rem 8rem 8rem 8rem 8rem 13.5rem 13.5rem;
   }
 
-  .addr-pan .addr-lane:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane),
-  .addr-pan .addr-head:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane) {
+  .addr-pan:not(.side-list) .addr-lane:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane),
+  .addr-pan:not(.side-list) .addr-head:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane) {
     width: 51rem;
     min-width: 51rem;
     grid-template-columns: 15rem 10rem 13rem 13rem;
   }
 
+  /* Flatten Type|Amount and From|To so Type can sticky like Blocks height / Txs hash. */
   .addr-pan .addr-lane.addr-history,
   .addr-pan .addr-head.addr-history {
-    width: 74rem;
-    min-width: 74rem;
-    grid-template-columns: 16rem 12rem 18rem 28rem;
-  }
-  .addr-pan .addr-lane.addr-history > .block-lane-pair,
-  .addr-pan .addr-head.addr-history > .block-lane-pair {
-    display: grid;
-    height: auto;
-    padding: 0;
+    width: 77.25rem;
+    min-width: 77.25rem;
+    grid-template-columns: 9.75rem 9.5rem 12rem 9rem 9rem 28rem;
   }
   .addr-pan .addr-history .addr-when-pair {
     display: grid;
@@ -1768,6 +1831,24 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     width: 56rem;
     min-width: 56rem;
     grid-template-columns: 10rem 9.5rem 8rem 12rem 7rem;
+  }
+
+  /* /names: Name · Address · Source · Txs · ERG · Last. Name sticks. */
+  .addr-pan .addr-lane.book-lane,
+  .addr-pan .addr-head.book-lane {
+    width: 56.5rem;
+    min-width: 56.5rem;
+    grid-template-columns: 13.5rem 10rem 8.5rem 6rem 9.5rem 9rem;
+  }
+  .addr-pan .addr-lane.book-lane > .book-addr,
+  .addr-pan .addr-lane.book-lane > .book-src,
+  .addr-pan .addr-lane.book-lane > .book-txs,
+  .addr-pan .addr-lane.book-lane > .book-last,
+  .addr-pan .addr-head.book-lane > .book-addr,
+  .addr-pan .addr-head.book-lane > .book-src,
+  .addr-pan .addr-head.book-lane > .book-txs,
+  .addr-pan .addr-head.book-lane > .book-last {
+    display: flex;
   }
 
   .addr-pan .addr-head.addr-history > .block-lane-pair > *,
@@ -1812,7 +1893,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   .addr-pan .addr-lane:not(.oracle-lane) > .block-lane-pair:first-child > :first-child,
   .addr-pan .addr-head:not(.oracle-lane) > .block-lane-pair:first-child > :first-child,
   .addr-pan .addr-lane:not(.oracle-lane) > :first-child:not(.block-lane-pair),
-  .addr-pan .addr-head:not(.oracle-lane) > :first-child:not(.block-lane-pair) {
+  .addr-pan:not(.side-list) .addr-head:not(.oracle-lane) > :first-child:not(.block-lane-pair) {
     position: sticky;
     left: 0;
     z-index: 3;
@@ -1827,9 +1908,27 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   }
 
   .addr-pan .addr-head > .block-lane-pair:first-child > :first-child,
-  .addr-pan .addr-head > :first-child:not(.block-lane-pair) {
+  .addr-pan:not(.side-list) .addr-head > :first-child:not(.block-lane-pair) {
     z-index: 4;
     background: var(--module);
+  }
+
+  /* Top traders: two columns, full phone width — not the 51rem fallback tape. */
+  .addr-pan.side-list {
+    overflow-x: hidden;
+  }
+  .addr-pan.side-list > .addr-head,
+  .addr-pan.side-list > .addr-lane {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    grid-template-columns: none;
+  }
+  .addr-pan.side-list .addr-head:not(.oracle-lane) > :first-child:not(.block-lane-pair) {
+    position: static;
+    box-shadow: none;
+    background: transparent;
+    overflow: hidden;
   }
 }
 
@@ -2183,13 +2282,14 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   }
 }
 @media (max-width: 1023px) {
-  .addr-pan .addr-lane.oracle-lane,
-  .addr-pan .addr-head.oracle-lane {
-    column-gap: 0.5rem;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    white-space: normal;
+  .addr-pan .addr-lane.oracle-lane:not(.is-battle),
+  .addr-pan .addr-head.oracle-lane:not(.is-battle) {
+    column-gap: 0;
+    width: 54rem;
+    min-width: 54rem;
+    max-width: none;
+    white-space: nowrap;
+    grid-template-columns: 11.5rem 16rem 8.5rem 8.5rem 9.5rem;
   }
   .addr-pan:has(> .oracle-lane.is-battle) {
     width: max-content;
@@ -2204,6 +2304,19 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     min-width: 0;
     max-width: none;
     white-space: nowrap;
+  }
+  .addr-pan .addr-lane.oracle-lane > .oracle-col-name,
+  .addr-pan .addr-head.oracle-lane > .oracle-col-name {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    overflow: hidden;
+    background: var(--bg);
+    box-shadow: 8px 0 12px -8px rgba(0, 0, 0, 0.55);
+  }
+  .addr-pan .addr-head.oracle-lane > .oracle-col-name {
+    z-index: 4;
+    background: var(--module);
   }
 }
 

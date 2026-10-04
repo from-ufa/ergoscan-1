@@ -37,12 +37,14 @@ export function CatalogSearchTile({
   searchLabel,
   placeholder,
   enter,
+  className,
 }: {
   q: string;
   onQ: (v: string) => void;
   searchLabel: string;
   placeholder: string;
   enter?: number;
+  className?: string;
 }) {
   const { armed, bind } = usePaperPress(true);
   const [focus, setFocus] = useState(false);
@@ -55,7 +57,8 @@ export function CatalogSearchTile({
         "token-search kpi-tile kpi-tile--press kpi-tile--dense flex h-full min-w-0 cursor-text items-center gap-2 rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-3 py-1.5",
         enter != null && "home-tile-enter",
         armed && "is-armed",
-        down && "is-pressed"
+        down && "is-pressed",
+        className
       )}
       style={enter != null ? { ["--enter" as string]: enter } : undefined}
       {...bind}

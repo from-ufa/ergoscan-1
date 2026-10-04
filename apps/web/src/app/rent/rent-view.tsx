@@ -57,6 +57,7 @@ import {
 } from "@/lib/list-snapshots";
 import { getGateway } from "@/lib/config";
 import { lookupAddress } from "@/lib/address-book";
+import { NameMarquee } from "@/components/NameMarquee";
 import { hasRentMinerRows, formatRentSharePct, rentShareOf } from "@/lib/rent-miner-pools";
 import { rentRowTone } from "@/lib/rent-row-tone";
 import { resolveTokenMeta, tokenAtRisk, tokenTickerInk } from "@/lib/token-meta";
@@ -418,7 +419,7 @@ export function RentView({
 
           {pane === "history" && (
           <>
-          <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 px-1 text-[12px] leading-relaxed text-[var(--muted)]">
+          <p className="mt-3 hidden flex-wrap items-baseline gap-x-3 gap-y-1 px-1 text-[12px] leading-relaxed text-[var(--muted)] lg:flex">
             <EvidenceBadge kind="chain" />
             <span className="min-w-0 flex-1">{t("rent.evidence.body")}</span>
             <Link href="/learn#evidence" className="shrink-0 text-[var(--accent)] hover:underline">
@@ -428,7 +429,7 @@ export function RentView({
 
           <div
             className={clsx(
-              "mt-3 grid items-stretch gap-3",
+              "mt-3 grid min-w-0 items-stretch gap-3",
               (hasRentMinerRows(data.collected?.miners) ||
                 hasRentMinerRows(data.collected?.minersDay) ||
                 hasRentMinerRows(data.collected?.minersMonth)) &&
@@ -460,7 +461,7 @@ export function RentView({
           <div className="mt-3 min-w-0">
             <div className="addr-sheet">
             <div className="addr-pan kpi-tape">
-            <div className="addr-head addr-lane addr-lane-x block-tx-pairs text-[12px] font-medium">
+            <div className="addr-head addr-lane addr-lane-x block-tx-pairs rent-tape text-[12px] font-medium">
               <div className="block-lane-pair rent-addr-pair">
                 <div className="min-w-0">{t("rent.colWho")}</div>
               </div>
@@ -481,7 +482,7 @@ export function RentView({
               data.collected.recent.map((row) => (
                 <div
                   key={row.boxId}
-                  className="addr-lane addr-lane-x block-tx-pairs border-t border-[var(--border-soft)] py-2.5 text-[13px]"
+                  className="addr-lane addr-lane-x block-tx-pairs rent-tape border-t border-[var(--border-soft)] py-2.5 text-[13px]"
                 >
                   <div className="block-lane-pair rent-addr-pair">
                     <div className="min-w-0 px-3">
@@ -571,7 +572,7 @@ export function RentView({
                   pending && "opacity-60"
                 )}
               >
-                <div className={clsx("addr-head addr-lane addr-lane-x block-tx-pairs text-[12px] font-medium", stuck && "is-stuck")}>
+                <div className={clsx("addr-head addr-lane addr-lane-x block-tx-pairs rent-tape text-[12px] font-medium", stuck && "is-stuck")}>
                   <div className="block-lane-pair rent-addr-pair">
                     <div className="min-w-0">{t("rent.colAddress")}</div>
                   </div>
@@ -803,7 +804,7 @@ function RentCollectedChart({
   return (
     <section
       className={clsx(
-        "mod flex h-full min-h-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] max-lg:min-h-[19.25rem]",
+        "mod flex h-full min-h-0 min-w-0 max-w-full flex-col overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] max-lg:min-h-[19.25rem]",
         enter != null && "home-tile-enter"
       )}
       style={enter != null ? ({ "--enter": enter } as CSSProperties) : undefined}
@@ -1006,7 +1007,7 @@ function RentDanger({
 }) {
   return (
     <section
-      className="home-tile-enter mod mt-3 rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3.5 sm:px-5"
+      className="home-tile-enter mod mt-3 min-w-0 max-w-full overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3.5 sm:px-5"
       style={{ "--enter": 5 } as CSSProperties}
     >
       <div className="flex items-start gap-3">
@@ -1132,7 +1133,7 @@ function RentWindowCard({
           <KpiNum>—</KpiNum>
         </p>
       )}
-      <p className="mt-0.5 text-[12px] leading-[1.15] text-[var(--muted-2)]">
+      <p className="mt-0.5 hidden text-[12px] leading-[1.15] text-[var(--muted-2)] lg:block">
         {windowCaption(w, covered, minHeight, t, locale)}
       </p>
     </AddrFactCard>
@@ -1202,6 +1203,7 @@ function RentRow({
   const href = row.address
     ? `/address/${encodeURIComponent(row.address)}`
     : `/box/${row.boxId}`;
+  const name = row.address ? lookupAddress(row.address)?.name?.trim() || null : null;
   const inBlocks = t("rent.status.inBlocks").replace(
     "{n}",
     row.blocksUntilRent.toLocaleString(loc(locale))
@@ -1210,15 +1212,30 @@ function RentRow({
   return (
     <div
       className={clsx(
-        "addr-lane addr-lane-x block-tx-pairs border-t border-[var(--border-soft)] py-2.5 text-[13px]",
+        "addr-lane addr-lane-x block-tx-pairs rent-tape border-t border-[var(--border-soft)] py-2.5 text-[13px]",
         enterClass
       )}
     >
       <div className="block-lane-pair rent-addr-pair">
-        <div className="min-w-0 px-3">
-          <Link href={href} title={row.address || row.boxId} className="whitespace-nowrap font-mono text-accent hover:underline">
-            {row.address ? <TapeAddr id={row.address} /> : shortId(row.boxId, 8)}
+        <div className="min-w-0 overflow-hidden px-3">
+          <Link
+            href={href}
+            title={row.address || row.boxId}
+            className="block min-w-0 overflow-hidden text-accent hover:underline"
+          >
+            {name ? (
+              <NameMarquee text={name} className="min-w-0 w-full" />
+            ) : (
+              <span className="whitespace-nowrap font-mono">
+                {row.address ? <TapeAddr id={row.address} /> : shortId(row.boxId, 8)}
+              </span>
+            )}
           </Link>
+          {name && row.address ? (
+            <p className="mt-0.5 truncate font-mono text-[11px] leading-none text-[var(--muted)]">
+              <TapeAddr id={row.address} />
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="block-lane-pair">

@@ -166,7 +166,7 @@ export function NavBrand({
       className={clsx(
         "nav-brand flex shrink-0 items-center",
         compact
-          ? "h-8 gap-2"
+          ? "h-11 w-11 justify-center"
           : clsx(
               "relative z-10 h-[var(--toolbar)]",
               collapsed ? "justify-center px-0" : "gap-3 px-4"
@@ -177,22 +177,21 @@ export function NavBrand({
       <img
         src="/ergoscan-mark.svg"
         alt=""
-        width={compact ? 24 : collapsed ? 28 : 32}
-        height={compact ? 24 : collapsed ? 28 : 32}
+        width={compact ? 28 : collapsed ? 28 : 32}
+        height={compact ? 28 : collapsed ? 28 : 32}
         className={clsx(
           "nav-brand-mark h-auto shrink-0 object-contain",
-          compact ? "w-6" : collapsed ? "w-7" : "w-8"
+          compact ? "w-7" : collapsed ? "w-7" : "w-8"
         )}
       />
+      {compact ? null : (
       <span
         className={clsx(
           "flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap",
           "transition-[max-width,opacity] duration-[420ms] ease-[var(--ease)]",
-          compact
-            ? "max-w-[12rem] opacity-100"
-            : collapsed
-              ? "pointer-events-none max-w-0 opacity-0"
-              : "max-w-[14.5rem] opacity-100"
+          collapsed
+            ? "pointer-events-none max-w-0 opacity-0"
+            : "max-w-[14.5rem] opacity-100"
         )}
       >
         <span className="flex min-w-0 flex-col justify-center">
@@ -221,6 +220,7 @@ export function NavBrand({
         </span>
         <BetaMark compact={compact} />
       </span>
+      )}
     </Link>
   );
 }

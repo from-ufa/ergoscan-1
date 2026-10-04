@@ -483,30 +483,26 @@ export function AddressesView({ initial }: { initial: AddressesPageData }) {
 
   return (
     <Shell>
-      <div className="addr-drop mb-3 flex flex-col gap-2">
-        <div className="grid grid-cols-2 items-stretch gap-2 sm:grid-cols-5">
-          <HolderBandStrip
-            raw={bands?.all}
-            t={t}
-            loc={loc}
-            selected={selBands}
-            onSelect={onBand}
-            enterFrom={0}
-          />
-        </div>
-        <div className="grid grid-cols-2 items-stretch gap-2 sm:grid-cols-5">
-          <AddressKindKey
-            raw={bands?.kinds}
-            t={t}
-            loc={loc}
-            allN={catalogN}
-            allSelected={allOn}
-            selected={selKinds}
-            onAll={onAll}
-            onSelect={onKind}
-            enterFrom={HOLDER_BAND_IDS.length}
-          />
-        </div>
+      <div className="addr-drop mb-3 grid grid-cols-2 items-stretch gap-2 sm:grid-cols-5">
+        <HolderBandStrip
+          raw={bands?.all}
+          t={t}
+          loc={loc}
+          selected={selBands}
+          onSelect={onBand}
+          enterFrom={0}
+        />
+        <AddressKindKey
+          raw={bands?.kinds}
+          t={t}
+          loc={loc}
+          allN={catalogN}
+          allSelected={allOn}
+          selected={selKinds}
+          onAll={onAll}
+          onSelect={onKind}
+          enterFrom={HOLDER_BAND_IDS.length}
+        />
       </div>
 
       {err && (

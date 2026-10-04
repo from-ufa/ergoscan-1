@@ -141,7 +141,7 @@ export function Shell({
       >
         <SideNavRail collapsed={railCollapsed} onToggle={toggleRail} />
 
-        <div className="stage-col flex min-h-dvh min-w-0 flex-col max-lg:pb-[var(--tabbar)]">
+        <div className="stage-col flex min-h-dvh min-w-0 flex-col">
           <SheetMark home={path === "/"} />
           <header className="sticky top-0 z-40 overflow-visible border-b border-[var(--border)] bg-[var(--bg)] pt-[env(safe-area-inset-top)]">
             <div className="stage-width hidden h-[var(--toolbar)] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-3 px-4 sm:px-6 lg:grid lg:px-8">
@@ -168,7 +168,7 @@ export function Shell({
             <div className={clsx("stage-width plane-stage px-4 sm:px-6 lg:px-8", path === "/" && "home-stage")}>{children}</div>
           </main>
 
-          <footer className="pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 max-lg:pb-4">
+          <footer className="pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] max-lg:pb-[calc(var(--tabbar)+0.75rem)]">
             <div className="stage-width flex flex-col gap-1.5 px-4 text-[11px] text-[var(--muted-2)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6 lg:px-8">
               <span className="inline-flex min-w-0 flex-wrap items-center gap-3">
                 <span className="inline-flex items-baseline gap-[0.28em] font-semibold tracking-[0.06em]">

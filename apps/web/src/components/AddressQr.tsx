@@ -63,6 +63,7 @@ export function AddressQr({
   copiedLabel,
   className,
   enter,
+  embed,
 }: {
   address: string;
   label: string;
@@ -71,6 +72,8 @@ export function AddressQr({
   className?: string;
   /** Home-style sheet enter. Index is the step in the cascade. */
   enter?: number;
+  /** Sit inside the balance tile; do not size the facts QR column. */
+  embed?: boolean;
 }) {
   const hostRef = useRef<HTMLButtonElement>(null);
   const [src, setSrc] = useState("");
@@ -85,6 +88,7 @@ export function AddressQr({
   );
 
   useLayoutEffect(() => {
+    if (embed) return;
     const host = hostRef.current;
     const facts = host?.closest<HTMLElement>(".addr-facts");
     const page = host?.closest<HTMLElement>(".addr-page");
@@ -112,7 +116,7 @@ export function AddressQr({
     ro.observe(stat);
     if (lane) ro.observe(lane);
     return () => ro.disconnect();
-  }, [address]);
+  }, [address, embed]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -165,7 +169,8 @@ export function AddressQr({
       ref={hostRef}
       type="button"
       className={clsx(
-        "addr-qr-tile addr-facts-qr chip-press",
+        "addr-qr-tile chip-press",
+        embed ? "addr-qr-embed" : "addr-facts-qr",
         enter != null && "home-tile-enter",
         className
       )}
