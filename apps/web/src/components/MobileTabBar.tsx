@@ -26,10 +26,12 @@ export function MobileTabBar({
   const moreOn = moreOpen || moreActive(path);
 
   return (
-    <nav
-      className="phone-tabbar lg:hidden"
-      aria-label={t("nav.menu")}
-    >
+    <>
+      <div className="phone-edge-haze lg:hidden" aria-hidden />
+      <nav
+        className="phone-tabbar lg:hidden"
+        aria-label={t("nav.menu")}
+      >
       <div className="grid h-14 grid-cols-5">
         {MOBILE_TABS.map((item) => {
           const active = pathActive(path, item);
@@ -63,6 +65,7 @@ export function MobileTabBar({
         </button>
       </div>
     </nav>
+    </>
   );
 }
 

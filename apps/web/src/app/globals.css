@@ -1654,11 +1654,48 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
    * Specular edge + saturate/blur; no neon glow.
    */
   .stage-col > header.sticky {
+    isolation: isolate;
     background: transparent;
     border-bottom-color: transparent;
     box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+  .stage-col > header.sticky::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    bottom: -4.5rem;
+    left: -0.75rem;
+    right: -0.75rem;
+    background: linear-gradient(
+      180deg,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 78%, transparent) 28%,
+      color-mix(in srgb, var(--bg) 42%, transparent) 54%,
+      color-mix(in srgb, var(--bg) 16%, transparent) 78%,
+      transparent 100%
+    );
+  }
+
+  .phone-edge-haze {
+    pointer-events: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 39;
+    height: calc(var(--tabbar) + 4.5rem);
+    background: linear-gradient(
+      0deg,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 78%, transparent) 28%,
+      color-mix(in srgb, var(--bg) 42%, transparent) 54%,
+      color-mix(in srgb, var(--bg) 16%, transparent) 78%,
+      transparent 100%
+    );
   }
 
   .phone-tabbar,
@@ -1671,8 +1708,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     background: var(--glass-fill);
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.2),
-      inset 0 -1px 0 rgb(0 0 0 / 0.12),
-      0 10px 28px rgb(0 0 0 / 0.22);
+      inset 0 -1px 0 rgb(0 0 0 / 0.12);
     -webkit-backdrop-filter: saturate(1.85) blur(28px);
     backdrop-filter: saturate(1.85) blur(28px);
   }
