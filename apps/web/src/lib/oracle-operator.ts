@@ -1,5 +1,9 @@
+import { Avatar, Style } from "@dicebear/core";
+import bottts from "@dicebear/styles/bottts.json";
 import { formatRelAge } from "./format";
-import { tokenIdenticonSrc } from "./token-identicon";
+
+/** Pablo Stanley's Bottts. Same seed always draws the same robot. */
+const botttsStyle = new Style(bottts);
 
 /** 30d — last post older than this reads as “very long ago”. */
 export const ORACLE_ANCIENT_MS = 30 * 86_400_000;
@@ -70,8 +74,15 @@ export function oracleSeedHex(seed: string): string {
   return parts.join("");
 }
 
+const markCache = new Map<string, string>();
+
 export function oracleOperatorMarkSrc(seed: string): string {
-  return tokenIdenticonSrc(oracleSeedHex(seed));
+  const key = seed || "0";
+  const hit = markCache.get(key);
+  if (hit) return hit;
+  const src = new Avatar(botttsStyle, { seed: key, size: 80 }).toDataUri();
+  markCache.set(key, src);
+  return src;
 }
 
 export function oracleOperatorName(seed: string): string {

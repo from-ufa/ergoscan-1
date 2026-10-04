@@ -17,7 +17,11 @@ test("operator mark and name are stable for a P2PK", () => {
   assert.equal(oracleOperatorName(A), oracleOperatorName(A));
   assert.equal(oracleSeedHex(A), oracleSeedHex(A));
   assert.notEqual(oracleOperatorName(A), oracleOperatorName(B));
-  assert.match(oracleOperatorMarkSrc(A), /^data:image\/svg\+xml/);
+  const mark = oracleOperatorMarkSrc(A);
+  assert.match(mark, /^data:image\/svg\+xml/);
+  assert.equal(oracleOperatorMarkSrc(A), mark);
+  assert.notEqual(oracleOperatorMarkSrc(A), oracleOperatorMarkSrc(B));
+  assert.match(decodeURIComponent(mark), /<svg[\s>]/);
 });
 
 test("duplicate callsigns get a numeric tail", () => {
