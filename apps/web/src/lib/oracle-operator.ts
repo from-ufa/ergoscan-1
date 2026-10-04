@@ -108,7 +108,7 @@ export function uniqueOracleNames(seeds: string[]): string[] {
   });
 }
 
-/** Lattice: neighbor to the right and below. They read as one bound set. */
+/** Lattice: neighbor to the right and below. Used when the council binds. */
 export function oracleCouncilMesh(n: number, cols: number): CouncilEdge[] {
   const count = Math.max(0, Math.floor(n));
   const width = Math.max(1, Math.floor(cols));
@@ -118,6 +118,31 @@ export function oracleCouncilMesh(n: number, cols: number): CouncilEdge[] {
     if (col + 1 < width && i + 1 < count) edges.push({ a: i, b: i + 1 });
     if (i + width < count) edges.push({ a: i, b: i + width });
   }
+  return edges;
+}
+
+/**
+ * A continuous lap through the seats: snake along each row, then walk back.
+ * Each step is a grid neighbor, so a signal can travel without jumping.
+ */
+export function oracleCouncilWalk(n: number, cols: number): CouncilEdge[] {
+  const count = Math.max(0, Math.floor(n));
+  const width = Math.max(1, Math.floor(cols));
+  if (count < 2) return [];
+  const snake: number[] = [];
+  const rows = Math.ceil(count / width);
+  for (let r = 0; r < rows; r++) {
+    const row: number[] = [];
+    for (let c = 0; c < width; c++) {
+      const i = r * width + c;
+      if (i < count) row.push(i);
+    }
+    if (r % 2 === 1) row.reverse();
+    snake.push(...row);
+  }
+  const edges: CouncilEdge[] = [];
+  for (let i = 0; i < snake.length - 1; i++) edges.push({ a: snake[i]!, b: snake[i + 1]! });
+  for (let i = snake.length - 1; i > 0; i--) edges.push({ a: snake[i]!, b: snake[i - 1]! });
   return edges;
 }
 

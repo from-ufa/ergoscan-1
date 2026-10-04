@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   oracleCouncilMesh,
+  oracleCouncilWalk,
   oracleErgLow,
   oracleOperatorMarkSrc,
   oracleOperatorName,
@@ -71,6 +72,23 @@ test("posts older than 30d read as very long ago", () => {
     }),
     "очень давно"
   );
+});
+
+test("council walk visits every seat along a neighbor", () => {
+  const walk = oracleCouncilWalk(11, 4);
+  const seen = new Set<number>();
+  for (const e of walk) {
+    seen.add(e.a);
+    seen.add(e.b);
+    const ac = e.a % 4;
+    const ar = Math.floor(e.a / 4);
+    const bc = e.b % 4;
+    const br = Math.floor(e.b / 4);
+    assert.equal(Math.abs(ac - bc) + Math.abs(ar - br), 1);
+  }
+  assert.equal(seen.size, 11);
+  assert.equal(walk[0]?.a, 0);
+  assert.equal(walk.at(-1)?.b, 0);
 });
 
 test("council mesh binds a row and the row below", () => {

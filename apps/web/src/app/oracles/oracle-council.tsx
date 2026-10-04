@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { lookupAddress } from "@/lib/address-book";
 import {
   oracleCouncilMesh,
+  oracleCouncilWalk,
   oracleOperatorMarkSrc,
   oracleOperatorSeed,
   uniqueOracleNames,
@@ -40,6 +41,22 @@ type Phase =
 
 const MARK = 36;
 const HALF = MARK / 2;
+const HOP_MS = 900;
+
+/** Start and end just outside the face, so the spark stays in the gap. */
+function gapEnds(a: ScenePt, b: ScenePt, pad = 22): ScenePt[] {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const pull = Math.min(pad, len / 2 - 1);
+  if (pull <= 0) return [a, b];
+  const ux = (dx / len) * pull;
+  const uy = (dy / len) * pull;
+  return [
+    { x: a.x + ux, y: a.y + uy },
+    { x: b.x - ux, y: b.y - uy },
+  ];
+}
 
 function colsFromGrid(el: Element | null): number {
   if (!el) return 4;
@@ -129,6 +146,7 @@ export function OracleCouncil({
   const [fromPts, setFromPts] = useState<ScenePt[]>([]);
   const [toPts, setToPts] = useState<ScenePt[]>([]);
   const [pinch, setPinch] = useState<ScenePt>({ x: 0, y: 0 });
+  const [hop, setHop] = useState(0);
   const boxRef = useRef(box);
   const colsRef = useRef(cols);
   boxRef.current = box;
@@ -293,14 +311,26 @@ export function OracleCouncil({
   };
 
   const lineSet = overlay === "out" ? fromPts : overlay === "in" ? toPts : pts;
-  const lineOps = overlay === "out" ? outActors : overlay === "in" ? inActors : shown;
   const lineEdges = oracleCouncilMesh(lineSet.length, cols);
+  const walk = useMemo(() => oracleCouncilWalk(shown.length, cols), [shown.length, cols]);
+  const step =
+    phase === "idle" && !reduce && walk.length > 0 && pts.length >= shown.length
+      ? walk[hop % walk.length]!
+      : null;
+  const spark = step ? gapEnds(pts[step.a] ?? pts[0]!, pts[step.b] ?? pts[0]!) : null;
+  const sparkInk = lens === "silent" ? "#ff4d6d" : "var(--up)";
+
+  useEffect(() => {
+    if (reduce || phase !== "idle" || walk.length < 1) return;
+    const id = window.setInterval(() => setHop((n) => n + 1), HOP_MS);
+    return () => window.clearInterval(id);
+  }, [reduce, phase, walk.length]);
   const flashStroke = lens === "silent" ? "#ff4d6d" : "var(--up)";
   const bindSilent = lens === "silent";
   const showLines =
     box.w > 0 &&
     lineSet.length > 1 &&
-    (phase === "idle" || phase === "flash" || phase === "pinch" || phase === "bind");
+    (phase === "flash" || phase === "pinch" || phase === "bind");
 
   const empty = !live.length && !silent.length;
   const gathering = phase === "gather" || phase === "beat";
@@ -331,46 +361,57 @@ export function OracleCouncil({
       ) : (
         <div
           ref={wrapRef}
-          className="relative mt-3 overflow-hidden"
+          className="relative mt-3 overflow-hidden pt-2"
           aria-busy={cinematic}
         >
-          {showLines ? (
+          {showLines || spark ? (
             <svg
-              className="pointer-events-none absolute inset-0 z-0"
+              className={clsx(
+                "pointer-events-none absolute inset-0",
+                spark ? "z-[2]" : "z-0"
+              )}
               width={box.w}
               height={box.h}
               aria-hidden
             >
-              {lineEdges.map((e) => {
+              {spark ? (
+                <g key={hop}>
+                  <motion.path
+                    d={`M ${spark[0]!.x} ${spark[0]!.y} L ${spark[1]!.x} ${spark[1]!.y}`}
+                    stroke={sparkInk}
+                    strokeWidth={1.75}
+                    strokeLinecap="round"
+                    fill="none"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: [0, 0.8, 0] }}
+                    transition={{
+                      duration: (HOP_MS - 80) / 1000,
+                      ease: SCENE_EASE,
+                      times: [0, 0.42, 1],
+                    }}
+                  />
+                  <motion.circle
+                    r={3.4}
+                    fill={sparkInk}
+                    initial={{ cx: spark[0]!.x, cy: spark[0]!.y, opacity: 0 }}
+                    animate={{
+                      cx: [spark[0]!.x, spark[1]!.x],
+                      cy: [spark[0]!.y, spark[1]!.y],
+                      opacity: [0, 1, 1, 0],
+                    }}
+                    transition={{
+                      duration: (HOP_MS - 80) / 1000,
+                      ease: SCENE_EASE,
+                      times: [0, 0.12, 0.8, 1],
+                    }}
+                  />
+                </g>
+              ) : null}
+              {showLines
+                ? lineEdges.map((e) => {
                 const a = lineSet[e.a];
                 const b = lineSet[e.b];
                 if (!a || !b) return null;
-                const opA = lineOps[e.a] as Actor | OracleOperator | undefined;
-                const opB = lineOps[e.b] as Actor | OracleOperator | undefined;
-                const bothLive =
-                  opA && opB && "ok" in opA && "ok" in opB
-                    ? opA.ok && opB.ok
-                    : (opA as OracleOperator | undefined)?.live === true &&
-                      (opB as OracleOperator | undefined)?.live === true;
-                if (phase === "idle") {
-                  const silentOn = lens === "silent";
-                  return (
-                    <line
-                      key={`${e.a}-${e.b}`}
-                      x1={a.x}
-                      y1={a.y}
-                      x2={b.x}
-                      y2={b.y}
-                      className={
-                        silentOn
-                          ? "oracle-bond-silent is-alarm"
-                          : bothLive
-                            ? "oracle-bond-live"
-                            : "oracle-bond"
-                      }
-                    />
-                  );
-                }
                 if (phase === "bind") {
                   return (
                     <motion.path
@@ -419,7 +460,8 @@ export function OracleCouncil({
                     }}
                   />
                 );
-              })}
+              })
+                : null}
             </svg>
           ) : null}
 
@@ -444,7 +486,12 @@ export function OracleCouncil({
                   aria-label={`${name}. ${ok ? liveLabel : staleLabel}`}
                   className="group flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-0.5 py-0.5 outline-none transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[var(--wash)] focus-visible:bg-[var(--wash)]"
                 >
-                  <span className="relative inline-flex">
+                  <span
+                    className={clsx(
+                      "relative inline-flex",
+                      step?.b === i && (lens === "silent" ? "oracle-mark-speak is-silent" : "oracle-mark-speak")
+                    )}
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       data-oracle-mark
