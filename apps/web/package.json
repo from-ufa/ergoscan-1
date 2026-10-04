@@ -15,6 +15,8 @@
     "names:snapshot": "node scripts/names-snapshot.mjs"
   },
   "dependencies": {
+    "@dicebear/core": "^10.7.0",
+    "@dicebear/styles": "^10.6.0",
     "@ergoscan/shared": "*",
     "@lumen/amm-chart": "*",
     "clsx": "^2.1.1",
