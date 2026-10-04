@@ -17,10 +17,16 @@ export const BOXES_ADDRESS_BTREE_MAX = 200;
 
 /**
  * PG btree v4 (8 kB page) max index row ~2704 bytes. `address_summary`
- * PK and rank indexes include `address`, so huge P2S cannot be rows.
- * Bank (992) and emission (318) fit. Skip the rest — still in `boxes`.
+ * PK and rank indexes include `address`, so a P2S longer than 2000 chars
+ * cannot be a row there. Those live in `address_summary_long`, keyed by
+ * md5(address). The balance itself is still the packed unspent sum by addr_id.
  */
 export const ADDRESS_SUMMARY_BTREE_MAX = 2000;
+
+/** True when the address text cannot be a btree key in address_summary. */
+export function isHugeSummaryAddress(address: string): boolean {
+  return address.length > ADDRESS_SUMMARY_BTREE_MAX;
+}
 
 let longLookupReady = false;
 
@@ -160,8 +166,23 @@ CREATE INDEX IF NOT EXISTS address_summary_holder_txs_asc_idx
   ON address_summary (tx_count, nanoerg DESC, address DESC) WHERE nanoerg > 0
 `;
 
+const HUGE_SCHEMA_SQL = `
+CREATE TABLE IF NOT EXISTS address_summary_long (
+  addr_md5     TEXT PRIMARY KEY,
+  address      TEXT NOT NULL,
+  nanoerg      NUMERIC NOT NULL DEFAULT 0,
+  box_count    INT NOT NULL DEFAULT 0,
+  tx_count     INT NOT NULL DEFAULT 0,
+  token_count  INT NOT NULL DEFAULT 0,
+  last_height  BIGINT,
+  first_height BIGINT,
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+`;
+
 export async function ensureAddressSummarySchema(db: Queryable): Promise<void> {
   await db.query(SCHEMA_SQL);
+  await db.query(HUGE_SCHEMA_SQL);
   await db.query(RANK_INDEX_SQL);
   await db.query(TOKEN_INDEX_SQL);
   await db.query(TX_INDEX_SQL);
@@ -263,6 +284,61 @@ ON CONFLICT (address) DO UPDATE SET
   updated_at = now()
 `;
 
+/** P2S longer than the btree key. Key is md5; the address text is not indexed. */
+const UPSERT_HUGE_SQL = `
+INSERT INTO address_summary_long (
+  addr_md5, address, nanoerg, box_count, token_count, tx_count, last_height, first_height, updated_at
+)
+SELECT
+  md5(a.address),
+  a.address,
+  COALESCE((
+    SELECT SUM(b.value_nano) ${PACKED_UNSPENT}
+  ), 0),
+  COALESCE((
+    SELECT COUNT(*)::int ${PACKED_UNSPENT}
+  ), 0),
+  CASE
+    WHEN COALESCE((
+      SELECT COUNT(*)::int ${PACKED_UNSPENT}
+    ), 0) >= ${FAT_SUMMARY_BOX_COUNT} THEN 0
+    ELSE COALESCE((
+      SELECT COUNT(DISTINCT ba.token_id)::int
+        FROM packed.addr ad
+        JOIN packed.boxes b ON b.addr_id = ad.id AND b.spent_tx_id IS NULL
+        JOIN packed.box_assets ba ON ba.box_id = b.box_id
+       WHERE ad.addr_md5 = md5(a.address) AND ad.address = a.address
+    ), 0)
+  END,
+  COALESCE((
+    SELECT count(*)::int
+      FROM packed.address_tx x
+     WHERE x.addr_id = (
+       SELECT ad.id FROM packed.addr ad
+        WHERE ad.addr_md5 = md5(a.address) AND ad.address = a.address
+     )
+  ), 0),
+  COALESCE(
+    ${ADDR_TX_LAST_HEIGHT_SQL},
+    (SELECT b.creation_height ${PACKED_UNSPENT} ORDER BY b.creation_height DESC LIMIT 1)
+  ),
+  (SELECT b.creation_height ${PACKED_UNSPENT} ORDER BY b.creation_height ASC LIMIT 1),
+  now()
+FROM unnest($1::text[]) AS a(address)
+ON CONFLICT (addr_md5) DO UPDATE SET
+  address = EXCLUDED.address,
+  nanoerg = EXCLUDED.nanoerg,
+  box_count = EXCLUDED.box_count,
+  token_count = CASE
+    WHEN EXCLUDED.box_count >= ${FAT_SUMMARY_BOX_COUNT} THEN address_summary_long.token_count
+    ELSE EXCLUDED.token_count
+  END,
+  tx_count = EXCLUDED.tx_count,
+  last_height = COALESCE(EXCLUDED.last_height, address_summary_long.last_height),
+  first_height = COALESCE(address_summary_long.first_height, EXCLUDED.first_height),
+  updated_at = now()
+`;
+
 export async function refreshAddressSummaries(
   client: Queryable,
   addresses: string[],
@@ -271,11 +347,12 @@ export async function refreshAddressSummaries(
   const seen = new Set<string>();
   const short: string[] = [];
   const long: string[] = [];
+  const huge: string[] = [];
   for (const a of addresses) {
     if (typeof a !== "string" || a.length === 0 || seen.has(a)) continue;
     seen.add(a);
     if (a.length <= BOXES_ADDRESS_BTREE_MAX) short.push(a);
-    else if (a.length > ADDRESS_SUMMARY_BTREE_MAX) continue;
+    else if (isHugeSummaryAddress(a)) huge.push(a);
     else if (longLookupReady) long.push(a);
   }
   const size = Math.max(1, Math.min(40, Math.trunc(chunk) || 40));
@@ -285,6 +362,63 @@ export async function refreshAddressSummaries(
   for (let i = 0; i < long.length; i += size) {
     await client.query(UPSERT_LONG_SQL, [long.slice(i, i + size)]);
   }
+  for (let i = 0; i < huge.length; i += size) {
+    await client.query(UPSERT_HUGE_SQL, [huge.slice(i, i + size)]);
+  }
+}
+
+const HUGE_FILL_KEY = "address_summary_huge_v1";
+let hugeSummaryRunning = false;
+
+/** One pass: every packed address the btree snapshot cannot hold. Not a GET. */
+export async function fillHugeAddressSummaries(db: Queryable): Promise<number> {
+  await db.query(HUGE_SCHEMA_SQL);
+  const rows = await db.query<{ address: string }>(
+    `SELECT address FROM packed.addr WHERE length(address) > ${ADDRESS_SUMMARY_BTREE_MAX}`
+  );
+  const addresses = rows.rows.map((row) => row.address).filter((a) => a.length > 0);
+  const size = 20;
+  for (let i = 0; i < addresses.length; i += size) {
+    await db.query(UPSERT_HUGE_SQL, [addresses.slice(i, i + size)]);
+  }
+  return addresses.length;
+}
+
+export async function maybeFillHugeAddressSummaries(pool: pg.Pool): Promise<void> {
+  if (hugeSummaryRunning) return;
+  const done = await pool.query<{ value: string }>(
+    `SELECT value FROM indexer_state WHERE key = $1`,
+    [HUGE_FILL_KEY]
+  );
+  if (done.rows[0]?.value) return;
+  hugeSummaryRunning = true;
+  void (async () => {
+    const t0 = Date.now();
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query("SET LOCAL statement_timeout = 0");
+      const n = await fillHugeAddressSummaries(client);
+      await client.query(
+        `INSERT INTO indexer_state (key, value, updated_at)
+         VALUES ($1, $2, now())
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
+        [HUGE_FILL_KEY, String(Date.now())]
+      );
+      await client.query("COMMIT");
+      console.log(`[indexer] address_summary_long filled=${n} ${Date.now() - t0}ms`);
+    } catch (e) {
+      try {
+        await client.query("ROLLBACK");
+      } catch {
+        /* ignore */
+      }
+      console.warn("[indexer] address_summary_long", String(e).slice(0, 300));
+    } finally {
+      client.release();
+      hugeSummaryRunning = false;
+    }
+  })();
 }
 
 /** Addresses that gained or spent boxes, or got an address_tx row, at this height. */
@@ -300,20 +434,20 @@ export async function touchedAddressesAtHeight(
          JOIN packed.addr ad ON ad.id = b.addr_id
         WHERE t.height = $1
           AND ad.address IS NOT NULL
-          AND ($2::boolean OR length(ad.address) <= 200)
+          AND ($2::boolean OR length(ad.address) <= 200 OR length(ad.address) > ${ADDRESS_SUMMARY_BTREE_MAX})
        UNION
        SELECT ad.address
          FROM packed.boxes b
          JOIN packed.addr ad ON ad.id = b.addr_id
         WHERE b.spent_height = $1
           AND ad.address IS NOT NULL
-          AND ($2::boolean OR length(ad.address) <= 200)
+          AND ($2::boolean OR length(ad.address) <= 200 OR length(ad.address) > ${ADDRESS_SUMMARY_BTREE_MAX})
        UNION
        SELECT ad.address
          FROM packed.address_tx x
          JOIN packed.addr ad ON ad.id = x.addr_id
         WHERE x.height = $1
-          AND ($2::boolean OR length(ad.address) <= 200)
+          AND ($2::boolean OR length(ad.address) <= 200 OR length(ad.address) > ${ADDRESS_SUMMARY_BTREE_MAX})
      ) u`,
     [height, longLookupReady]
   );

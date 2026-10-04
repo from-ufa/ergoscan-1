@@ -65,6 +65,7 @@ import {
 import {
   backfillAddressSummaryTxCounts,
   ensureAddressSummarySchema,
+  maybeFillHugeAddressSummaries,
   ensureLongAddressLookup,
   fatSummaryRows,
   isBoxesUnspentValueIdxValid,
@@ -611,13 +612,23 @@ async function fetchBlockById(headerId: string): Promise<FetchedBlock> {
   return { headerId, block };
 }
 
+function isNode404(e: unknown): boolean {
+  return e instanceof Error && e.message.startsWith("node 404 ");
+}
+
+/** Parent of a header. A block id the node has already dropped (404) is not a parent. */
 async function headerParentId(id: string): Promise<string | undefined> {
   try {
     const hdr = await nodeGet<{ parentId?: string }>(`/blocks/${id}/header`, 8000);
     return hdr.parentId;
-  } catch {
-    const full = await nodeGet<NodeFullBlock>(`/blocks/${id}`, 20000);
-    return full.header?.parentId;
+  } catch (e) {
+    try {
+      const full = await nodeGet<NodeFullBlock>(`/blocks/${id}`, 20000);
+      return full.header?.parentId;
+    } catch (e2) {
+      if (isNode404(e) && isNode404(e2)) return undefined;
+      throw e2;
+    }
   }
 }
 
@@ -2590,6 +2601,7 @@ async function loop(pool: Pool): Promise<boolean> {
   }
 
   void maybeSeedAddressSummaries(pool);
+  void maybeFillHugeAddressSummaries(pool);
   void maybeBackfillAddressTxCounts(pool);
   void maybeBackfillAddressTokenCounts(pool);
   void maybeFillTokenBalanceHeights(pool);

@@ -2040,6 +2040,9 @@ export async function addressRentBlocks(address: string): Promise<number | null>
 export async function getAddressSummary(
   address: string
 ): Promise<AddressSummary | null> {
+  const cols = `s.nanoerg::text AS nanoerg, s.box_count::text, s.tx_count::text, s.token_count::text,
+            s.last_height::text, s.first_height::text,
+            fb.timestamp_ms::text AS first_ts, lb.timestamp_ms::text AS last_ts`;
   const hit = await qSlow<{
     nanoerg: string;
     box_count: string;
@@ -2050,9 +2053,7 @@ export async function getAddressSummary(
     first_ts: string | null;
     last_ts: string | null;
   }>(
-    `SELECT s.nanoerg::text AS nanoerg, s.box_count::text, s.tx_count::text, s.token_count::text,
-            s.last_height::text, s.first_height::text,
-            fb.timestamp_ms::text AS first_ts, lb.timestamp_ms::text AS last_ts
+    `SELECT ${cols}
      FROM address_summary s
      LEFT JOIN packed.blocks fb ON fb.height = s.first_height
      LEFT JOIN packed.blocks lb ON lb.height = s.last_height
@@ -2060,8 +2061,32 @@ export async function getAddressSummary(
     [address],
     4000
   );
-  if (!hit || !hit[0]) return null;
-  const r = hit[0];
+  const row =
+    hit?.[0] ??
+    (address.length > 2000
+      ? (
+          await qSlow<{
+            nanoerg: string;
+            box_count: string;
+            tx_count: string;
+            token_count: string;
+            last_height: string | null;
+            first_height: string | null;
+            first_ts: string | null;
+            last_ts: string | null;
+          }>(
+            `SELECT ${cols}
+               FROM address_summary_long s
+               LEFT JOIN packed.blocks fb ON fb.height = s.first_height
+               LEFT JOIN packed.blocks lb ON lb.height = s.last_height
+              WHERE s.addr_md5 = md5($1) AND s.address = $1`,
+            [address],
+            4000
+          )
+        )?.[0]
+      : undefined);
+  if (!row) return null;
+  const r = row;
   return {
     address,
     nanoerg: r.nanoerg || "0",
