@@ -623,15 +623,15 @@ export function SideNavDrawer({
             onClick={onClose}
           />
           <motion.aside
-            className="nav-drawer fixed inset-y-0 left-0 z-50 flex w-[min(17.5rem,88vw)] flex-col border-r border-[var(--border)] bg-[var(--bg)] pt-[env(safe-area-inset-top,0px)] lg:hidden"
-            initial={reduce ? false : { x: "-100%" }}
+            className="nav-drawer fixed z-50 flex w-[min(17.5rem,calc(100vw-1.5rem))] flex-col lg:hidden"
+            initial={reduce ? false : { x: "-110%" }}
             animate={{ x: 0 }}
-            exit={reduce ? undefined : { x: "-100%" }}
+            exit={reduce ? undefined : { x: "-110%" }}
             transition={reduce ? { duration: 0 } : { duration: 0.32, ease: pillEase }}
             aria-label={t("nav.menu")}
           >
             <NavBrand />
-            <nav className="scrollbar-none min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-2 pb-6 pt-5">
+            <nav className="scrollbar-none relative z-[1] min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-2 pb-4 pt-2">
               <NavList onNavigate={onClose} />
             </nav>
           </motion.aside>

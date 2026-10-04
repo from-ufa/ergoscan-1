@@ -143,7 +143,7 @@ export function Shell({
 
         <div className="stage-col flex min-h-dvh min-w-0 flex-col">
           <SheetMark home={path === "/"} />
-          <header className="sticky top-0 z-40 overflow-visible border-b border-[var(--border)] bg-[var(--bg)] pt-[env(safe-area-inset-top)]">
+          <header className="sticky top-0 z-40 overflow-visible border-b border-[var(--border)] bg-[var(--bg)] pt-[env(safe-area-inset-top)] max-lg:border-transparent max-lg:bg-transparent max-lg:px-3 max-lg:pb-[0.4rem] max-lg:pt-[calc(0.45rem+env(safe-area-inset-top,0px))]">
             <div className="stage-width hidden h-[var(--toolbar)] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-3 px-4 sm:px-6 lg:grid lg:px-8">
               <div className="flex h-full min-w-0 items-center gap-3">
                 <SearchField />
@@ -157,9 +157,9 @@ export function Shell({
             </div>
             <HeaderScout />
 
-            <div className="stage-width flex h-[var(--toolbar)] items-center gap-2 px-4 sm:px-6 lg:hidden">
+            <div className="phone-toolbar flex h-14 items-center gap-2 px-2.5 lg:hidden">
               <NavBrand compact />
-              <SearchField phone />
+              <SearchField />
               <ErgPrice compact />
             </div>
           </header>
@@ -183,13 +183,13 @@ export function Shell({
           </footer>
         </div>
       </div>
-      <MobileTabBar onMore={() => setMenuOpen(true)} />
+      <MobileTabBar moreOpen={menuOpen} onMore={() => setMenuOpen((v) => !v)} />
     </NestedShell.Provider>
   );
 }
 
 
-function SearchField({ phone = false }: { phone?: boolean }) {
+function SearchField() {
   const t = useT();
   const { locale } = useI18n();
   const cue = useSearchCue(locale === "ru" ? SCOUT_CUES_RU : SCOUT_CUES_EN);
@@ -200,11 +200,7 @@ function SearchField({ phone = false }: { phone?: boolean }) {
       onClick={openSearch}
       aria-label={t("nav.searchChain")}
       data-scout="search"
-      className={
-        phone
-          ? "flex h-11 min-w-0 flex-1 items-center gap-2 bg-transparent text-left"
-          : "hidden h-8 min-w-0 items-center gap-2 bg-transparent text-left lg:flex"
-      }
+      className="flex h-8 min-w-0 flex-1 items-center gap-2 bg-transparent px-0 text-left lg:h-8"
     >
       <SearchSlashIcon />
       <span className="inline-flex min-w-0 items-baseline truncate text-[15px] font-medium tracking-tight text-[var(--text)]">

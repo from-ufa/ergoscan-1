@@ -14,14 +14,20 @@ const TAB_ICON: Record<string, NavIconId> = {
   "/transactions": "txs",
 };
 
-export function MobileTabBar({ onMore }: { onMore: () => void }) {
+export function MobileTabBar({
+  onMore,
+  moreOpen,
+}: {
+  onMore: () => void;
+  moreOpen: boolean;
+}) {
   const path = usePathname();
   const t = useT();
-  const moreOn = moreActive(path);
+  const moreOn = moreOpen || moreActive(path);
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--border)] bg-[var(--bg)] pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="phone-tabbar lg:hidden"
       aria-label={t("nav.menu")}
     >
       <div className="grid h-14 grid-cols-5">
@@ -46,6 +52,7 @@ export function MobileTabBar({ onMore }: { onMore: () => void }) {
           type="button"
           onClick={onMore}
           aria-label={t("nav.more")}
+          aria-expanded={moreOpen}
           className={clsx(
             "chip-press mx-1 my-1 flex min-h-[44px] flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[10px] text-[10px] font-medium",
             moreOn ? "is-pressed text-[var(--text)]" : "text-[var(--muted)]"
