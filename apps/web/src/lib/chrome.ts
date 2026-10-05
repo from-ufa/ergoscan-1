@@ -20,6 +20,8 @@ export function chromeFor(path: string): { titleKey: string; heading: boolean } 
   if (p.startsWith("/operators/oracles")) return { titleKey: "nav.oracles", heading: true };
   if (p === "/defi/stable" || p.startsWith("/defi/stable/"))
     return { titleKey: "nav.defiAgeusd", heading: true };
+  if (p === "/defi/basis" || p.startsWith("/defi/basis/"))
+    return { titleKey: "nav.defiBasis", heading: true };
   if (p === "/defi/lithos" || p.startsWith("/defi/lithos/"))
     return { titleKey: "nav.defiLithos", heading: true };
   if (p.startsWith("/defi/pool/")) return { titleKey: "nav.defiPool", heading: false };

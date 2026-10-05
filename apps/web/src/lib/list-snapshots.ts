@@ -424,6 +424,43 @@ export async function fetchAgeUsdBank(): Promise<AgeUsdBank | null> {
   return gwJson<AgeUsdBank>("/v1/defi/ageusd");
 }
 
+export type BasisCollateral = {
+  tokenId: string;
+  amount: string;
+  decimals: number;
+  name: string | null;
+};
+
+export type BasisReserve = {
+  boxId: string;
+  kind: "erg" | "token";
+  nano: string;
+  height: number | null;
+  owner: string | null;
+  trackerNft: string | null;
+  trackerBoxId: string | null;
+  trackerHeight: number | null;
+  refundHeight: string | null;
+  status: "open" | "quiet" | "refund" | "refundReady" | "noTracker";
+  blocksLeft: string | null;
+  collateral: BasisCollateral | null;
+};
+
+export type BasisSnap = {
+  ok?: boolean;
+  protocol?: string;
+  tipHeight?: number | null;
+  reserveCount?: number;
+  ergLockedNano?: string;
+  tokenReserveCount?: number;
+  trackerCount?: number;
+  reserves?: BasisReserve[];
+};
+
+export async function fetchBasis(): Promise<BasisSnap | null> {
+  return gwJson<BasisSnap>("/v1/defi/basis");
+}
+
 export type LithosDexSnap = {
   ok?: boolean;
   protocol?: string;

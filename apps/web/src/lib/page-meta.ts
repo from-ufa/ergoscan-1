@@ -128,6 +128,10 @@ export const LIST_PAGES: Record<
     title: "AgeUSD protocol",
     description: "AgeUSD bank on Ergo: SigUSD, SigRSV, reserve, and bank-box history.",
   },
+  "/defi/basis": {
+    title: "Basis",
+    description: "Basis lockboxes on Ergo: ERG and token reserves, and the tracker fingerprint boxes they name.",
+  },
   "/rosen": {
     title: "Rosen bridge",
     description: "Rosen bridge events on Ergo: processing, completed, fraud.",
@@ -345,6 +349,7 @@ export const SITEMAP_STATIC = [
   "/defi/pool",
   "/defi/lithos",
   "/defi/stable",
+  "/defi/basis",
   "/oracles",
   "/oracles/ergusd",
   "/oracles/erg-usd",

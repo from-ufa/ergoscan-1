@@ -78,6 +78,12 @@ const NAV_MAIN: NavItem[] = [
           { href: "/defi/stable", key: "nav.defiAgeusd", icon: "ageusd", exact: true },
         ],
       },
+      {
+        href: "/defi/basis",
+        key: "nav.defiBasis",
+        icon: "basis",
+        match: ["/defi/basis"],
+      },
     ],
   },
   {

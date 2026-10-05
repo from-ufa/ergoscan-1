@@ -530,6 +530,7 @@ export function CommandPalette() {
     { key: "nav.defiPool", href: "/defi/pool" },
     { key: "nav.defiLithos", href: "/defi/lithos" },
     { key: "nav.defiAgeusd", href: "/defi/stable" },
+    { key: "nav.defiBasis", href: "/defi/basis" },
     { key: "nav.oracles", href: "/oracles" },
     { key: "nav.oraclesOfficial", href: "/oracles/ergusd" },
     { key: "nav.oraclesUsd", href: "/oracles/erg-usd" },

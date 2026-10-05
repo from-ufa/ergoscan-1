@@ -22,6 +22,7 @@ test("toolbar chrome is a title only — no page lead", () => {
   assert.equal(chromeFor("/defi/pool").titleKey, "nav.defiPool");
   assert.equal(chromeFor("/defi/lithos").titleKey, "nav.defiLithos");
   assert.equal(chromeFor("/defi/stable").titleKey, "nav.defiAgeusd");
+  assert.equal(chromeFor("/defi/basis").titleKey, "nav.defiBasis");
   assert.equal(chromeFor("/oracles").titleKey, "nav.oracles");
   assert.equal(chromeFor("/oracles/ergusd").titleKey, "nav.oraclesOfficial");
   assert.equal(chromeFor("/oracles/erg-usd").titleKey, "nav.oraclesUsd");

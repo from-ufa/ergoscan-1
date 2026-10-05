@@ -37,6 +37,7 @@ export * from "./ipfs-url.js";
 export * from "./eip4-nft.js";
 export * from "./tx-shape.js";
 export * from "./ageusd.js";
+export * from "./basis.js";
 export * from "./lithosdex.js";
 export * from "./pool-tvl.js";
 export * from "./lock-overlay.js";

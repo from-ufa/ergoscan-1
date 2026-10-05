@@ -30,6 +30,10 @@ import type { Express, Request, Response } from "express";
 import pg from "pg";
 import {
   AGEUSD_BANK_V2_NFT,
+  BASIS_ERG_RESERVE_ADDRESS,
+  BASIS_TOKEN_RESERVE_ADDRESS,
+  basisReserveStatus,
+  decodeSigmaConstant,
   AGEUSD_RC_MAX_RAW,
   AGEUSD_SC_MAX_RAW,
   LITHOS_DEX_VENUE,
@@ -2002,6 +2006,190 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
         at: Date.now(),
       });
     },
+
+    /**
+     * Basis lockboxes. Two P2S scripts from basis-tracker. Not ChainCash.
+     * Unspent boxes only. Tracker boxes are the NFT named in R6. No tracker HTTP API.
+     */
+    async basis(_req: Request, res: Response) {
+      const rows = await q<{
+        box_id: string;
+        value_nano: string;
+        creation_height: string | null;
+        additional_registers: unknown;
+        address: string;
+      }>(
+        `
+        SELECT encode(b.box_id, 'hex') AS box_id,
+               b.value_nano::text AS value_nano,
+               b.creation_height::text AS creation_height,
+               b.additional_registers,
+               ad.address
+          FROM packed.addr ad
+          JOIN packed.boxes b ON b.addr_id = ad.id AND b.spent_tx_id IS NULL
+         WHERE (ad.addr_md5 = md5($1) AND ad.address = $1)
+            OR (ad.addr_md5 = md5($2) AND ad.address = $2)
+         ORDER BY b.creation_height DESC NULLS LAST
+        `,
+        [BASIS_ERG_RESERVE_ADDRESS, BASIS_TOKEN_RESERVE_ADDRESS]
+      );
+      if (!rows) {
+        res.status(503).json({ ok: false });
+        return;
+      }
+      const tipRow = await q<{ tip: string | null }>(
+        `SELECT value::text AS tip FROM indexer_state WHERE key = 'last_height' LIMIT 1`
+      );
+      const tipNum = Number(tipRow?.[0]?.tip);
+      const tip = Number.isFinite(tipNum) ? tipNum : null;
+      const ids = rows.map((r) => r.box_id);
+      const assets = ids.length
+        ? await q<{ box_id: string; token_id: string; amount: string }>(
+            `
+            SELECT encode(box_id, 'hex') AS box_id,
+                   encode(token_id, 'hex') AS token_id,
+                   amount::text AS amount
+              FROM packed.box_assets
+             WHERE box_id = ANY($1::bytea[])
+            `,
+            [ids.map((id) => Buffer.from(id, "hex"))]
+          )
+        : [];
+      const byBox = new Map<string, { tokenId: string; amount: string }[]>();
+      for (const a of assets ?? []) {
+        const list = byBox.get(a.box_id) ?? [];
+        list.push({ tokenId: a.token_id, amount: a.amount });
+        byBox.set(a.box_id, list);
+      }
+      const parsed = rows.map((r) => {
+        const regs =
+          r.additional_registers && typeof r.additional_registers === "object"
+            ? (r.additional_registers as Record<string, unknown>)
+            : {};
+        const ownerInfo = decodeSigmaConstant(registerHex(regs.R4));
+        const trackerInfo = decodeSigmaConstant(registerHex(regs.R6));
+        const owner =
+          ownerInfo?.sigmaType === "SGroupElement" ? ownerInfo.renderedValue.toLowerCase() : null;
+        const trackerRaw = trackerInfo?.renderedValue?.toLowerCase() ?? "";
+        const trackerNft =
+          trackerInfo?.sigmaType === "Coll[SByte]" && /^[0-9a-f]{64}$/.test(trackerRaw)
+            ? trackerRaw
+            : null;
+        const refund = longFromRegister(regs.R7);
+        const refundHeight = refund != null && refund > 0n ? refund.toString() : null;
+        const held = byBox.get(r.box_id) ?? [];
+        const collateral =
+          held
+            .filter((a) => a.amount !== "1")
+            .sort((a, b) => {
+              try {
+                const x = BigInt(a.amount.split(".")[0] || "0");
+                const y = BigInt(b.amount.split(".")[0] || "0");
+                if (x === y) return 0;
+                return x > y ? -1 : 1;
+              } catch {
+                return 0;
+              }
+            })[0] ?? null;
+        return {
+          boxId: r.box_id,
+          kind: r.address === BASIS_ERG_RESERVE_ADDRESS ? ("erg" as const) : ("token" as const),
+          nano: r.value_nano || "0",
+          height: r.creation_height != null ? Number(r.creation_height) : null,
+          owner,
+          trackerNft,
+          refundHeight,
+          collateral,
+        };
+      });
+      const trackerIds = [...new Set(parsed.map((p) => p.trackerNft).filter((id): id is string => Boolean(id)))];
+      const trackerRows = trackerIds.length
+        ? await q<{ nft: string; box_id: string; creation_height: string | null }>(
+            `
+            SELECT encode(a.token_id, 'hex') AS nft,
+                   encode(b.box_id, 'hex') AS box_id,
+                   b.creation_height::text AS creation_height
+              FROM packed.box_assets a
+              JOIN packed.boxes b ON b.box_id = a.box_id AND b.spent_tx_id IS NULL
+             WHERE a.amount = 1
+               AND a.token_id = ANY($1::bytea[])
+             ORDER BY b.creation_height DESC NULLS LAST
+            `,
+            [trackerIds.map((id) => Buffer.from(id, "hex"))]
+          )
+        : [];
+      const trackerByNft = new Map<string, { boxId: string; height: number | null }>();
+      for (const t of trackerRows ?? []) {
+        if (trackerByNft.has(t.nft)) continue;
+        const h = t.creation_height != null ? Number(t.creation_height) : null;
+        trackerByNft.set(t.nft, {
+          boxId: t.box_id,
+          height: Number.isFinite(h as number) ? h : null,
+        });
+      }
+      const tokenIds = [
+        ...new Set(parsed.map((p) => p.collateral?.tokenId).filter((id): id is string => Boolean(id))),
+      ];
+      const names = tokenIds.length
+        ? await q<{ token_id: string; name: string | null; decimals: string | null }>(
+            `
+            SELECT token_id, name, decimals::text AS decimals
+              FROM tokens
+             WHERE token_id = ANY($1::text[])
+            `,
+            [tokenIds]
+          )
+        : [];
+      const meta = new Map((names ?? []).map((n) => [n.token_id, n]));
+      let ergLocked = 0n;
+      for (const p of parsed) {
+        if (p.kind === "erg") ergLocked += BigInt(p.nano || "0");
+      }
+      const reserves = parsed.map((p) => {
+        const tracker = p.trackerNft ? trackerByNft.get(p.trackerNft) : undefined;
+        const state = basisReserveStatus({
+          tip,
+          refundHeight: p.refundHeight,
+          trackerHeight: tracker?.height ?? null,
+        });
+        const token = p.collateral ? meta.get(p.collateral.tokenId) : undefined;
+        const decimals = token?.decimals != null ? Number(token.decimals) : 0;
+        return {
+          boxId: p.boxId,
+          kind: p.kind,
+          nano: p.nano,
+          height: p.height,
+          owner: p.owner,
+          trackerNft: p.trackerNft,
+          trackerBoxId: tracker?.boxId ?? null,
+          trackerHeight: tracker?.height ?? null,
+          refundHeight: p.refundHeight,
+          status: state.status,
+          blocksLeft: state.blocksLeft,
+          collateral: p.collateral
+            ? {
+                tokenId: p.collateral.tokenId,
+                amount: p.collateral.amount,
+                decimals: Number.isFinite(decimals) ? decimals : 0,
+                name: token?.name || null,
+              }
+            : null,
+        };
+      });
+      cacheTokens(res);
+      res.json({
+        ok: true,
+        protocol: "basis",
+        tipHeight: tip,
+        reserveCount: reserves.length,
+        ergLockedNano: ergLocked.toString(),
+        tokenReserveCount: reserves.filter((r) => r.kind === "token").length,
+        trackerCount: trackerByNft.size,
+        reserves,
+        source: "index",
+        at: Date.now(),
+      });
+    },
   };
 
   // primary + aliases (Caddy may strip /api)
@@ -2021,6 +2209,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
     );
     app.get(`${base}/ohlc`, (req, res) => void handlers.ohlc(req, res));
     app.get(`${base}/ageusd`, (req, res) => void handlers.ageusd(req, res));
+    app.get(`${base}/basis`, (req, res) => void handlers.basis(req, res));
     app.get(`${base}/lithos`, (req, res) => void handlers.lithos(req, res));
     app.get(`${base}/spectrum`, (req, res) => void handlers.spectrum(req, res));
     app.get(`${base}/pool-board`, (req, res) => void handlers.poolBoard(req, res));

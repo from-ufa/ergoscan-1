@@ -1026,6 +1026,19 @@ export const DOCS_ROUTES: DocsRoute[] = [
     tryPath: "/v1/defi/ageusd",
   },
   {
+    id: "defi-basis",
+    tab: "more",
+    method: "GET",
+    path: "/defi/basis",
+    source: "index",
+    title: { en: "Basis lockboxes", ru: "Сейфы Basis" },
+    blurb: {
+      en: "Unspent Basis ERG and token reserve boxes, plus the tracker fingerprint box each one names. Not the off-chain debt list.",
+      ru: "Непотраченные ERG- и токен-сейфы Basis и бокс-отпечаток трекера, который они называют. Не список долгов вне цепи.",
+    },
+    tryPath: "/v1/defi/basis",
+  },
+  {
     id: "defi-lithos",
     tab: "more",
     method: "GET",
