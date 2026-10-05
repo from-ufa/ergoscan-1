@@ -471,7 +471,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
                 <div
                   key={row.boxId}
                   className={clsx(
-                    "addr-lane addr-lane-x basis-tape border-t border-[var(--border-soft)] text-[13px] hover:bg-[var(--wash)]",
+                    "addr-lane addr-lane-x basis-tape border-t border-[var(--border-soft)] text-[13px]",
                     enter.enterClass(row.boxId)
                   )}
                 >
