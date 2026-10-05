@@ -236,7 +236,8 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
           const r = await fetch(`${getGateway()}/v1/blocks/${h}`, SNAPSHOT_FETCH);
           if (!r.ok) return null;
           const j = (await r.json()) as { timestamp?: number };
-          return Number.isFinite(j.timestamp) ? ([h, j.timestamp] as const) : null;
+          const ts = j.timestamp;
+          return ts != null && Number.isFinite(ts) ? ([h, ts] as const) : null;
         } catch {
           return null;
         }
