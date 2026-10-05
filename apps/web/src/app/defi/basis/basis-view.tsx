@@ -15,7 +15,7 @@ import {
 } from "@/components/kpi-marks";
 import { TokenAvatar } from "@/components/TokenBadge";
 import { INK } from "@/lib/palette";
-import { formatFactWhen, formatRelTime, relAgeTone, relAgeToneClass, shortId } from "@/lib/format";
+import { describeRentErg, formatFactWhen, formatRelTime, relAgeTone, relAgeToneClass, shortId } from "@/lib/format";
 import { ERG_ZERO, resolveTokenMeta, tokenTickerInk } from "@/lib/token-meta";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { useKeepFresh, usePageSync } from "@/lib/page-sync";
@@ -27,6 +27,18 @@ import type { BasisReserve, BasisSnap } from "@/lib/list-snapshots";
 const TRACKER_REPO = "https://github.com/BetterMoneyLabs/basis-tracker";
 const PAGE = 25;
 type SortKey = "created" | "amount";
+
+function BasisErgApprox({ nano }: { nano: bigint }) {
+  const d = describeRentErg(nano.toString());
+  if (!d.tiny) return <>≈ {d.text}</>;
+  return (
+    <>
+      ≈ {d.sign}0.0
+      <span className="text-[0.85em]">({d.tiny.zeros})</span>
+      {d.tiny.digits} ERG
+    </>
+  );
+}
 
 function fmtUnits(amount: string, decimals: number, locale: string): string {
   const neg = amount.startsWith("-");
@@ -342,7 +354,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
     },
     {
       label: t("basis.total"),
-      value: totalNano != null ? `${fmtUnits(totalNano, 9, loc)} ERG` : miss,
+      value: totalNano != null ? describeRentErg(totalNano).text ?? miss : miss,
       unavailable: totalNano == null,
       sub: unpriced > 0 ? t("basis.totalGap") : t("basis.totalSub"),
       mark: <KpiMarkCoins tone={INK.teal} />,
@@ -477,7 +489,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
                       </span>
                       {worth != null ? (
                         <span className="mt-0.5 block truncate text-[12px] tabular-nums" style={{ color: INK.gold }}>
-                          ≈ {fmtUnits(worth.toString(), 9, loc)} ERG
+                          <BasisErgApprox nano={worth} />
                         </span>
                       ) : null}
                     </span>
