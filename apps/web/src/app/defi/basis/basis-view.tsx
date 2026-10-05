@@ -1,25 +1,32 @@
 "use client";
 
-import { useCallback, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
+import clsx from "clsx";
 import { Shell } from "@/components/Shell";
 import { KpiGrid } from "@/components/KpiGrid";
+import { RankWindow } from "@/components/RankWindow";
 import {
   KpiMarkBox,
+  KpiMarkCoins,
   KpiMarkFingerprint,
   KpiMarkVault,
   KpiMarkWalletMinimal,
 } from "@/components/kpi-marks";
 import { TokenAvatar } from "@/components/TokenBadge";
 import { INK } from "@/lib/palette";
-import { shortId } from "@/lib/format";
+import { formatFactWhen, formatRelTime, relAgeTone, relAgeToneClass, shortId } from "@/lib/format";
+import { ERG_ZERO, resolveTokenMeta, tokenTickerInk } from "@/lib/token-meta";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { useKeepFresh, usePageSync } from "@/lib/page-sync";
-import { SNAPSHOT_FETCH } from "@/lib/keyed-enter";
+import { SNAPSHOT_FETCH, useEnterIds } from "@/lib/keyed-enter";
+import { basisPackReady, completeBasisPack, ergPerToken } from "@/lib/basis-pack";
 import { getGateway } from "@/lib/config";
 import type { BasisReserve, BasisSnap } from "@/lib/list-snapshots";
 
 const TRACKER_REPO = "https://github.com/BetterMoneyLabs/basis-tracker";
+const PAGE = 25;
+type SortKey = "created" | "amount";
 
 function fmtUnits(amount: string, decimals: number, locale: string): string {
   const neg = amount.startsWith("-");
@@ -35,17 +42,98 @@ function fmtUnits(amount: string, decimals: number, locale: string): string {
   return `${neg ? "-" : ""}${grouped}${frac ? `.${frac}` : ""}`;
 }
 
-function statusLabel(
+function statusCopy(
   row: BasisReserve,
   t: (k: string) => string
-): string {
-  if (row.status === "refundReady") return t("basis.statusRefundReady");
-  if (row.status === "refund") {
-    return t("basis.statusRefund").replace("{n}", row.blocksLeft ?? "—");
+): { label: string; hint: string } {
+  if (row.status === "refundReady") {
+    return { label: t("basis.statusRefundReady"), hint: t("basis.statusRefundReadyHint") };
   }
-  if (row.status === "quiet") return t("basis.statusQuiet");
-  if (row.status === "noTracker") return t("basis.statusNoTracker");
-  return t("basis.statusOpen");
+  if (row.status === "refund") {
+    const blocks = Number(row.blocksLeft);
+    const days = Number.isFinite(blocks) ? String(Math.max(1, Math.ceil(blocks / 720))) : "—";
+    return {
+      label: t("basis.statusRefund").replace("{n}", days),
+      hint: t("basis.statusRefundHint").replace("{n}", days),
+    };
+  }
+  if (row.status === "quiet") {
+    return { label: t("basis.statusQuiet"), hint: t("basis.statusQuietHint") };
+  }
+  if (row.status === "noTracker") {
+    return { label: t("basis.statusNoTracker"), hint: t("basis.statusNoTrackerHint") };
+  }
+  return { label: t("basis.statusOpen"), hint: t("basis.statusOpenHint") };
+}
+
+function lockedTicker(row: BasisReserve): string {
+  if (row.kind === "erg") return "ERG";
+  const id = row.collateral?.tokenId;
+  if (!id) return "—";
+  return resolveTokenMeta(id).symbol;
+}
+
+/** ERG box value, or token collateral × pool price. Null when the token has no ERG price. */
+function rowErgNano(row: BasisReserve, prices: Record<string, number>): bigint | null {
+  if (row.ergValueNano != null) {
+    try {
+      return BigInt(row.ergValueNano.split(".")[0] || "0");
+    } catch {
+      return null;
+    }
+  }
+  if (row.kind === "erg") {
+    try {
+      return BigInt(row.nano.split(".")[0] || "0");
+    } catch {
+      return null;
+    }
+  }
+  const held = row.collateral;
+  const price = held ? prices[held.tokenId] : undefined;
+  if (!held || price == null || !(price > 0)) return null;
+  try {
+    const raw = BigInt(held.amount.split(".")[0] || "0");
+    const priceNano = BigInt(Math.round(price * 1e9));
+    const scale = 10n ** BigInt(Math.min(18, Math.max(0, Math.trunc(held.decimals) || 0)));
+    return (raw * priceNano) / scale;
+  } catch {
+    return null;
+  }
+}
+
+function SortHead({
+  label,
+  on,
+  dir,
+  align,
+  onClick,
+}: {
+  label: string;
+  on: boolean;
+  dir: "asc" | "desc";
+  align?: "end";
+  onClick: () => void;
+}) {
+  return (
+    <div className={clsx("min-w-0", align === "end" && "is-end")}>
+      <button
+        type="button"
+        onClick={onClick}
+        aria-sort={on ? (dir === "asc" ? "ascending" : "descending") : "none"}
+        className={clsx(
+          "chip-press inline-flex max-w-full items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-[10px] px-2 py-1.5 text-[12px] font-medium leading-none transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:text-[var(--text)]",
+          on ? "is-pressed bg-[var(--wash-strong)] text-[var(--text)]" : "text-[var(--muted)]"
+        )}
+      >
+        {label}
+        <span className="sort-mark" aria-hidden>
+          <span className={clsx("sort-caret sort-caret-up", on && dir === "asc" && "is-on")} />
+          <span className={clsx("sort-caret sort-caret-dn", on && dir === "desc" && "is-on")} />
+        </span>
+      </button>
+    </div>
+  );
 }
 
 export function BasisView({ initial }: { initial: BasisSnap | null }) {
@@ -54,13 +142,41 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
   const loc = locale === "ru" ? "ru-RU" : "en-US";
   const { markSynced } = usePageSync();
   const [snap, setSnap] = useState<BasisSnap | null>(initial);
+  const [blockTs, setBlockTs] = useState<Record<number, number>>({});
+  const [sort, setSort] = useState<SortKey>("created");
+  const [dir, setDir] = useState<"asc" | "desc">("desc");
+  const [offset, setOffset] = useState(0);
+  const [pricePack, setPricePack] = useState<{ key: string; map: Record<string, number> }>({
+    key: "",
+    map: {},
+  });
+  const [listReady, setListReady] = useState(false);
+  const opened = useRef(false);
+  const packTries = useRef(0);
+  const enter = useEnterIds();
+  const packEnter = useEnterIds();
   const miss = t("home.unavailable");
 
   const pull = useCallback(async () => {
     try {
       const r = await fetch(`${getGateway()}/v1/defi/basis`, SNAPSHOT_FETCH);
       if (!r.ok) return;
-      setSnap((await r.json()) as BasisSnap);
+      const next = (await r.json()) as BasisSnap;
+      setSnap((prev) => {
+        if (!prev?.reserves || !next.reserves) return next;
+        const known = new Map(prev.reserves.map((row) => [row.boxId, row]));
+        return {
+          ...next,
+          reserves: next.reserves.map((row) => {
+            const had = known.get(row.boxId);
+            return {
+              ...row,
+              creator: row.creator !== undefined ? row.creator : had?.creator,
+              createdAt: row.createdAt != null ? row.createdAt : had?.createdAt,
+            };
+          }),
+        };
+      });
     } catch {
       /* keep the pack we have */
     } finally {
@@ -68,11 +184,141 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
     }
   }, [markSynced]);
   useKeepFresh(pull);
+  useEffect(() => {
+    if (snap?.ok) return;
+    void pull();
+  }, [pull, snap?.ok]);
 
   const ready = snap?.ok === true;
-  const rows = snap?.reserves ?? [];
+  const packed = basisPackReady(snap?.reserves);
+  useEffect(() => {
+    if (!ready || packed || !snap?.reserves) return;
+    if (packTries.current >= 3) {
+      setSnap({
+        ...snap,
+        reserves: snap.reserves.map((row) =>
+          row.creator === undefined ? { ...row, creator: null } : row
+        ),
+      });
+      return;
+    }
+    packTries.current += 1;
+    let stop = false;
+    void completeBasisPack(snap).then((next) => {
+      if (!stop && next) setSnap(next);
+    });
+    return () => {
+      stop = true;
+    };
+  }, [ready, packed, snap]);
+  useEffect(() => {
+    if (opened.current || !ready || !packed || !snap?.reserves?.length) return;
+    opened.current = true;
+    enter.mark(snap.reserves.map((row) => row.boxId));
+    packEnter.mark(["pack"]);
+    setListReady(true);
+  }, [ready, packed, snap, enter, packEnter]);
+  const heightKey = (snap?.reserves ?? [])
+    .filter((row) => row.height != null && row.createdAt == null)
+    .map((row) => row.height)
+    .join(",");
+  useEffect(() => {
+    if (!heightKey) return;
+    const heights = heightKey
+      .split(",")
+      .map((h) => Number(h))
+      .filter((h) => Number.isFinite(h) && h > 0);
+    if (!heights.length) return;
+    let stop = false;
+    void Promise.all(
+      heights.map(async (h) => {
+        try {
+          const r = await fetch(`${getGateway()}/v1/blocks/${h}`, SNAPSHOT_FETCH);
+          if (!r.ok) return null;
+          const j = (await r.json()) as { timestamp?: number };
+          return Number.isFinite(j.timestamp) ? ([h, j.timestamp] as const) : null;
+        } catch {
+          return null;
+        }
+      })
+    ).then((pairs) => {
+      if (stop) return;
+      setBlockTs((prev) => {
+        const next = { ...prev };
+        for (const pair of pairs) if (pair) next[pair[0]] = pair[1];
+        return next;
+      });
+    });
+    return () => {
+      stop = true;
+    };
+  }, [heightKey]);
+  const priceKey = [
+    ...new Set(
+      (snap?.reserves ?? [])
+        .filter((row) => row.kind === "token" && row.ergValueNano == null && row.collateral?.tokenId)
+        .map((row) => row.collateral!.tokenId)
+    ),
+  ]
+    .sort()
+    .join(",");
+  useEffect(() => {
+    if (!priceKey) return;
+    let stop = false;
+    const ids = priceKey.split(",");
+    void Promise.all(
+      ids.map(async (id) => {
+        try {
+          const price = await ergPerToken(id);
+          return price != null && price > 0 ? ([id, price] as const) : null;
+        } catch {
+          return null;
+        }
+      })
+    ).then((pairs) => {
+      if (stop) return;
+      const map: Record<string, number> = {};
+      for (const pair of pairs) if (pair) map[pair[0]] = pair[1];
+      setPricePack({ key: priceKey, map });
+    });
+    return () => {
+      stop = true;
+    };
+  }, [priceKey]);
+  const prices = pricePack.key === priceKey ? pricePack.map : {};
+  const rows = [...(snap?.reserves ?? [])].sort((a, b) => {
+    const sign = dir === "asc" ? 1 : -1;
+    if (sort === "amount") {
+      const av = rowErgNano(a, prices);
+      const bv = rowErgNano(b, prices);
+      if (av == null && bv == null) return (b.height ?? 0) - (a.height ?? 0);
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (av === bv) return 0;
+      return av > bv ? sign : -sign;
+    }
+    const at = a.createdAt ?? a.height ?? 0;
+    const bt = b.createdAt ?? b.height ?? 0;
+    return at === bt ? 0 : at > bt ? sign : -sign;
+  });
   const erg =
     ready && snap?.ergLockedNano != null ? fmtUnits(snap.ergLockedNano, 9, loc) : null;
+  const summed = rows.reduce((sum, row) => sum + (rowErgNano(row, prices) ?? 0n), 0n);
+  const totalNano = ready ? summed.toString() : null;
+  const unpriced = rows.filter((row) => row.kind === "token" && rowErgNano(row, prices) == null).length;
+  const pageStart = Math.min(
+    offset,
+    Math.floor(Math.max(0, rows.length - 1) / PAGE) * PAGE
+  );
+  const pageRows = rows.slice(pageStart, pageStart + PAGE);
+  const toggleSort = (key: SortKey) => {
+    setOffset(0);
+    if (sort === key) setDir((d) => (d === "desc" ? "asc" : "desc"));
+    else {
+      setSort(key);
+      setDir("desc");
+    }
+  };
 
   const kpis = [
     {
@@ -94,6 +340,15 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
       enter: 1,
     },
     {
+      label: t("basis.total"),
+      value: totalNano != null ? `${fmtUnits(totalNano, 9, loc)} ERG` : miss,
+      unavailable: totalNano == null,
+      sub: unpriced > 0 ? t("basis.totalGap") : t("basis.totalSub"),
+      mark: <KpiMarkCoins tone={INK.teal} />,
+      ink: INK.teal,
+      enter: 2,
+    },
+    {
       label: t("basis.tokenSafes"),
       value:
         ready && snap?.tokenReserveCount != null
@@ -103,7 +358,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
       sub: t("basis.tokenSafesSub"),
       mark: <KpiMarkBox tone={INK.violet} />,
       ink: INK.violet,
-      enter: 2,
+      enter: 3,
     },
     {
       label: t("basis.trackers"),
@@ -112,13 +367,13 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
       sub: t("basis.trackersSub"),
       mark: <KpiMarkFingerprint tone={INK.green} />,
       ink: INK.green,
-      enter: 3,
+      enter: 4,
     },
   ];
 
   return (
     <Shell>
-      <KpiGrid items={kpis} dense className="mb-4 sm:grid-cols-4" />
+      <KpiGrid items={kpis} dense className="mb-4" />
       <article
         className="home-tile-enter mb-4 flex min-w-0 flex-col gap-3 rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3 sm:flex-row sm:items-stretch"
         style={{ "--enter": 4 } as CSSProperties}
@@ -150,67 +405,161 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
           </div>
         </div>
       </article>
-      <div className="home-tile-enter min-w-0 overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)]">
-        {!ready ? (
-          <p className="px-4 py-6 text-[13px] text-[var(--muted)]">{t("basis.unavailable")}</p>
-        ) : !rows.length ? (
-          <p className="px-4 py-6 text-[13px] text-[var(--muted)]">{t("basis.empty")}</p>
-        ) : (
-          <>
-          <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(5.5rem,1fr)_minmax(5.5rem,1fr)_auto] items-center gap-x-3 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--muted)]">
-            <span>{t("basis.colLocked")}</span>
-            <span>{t("basis.colOwner")}</span>
-            <span>{t("basis.colTracker")}</span>
-            <span className="text-right">{t("basis.colStatus")}</span>
-          </div>
-          <ul className="m-0 list-none border-t border-[var(--border-soft)] p-0">
-            {rows.map((row) => {
-              const locked =
+      {!ready ? (
+        <p className="text-[13px] text-[var(--muted)]">{t("basis.unavailable")}</p>
+      ) : !rows.length ? (
+        <p className="text-[13px] text-[var(--muted)]">{t("basis.empty")}</p>
+      ) : !listReady ? null : (
+        <div className="addr-sheet">
+          <div className={packEnter.enterClass("pack")}>
+          <div className="addr-pan">
+            <div className="addr-head addr-lane addr-lane-x basis-tape text-[12px] font-medium">
+              <SortHead
+                label={t("basis.colLocked")}
+                on={sort === "amount"}
+                dir={dir}
+                onClick={() => toggleSort("amount")}
+              />
+              <span>{t("basis.colOwner")}</span>
+              <span>{t("basis.colCreator")}</span>
+              <span>{t("basis.colTracker")}</span>
+              <span className="is-end">{t("basis.colBlock")}</span>
+              <SortHead
+                label={t("basis.colCreated")}
+                on={sort === "created"}
+                dir={dir}
+                align="end"
+                onClick={() => toggleSort("created")}
+              />
+              <span className="is-end">{t("basis.colStatus")}</span>
+            </div>
+            {pageRows.map((row) => {
+              const ticker = lockedTicker(row);
+              const amount =
                 row.kind === "erg"
-                  ? `${fmtUnits(row.nano, 9, loc)} ERG`
+                  ? fmtUnits(row.nano, 9, loc)
                   : row.collateral
-                    ? `${fmtUnits(row.collateral.amount, row.collateral.decimals, loc)} ${
-                        row.collateral.name || shortId(row.collateral.tokenId, 4)
-                      }`
+                    ? fmtUnits(row.collateral.amount, row.collateral.decimals, loc)
                     : "—";
+              const urgent = row.status === "refund" || row.status === "refundReady";
+              const worth = row.kind === "token" ? rowErgNano(row, prices) : null;
+              const tone =
+                row.status === "quiet"
+                  ? { color: "var(--up)", wash: "var(--up)" }
+                  : row.status === "open"
+                    ? { color: "var(--accent)", wash: "var(--accent)" }
+                    : urgent
+                      ? { color: INK.gold, wash: "#e0b15a" }
+                      : { color: INK.violet, wash: "#c4b5fd" };
+              const whenTs = row.createdAt ?? (row.height != null ? blockTs[row.height] : null);
+              const state = statusCopy(row, t);
+              const trackerId = row.trackerNft;
               return (
-                <li
+                <div
                   key={row.boxId}
-                  className="grid grid-cols-[minmax(0,1.6fr)_minmax(5.5rem,1fr)_minmax(5.5rem,1fr)_auto] items-center gap-x-3 border-t border-[var(--border-soft)] px-4 py-2.5 text-[13px] first:border-t-0"
+                  className={clsx(
+                    "addr-lane addr-lane-x basis-tape border-t border-[var(--border-soft)] text-[13px] hover:bg-[var(--wash)]",
+                    enter.enterClass(row.boxId)
+                  )}
                 >
                   <Link
                     href={`/box/${row.boxId}`}
-                    className="flex min-w-0 items-center gap-2 font-medium text-soft hover:underline"
+                    className="flex min-w-0 items-center gap-2.5 font-medium text-[var(--text)] hover:underline"
                   >
-                    {row.collateral ? (
-                      <TokenAvatar tokenId={row.collateral.tokenId} symbol={row.collateral.name} size={18} />
-                    ) : null}
-                    <span className="min-w-0 truncate">{locked}</span>
+                    <TokenAvatar tokenId={row.collateral?.tokenId ?? ERG_ZERO} size={22} />
+                    <span className="min-w-0">
+                      <span className="block truncate tabular-nums">
+                        {amount}{" "}
+                        <span style={{ color: row.kind === "erg" ? INK.gold : tokenTickerInk(row.collateral?.tokenId) }}>
+                          {ticker}
+                        </span>
+                      </span>
+                      {worth != null ? (
+                        <span className="mt-0.5 block truncate text-[12px] tabular-nums" style={{ color: INK.gold }}>
+                          ≈ {fmtUnits(worth.toString(), 9, loc)} ERG
+                        </span>
+                      ) : null}
+                    </span>
                   </Link>
-                  <span className="truncate font-mono text-[12px] text-[var(--muted)]" title={row.owner ?? undefined}>
+                  <span
+                    className="truncate font-mono text-[12px]"
+                    style={{ color: INK.violet }}
+                    title={row.owner ?? undefined}
+                  >
                     {row.owner ? shortId(row.owner, 4) : "—"}
                   </span>
-                  {row.trackerBoxId ? (
+                  {row.creator ? (
                     <Link
-                      href={`/box/${row.trackerBoxId}`}
+                      href={`/address/${row.creator}`}
                       className="truncate font-mono text-[12px] text-soft hover:underline"
-                      title={row.trackerNft ?? undefined}
+                      title={row.creator}
                     >
-                      {row.trackerNft ? shortId(row.trackerNft, 4) : t("basis.colTracker")}
+                      {shortId(row.creator, 4)}
                     </Link>
                   ) : (
                     <span className="text-[12px] text-[var(--muted)]">—</span>
                   )}
-                  <span className="whitespace-nowrap text-right text-[12px] text-[var(--muted)]">
-                    {statusLabel(row, t)}
+                  {trackerId ? (
+                    <Link
+                      href={row.trackerBoxId ? `/box/${row.trackerBoxId}` : `/token/${trackerId}`}
+                      className="truncate font-mono text-[12px] text-soft hover:underline"
+                      title={trackerId}
+                    >
+                      {shortId(trackerId, 4)}
+                    </Link>
+                  ) : (
+                    <span className="text-[12px] text-[var(--muted)]">—</span>
+                  )}
+                  {row.height != null ? (
+                    <Link
+                      href={`/block/${row.height}`}
+                      className="is-end font-mono text-[12px] tabular-nums text-soft hover:underline"
+                    >
+                      #{row.height.toLocaleString(loc)}
+                    </Link>
+                  ) : (
+                    <span className="is-end text-[var(--muted)]">—</span>
+                  )}
+                  <div className="basis-when">
+                    <p className={clsx("whitespace-nowrap tabular-nums", relAgeToneClass(relAgeTone(whenTs)))}>
+                      {formatRelTime(whenTs)}
+                    </p>
+                    <p className="mt-0.5 whitespace-nowrap text-[12px] tabular-nums text-[var(--muted-2)]">
+                      {formatFactWhen(whenTs, loc)}
+                    </p>
+                  </div>
+                  <span className="is-end">
+                    <span
+                      className="whitespace-nowrap rounded-full px-2.5 py-1 text-[12px]"
+                      style={{
+                        color: tone.color,
+                        background: `color-mix(in srgb, ${tone.wash} 16%, transparent)`,
+                      }}
+                      title={state.hint}
+                    >
+                      {state.label}
+                    </span>
                   </span>
-                </li>
+                </div>
               );
             })}
-          </ul>
-          </>
-        )}
-      </div>
+          </div>
+          </div>
+          <RankWindow
+            offset={pageStart}
+            pageSize={PAGE}
+            shown={pageRows.length}
+            total={rows.length}
+            loc={loc}
+            ofLabel={t("addresses.packOf")}
+            prevLabel={t("addresses.packPrev")}
+            nextLabel={t("addresses.packNext")}
+            tapeLabel={t("basis.packTape")}
+            hint={t("basis.packHint")}
+            onOffset={setOffset}
+          />
+        </div>
+      )}
     </Shell>
   );
 }

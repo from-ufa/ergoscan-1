@@ -1390,6 +1390,33 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     minmax(0, 1fr)
     minmax(0, 7rem);
 }
+.addr-lane.basis-tape,
+.addr-head.basis-tape {
+  align-items: center;
+  column-gap: 0;
+  grid-template-columns:
+    minmax(10rem, 1.35fr)
+    minmax(6.5rem, 0.8fr)
+    minmax(7.5rem, 0.9fr)
+    minmax(7rem, 0.85fr)
+    6.5rem
+    11rem
+    minmax(9.5rem, 1.15fr);
+}
+.addr-sheet .addr-lane.basis-tape:not(.addr-head) > * {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 0.75rem;
+}
+.addr-sheet .addr-lane.basis-tape:not(.addr-head) > .basis-when {
+  display: block;
+  text-align: right;
+}
+.addr-head.basis-tape > .is-end,
+.addr-sheet .addr-lane.basis-tape:not(.addr-head) > .is-end {
+  justify-content: flex-end;
+}
 .addr-lane-x {
   row-gap: 0;
 }
@@ -1871,8 +1898,15 @@ html[data-ink="day"] {
     grid-template-columns: 6.5rem 7rem 5.5rem 8rem 8rem 8rem 8rem 13.5rem 13.5rem;
   }
 
-  .addr-pan:not(.side-list) .addr-lane:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane),
-  .addr-pan:not(.side-list) .addr-head:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane) {
+  .addr-pan .addr-lane.basis-tape,
+  .addr-pan .addr-head.basis-tape {
+    width: 72rem;
+    min-width: 72rem;
+    grid-template-columns: 12rem 8rem 9rem 8rem 6.5rem 11rem 17.5rem;
+  }
+
+  .addr-pan:not(.side-list) .addr-lane:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane):not(.basis-tape),
+  .addr-pan:not(.side-list) .addr-head:not(.token-lane):not(.favorites-lane):not(.book-lane):not(.block-lane):not(.block-tx-pairs):not(.addr-history):not(.addr-boxes):not(.oracle-lane):not(.addr-token-tape):not(.token-tx-tape):not(.pool-tape):not(.buyback-lane):not(.basis-tape) {
     width: 51rem;
     min-width: 51rem;
     grid-template-columns: 15rem 10rem 13rem 13rem;

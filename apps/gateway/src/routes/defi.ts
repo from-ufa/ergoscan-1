@@ -33,6 +33,7 @@ import {
   BASIS_ERG_RESERVE_ADDRESS,
   BASIS_TOKEN_RESERVE_ADDRESS,
   basisReserveStatus,
+  isBasisReserveAddress,
   decodeSigmaConstant,
   AGEUSD_RC_MAX_RAW,
   AGEUSD_SC_MAX_RAW,
@@ -2104,16 +2105,17 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
       });
       const trackerIds = [...new Set(parsed.map((p) => p.trackerNft).filter((id): id is string => Boolean(id)))];
       const trackerRows = trackerIds.length
-        ? await q<{ nft: string; box_id: string; creation_height: string | null }>(
+        ? await q<{ nft: string; box_id: string; creation_height: string | null; live: boolean }>(
             `
             SELECT encode(a.token_id, 'hex') AS nft,
                    encode(b.box_id, 'hex') AS box_id,
-                   b.creation_height::text AS creation_height
+                   b.creation_height::text AS creation_height,
+                   (b.spent_tx_id IS NULL) AS live
               FROM packed.box_assets a
-              JOIN packed.boxes b ON b.box_id = a.box_id AND b.spent_tx_id IS NULL
+              JOIN packed.boxes b ON b.box_id = a.box_id
              WHERE a.amount = 1
                AND a.token_id = ANY($1::bytea[])
-             ORDER BY b.creation_height DESC NULLS LAST
+             ORDER BY (b.spent_tx_id IS NULL) DESC, b.creation_height DESC NULLS LAST
             `,
             [trackerIds.map((id) => Buffer.from(id, "hex"))]
           )
@@ -2124,7 +2126,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
         const h = t.creation_height != null ? Number(t.creation_height) : null;
         trackerByNft.set(t.nft, {
           boxId: t.box_id,
-          height: Number.isFinite(h as number) ? h : null,
+          height: t.live && Number.isFinite(h as number) ? h : null,
         });
       }
       const tokenIds = [
@@ -2141,9 +2143,79 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           )
         : [];
       const meta = new Map((names ?? []).map((n) => [n.token_id, n]));
+      const heights = [
+        ...new Set(
+          parsed
+            .map((p) => p.height)
+            .filter((h): h is number => h != null && Number.isFinite(h))
+        ),
+      ];
+      const stamps = heights.length
+        ? await q<{ height: string; ts: string }>(
+            `SELECT height::text AS height, timestamp_ms::text AS ts
+               FROM packed.blocks
+              WHERE height = ANY($1::bigint[])`,
+            [heights]
+          )
+        : [];
+      const createdAtByHeight = new Map<number, number>();
+      for (const row of stamps ?? []) {
+        const h = Number(row.height);
+        const ts = Number(row.ts);
+        if (Number.isFinite(h) && Number.isFinite(ts)) createdAtByHeight.set(h, ts);
+      }
+      const makers = ids.length
+        ? await q<{ reserve_id: string; address: string; nano: string }>(
+            `
+            SELECT encode(out.box_id, 'hex') AS reserve_id,
+                   ad.address,
+                   src.value_nano::text AS nano
+              FROM packed.boxes out
+              JOIN packed.tx_inputs i ON i.spent_tx_id = out.creation_tx_id
+              JOIN packed.boxes src ON src.box_id = i.box_id
+              JOIN packed.addr ad ON ad.id = src.addr_id
+             WHERE out.box_id = ANY($1::bytea[])
+            `,
+            [ids.map((id) => Buffer.from(id, "hex"))]
+          )
+        : [];
+      const creatorByBox = new Map<string, string>();
+      const creatorScore = new Map<string, bigint>();
+      for (const row of makers ?? []) {
+        if (!row.address || isBasisReserveAddress(row.address)) continue;
+        const nano = BigInt(row.nano?.split(".")[0] || "0");
+        const prev = creatorScore.get(row.reserve_id);
+        const p2pk = row.address.startsWith("9");
+        const prevAddr = creatorByBox.get(row.reserve_id);
+        const prevP2pk = prevAddr?.startsWith("9") ?? false;
+        if (prev == null || (p2pk && !prevP2pk) || (p2pk === prevP2pk && nano > prev)) {
+          creatorByBox.set(row.reserve_id, row.address);
+          creatorScore.set(row.reserve_id, nano);
+        }
+      }
+      const prices = tokenIds.length
+        ? await q<{ token_id: string; price_erg: number }>(
+            `
+            SELECT DISTINCT ON (r.quote_token)
+                   r.quote_token AS token_id,
+                   ps.price_erg::float8 AS price_erg
+              FROM defi.pool_registry r
+              JOIN defi.pool_snap ps ON ps.pool_id = r.pool_id
+             WHERE r.quote_token = ANY($1::text[])
+               AND coalesce(ps.price_erg, 0) > 0
+             ORDER BY r.quote_token, coalesce(ps.tvl_erg, 0) DESC
+            `,
+            [tokenIds]
+          )
+        : [];
+      const priceByToken = new Map(
+        (prices ?? [])
+          .filter((row) => row.price_erg > 0)
+          .map((row) => [row.token_id, row.price_erg])
+      );
       let ergLocked = 0n;
       for (const p of parsed) {
-        if (p.kind === "erg") ergLocked += BigInt(p.nano || "0");
+        if (p.kind === "erg") ergLocked += BigInt(p.nano.split(".")[0] || "0");
       }
       const reserves = parsed.map((p) => {
         const tracker = p.trackerNft ? trackerByNft.get(p.trackerNft) : undefined;
@@ -2154,12 +2226,28 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
         });
         const token = p.collateral ? meta.get(p.collateral.tokenId) : undefined;
         const decimals = token?.decimals != null ? Number(token.decimals) : 0;
+        const safeDecimals = Number.isFinite(decimals) ? decimals : 0;
+        let ergValueNano: string | null = null;
+        if (p.kind === "erg") {
+          ergValueNano = p.nano.split(".")[0] || "0";
+        } else if (p.collateral) {
+          const price = priceByToken.get(p.collateral.tokenId);
+          if (price != null && price > 0) {
+            const raw = BigInt(p.collateral.amount.split(".")[0] || "0");
+            const priceNano = BigInt(Math.round(price * 1e9));
+            const scale = 10n ** BigInt(Math.min(18, Math.max(0, safeDecimals)));
+            ergValueNano = ((raw * priceNano) / scale).toString();
+          }
+        }
         return {
           boxId: p.boxId,
           kind: p.kind,
           nano: p.nano,
           height: p.height,
+          createdAt: p.height != null ? createdAtByHeight.get(p.height) ?? null : null,
           owner: p.owner,
+          creator: creatorByBox.get(p.boxId) ?? null,
+          ergValueNano,
           trackerNft: p.trackerNft,
           trackerBoxId: tracker?.boxId ?? null,
           trackerHeight: tracker?.height ?? null,
@@ -2170,7 +2258,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
             ? {
                 tokenId: p.collateral.tokenId,
                 amount: p.collateral.amount,
-                decimals: Number.isFinite(decimals) ? decimals : 0,
+                decimals: safeDecimals,
                 name: token?.name || null,
               }
             : null,
@@ -2183,8 +2271,13 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
         tipHeight: tip,
         reserveCount: reserves.length,
         ergLockedNano: ergLocked.toString(),
+        totalErgNano: reserves
+          .reduce((sum, row) => sum + BigInt(row.ergValueNano ?? "0"), 0n)
+          .toString(),
+        unpricedCount: reserves.filter((row) => row.kind === "token" && row.ergValueNano == null)
+          .length,
         tokenReserveCount: reserves.filter((r) => r.kind === "token").length,
-        trackerCount: trackerByNft.size,
+        trackerCount: [...trackerByNft.values()].filter((t) => t.height != null).length,
         reserves,
         source: "index",
         at: Date.now(),

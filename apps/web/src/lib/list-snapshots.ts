@@ -436,7 +436,13 @@ export type BasisReserve = {
   kind: "erg" | "token";
   nano: string;
   height: number | null;
+  /** Block time in ms. Null when the header is not in the index yet. */
+  createdAt?: number | null;
   owner: string | null;
+  /** Address that funded the creation transaction. Not the key inside the safe. */
+  creator?: string | null;
+  /** This lockbox priced in nanoERG. Token rows are null when no pool price exists. */
+  ergValueNano?: string | null;
   trackerNft: string | null;
   trackerBoxId: string | null;
   trackerHeight: number | null;
@@ -452,6 +458,9 @@ export type BasisSnap = {
   tipHeight?: number | null;
   reserveCount?: number;
   ergLockedNano?: string;
+  /** ERG safes plus token collateral that has an ERG pool price. */
+  totalErgNano?: string;
+  unpricedCount?: number;
   tokenReserveCount?: number;
   trackerCount?: number;
   reserves?: BasisReserve[];
