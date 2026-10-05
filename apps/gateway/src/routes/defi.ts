@@ -2202,7 +2202,9 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
               FROM defi.pool_registry r
               JOIN defi.pool_snap ps ON ps.pool_id = r.pool_id
              WHERE r.quote_token = ANY($1::text[])
+               AND r.base_token = repeat('0', 64)
                AND coalesce(ps.price_erg, 0) > 0
+               AND coalesce(ps.tvl_erg, 0) >= 0.05
              ORDER BY r.quote_token, coalesce(ps.tvl_erg, 0) DESC
             `,
             [tokenIds]
