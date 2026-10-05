@@ -70,8 +70,10 @@ export function neonLine(opts: {
   smooth: number | boolean;
   width?: number;
   yAxisIndex?: number;
-  /** 0 hides the under-fill. KPI sparks want ~0.5, activity charts ~0.26. */
+  /** 0 hides the under-fill. Activity charts use a light wash. Sparks use none. */
   wash?: number;
+  /** Extra blur around the stroke, so light thins out with distance from the line. */
+  scatter?: number;
   connectNulls?: boolean;
   smoothMonotone?: "x";
 }): LineOpt[] {
@@ -79,6 +81,7 @@ export function neonLine(opts: {
   const yAxisIndex = opts.yAxisIndex ?? 0;
   const width = opts.width ?? 2;
   const washTop = opts.wash ?? 0;
+  const scatter = opts.scatter ?? 0;
   const ink = punch(opts.color, day ? 0.15 : 0.62);
   const shared = {
     type: "line" as const,
@@ -99,13 +102,36 @@ export function neonLine(opts: {
       ...quiet,
       z: 1,
       lineStyle: { width: 0, color: "transparent" },
-      areaStyle: { color: wash(ink, day ? washTop * 0.55 : washTop), opacity: 1 },
+      areaStyle: {
+        // 'start' is the axis floor. Origin 0 sits far below a tight price scale,
+        // so the canvas clips a still-opaque slice and the wash ends in a hard edge.
+        origin: "start",
+        color: wash(ink, day ? washTop * 0.55 : washTop),
+        opacity: 1,
+      },
+    });
+  }
+  if (scatter > 0) {
+    layers.push({
+      ...shared,
+      ...quiet,
+      z: 2,
+      lineStyle: {
+        width: width + 1.5,
+        color: rgba(ink, day ? 0.16 : 0.4),
+        shadowBlur: scatter,
+        shadowColor: rgba(ink, day ? 0.28 : 0.9),
+        shadowOffsetX: 0,
+        shadowOffsetY: 0,
+        cap: "round",
+        join: "round",
+      },
     });
   }
   layers.push({
     ...shared,
     ...quiet,
-    z: 2,
+    z: 3,
     lineStyle: {
       width: day ? width + 0.75 : width + 1.25,
       color: rgba(ink, day ? 0.14 : 0.22),

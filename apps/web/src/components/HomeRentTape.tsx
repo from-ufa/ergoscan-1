@@ -90,7 +90,7 @@ export function HomeRentTape({
       <article className="mod flex h-full min-h-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)]">
         <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[20px] px-4 py-3 sm:px-5">
           <div className="flex min-h-[38px] shrink-0 items-start justify-between gap-3">
-            <h2 className="m-0 text-[17px] font-semibold leading-[1.15] tracking-tight">{t("rent.title")}</h2>
+            <h2 className="m-0 text-[13px] leading-none" style={{ color: INK.coral }}>{t("rent.title")}</h2>
             <div className="text-right">
               <p
                 className={clsx(

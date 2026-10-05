@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
+import { HOME } from "@/lib/palette";
 import { usePaperPress } from "@/lib/use-paper-press";
 
 const TYPE_MS = 70;
@@ -64,7 +65,9 @@ export function CatalogSearchTile({
       {...bind}
     >
       <span className="min-w-0 flex-1 overflow-hidden">
-        <span className="block text-[13px] leading-[1.15] text-[var(--muted)]">{searchLabel}</span>
+        <span className="block text-[13px] leading-[1.15]" style={{ color: HOME.forming }}>
+          {searchLabel}
+        </span>
         <span className="relative mt-0.5 block h-[1.15em] text-[17px]">
           <input
             value={q}

@@ -3431,16 +3431,18 @@ html[data-ink="day"] .mcap-vol {
 
 .holders-mark {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 22px;
-  height: 22px;
+  top: 12px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
   color: var(--accent);
   fill: none;
   stroke: currentColor;
   stroke-width: 1.7;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transform-origin: 70% 30%;
+  animation: holders-mark-float 4.8s ease-in-out infinite;
 }
 
 .holders-mark-head {
@@ -3459,6 +3461,23 @@ html[data-ink="day"] .mcap-vol {
   }
   50% {
     opacity: 0.95;
+  }
+}
+
+@keyframes holders-mark-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holders-mark,
+  .holders-mark-back {
+    animation: none;
   }
 }
 

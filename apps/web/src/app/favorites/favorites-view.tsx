@@ -226,7 +226,9 @@ function KindTile({
     >
       <KpiTileRail />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] leading-[1.15] text-[var(--muted)]">{label}</span>
+        <span className="block truncate text-[13px] leading-[1.15]" style={{ color: INK.coral }}>
+          {label}
+        </span>
         <span className="mt-0.5 block text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight">
           <KpiNum>{n.toLocaleString(loc)}</KpiNum>
         </span>

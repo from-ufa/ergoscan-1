@@ -20,6 +20,7 @@ import type { ErgMarket } from "@/lib/list-snapshots";
 import {
   formatBytes,
   formatCompact,
+  formatGroupedNumber,
   formatDottedDate,
   formatDottedDay,
   formatErgPrecise,
@@ -511,7 +512,6 @@ export function HomeExplorer({
   const showTxChart = txActivity.length >= 2;
   const showFeeLine = txActivity.some((p) => p.feesKnown !== false && p.feesErg > 0);
   const holderCount = stats?.holderCount ?? null;
-  const holdersMonth = stats?.holdersMonth ?? null;
   const minerCount =
     stats?.minerCount != null && stats.minerCount > 0
       ? stats.minerCount
@@ -535,8 +535,8 @@ export function HomeExplorer({
         <div className="home-bento-top contents gap-3 lg:col-span-2 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-subgrid lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_auto]">
         <div className="home-kpi grid min-h-0 grid-cols-2 gap-3 sm:grid-cols-3 max-lg:order-1 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:h-full lg:grid-rows-2">
           <article className={TILE} style={enterAt(2)}>
-            <div className="flex shrink-0 items-center justify-between gap-2">
-              <p className="text-[13px] text-[var(--muted)]">{t("home.price")}</p>
+            <div className="flex shrink-0 items-end justify-between gap-2">
+              <TileName>{t("home.price")}</TileName>
               {changePct != null ? <PriceChangeChip pct={changePct} /> : null}
             </div>
             <div className="flex shrink-0 items-baseline justify-between gap-2">
@@ -549,18 +549,19 @@ export function HomeExplorer({
                 </span>
               ) : null}
             </div>
-            <div className="mt-auto h-9">
+            <div className="mt-1 min-h-0 flex-1">
               {chartBusy ? (
                 <div className="h-full rounded-[8px] bg-[var(--wash-faint)] motion-safe:animate-pulse" />
               ) : price.length >= 2 ? (
                 <AreaChart
                   points={price}
-                  height={36}
+                  fill
                   compact
                   glow
+                  activity
                   showTip={false}
                   color={changePct != null && changePct < 0 ? PRICE_DOWN : PRICE_UP}
-                  lineWidth={1.75}
+                  lineWidth={2}
                   formatValue={(v) => formatUsd(v, 4)}
                   onHover={(v, t) => {
                     const on = v != null && v > 0;
@@ -578,7 +579,7 @@ export function HomeExplorer({
 
           <article className={TILE} style={enterAt(3)}>
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[13px] text-[var(--muted)]">{t("home.mcap")}</p>
+              <TileName>{t("home.mcap")}</TileName>
               {market?.rank != null ? (
                 <span className="mcap-rank shrink-0 rounded-[8px] px-1.5 py-0.5 text-[12px] font-semibold tabular-nums leading-none">
                   #{market.rank}
@@ -591,33 +592,28 @@ export function HomeExplorer({
             <p className="mt-auto flex h-9 items-end gap-1.5 pb-1 text-[12px]">
               <span className="text-[var(--muted-2)]">{t("home.volume24h")}</span>
               <span className="mcap-vol font-medium tabular-nums">
-                {vol24 != null ? <ReelText text={`$${formatCompact(vol24)}`} /> : "—"}
+                {vol24 != null ? (
+                  <ReelText text={`${formatGroupedNumber(Math.round(vol24), 0, 0)} $`} />
+                ) : (
+                  "—"
+                )}
               </span>
             </p>
           </article>
 
           <Link href="/addresses" className={clsx(TILE, "kpi-tile--press relative")} style={enterAt(4)}>
             <HoldersMark />
-            <p className="pr-7 text-[13px] text-[var(--muted)]">{t("home.holdersCount")}</p>
+            <TileName className="pr-14">{t("home.holdersCount")}</TileName>
             <KpiValue muted={holderCount == null}>
               <ReelText text={holderCount != null ? holderCount.toLocaleString(loc) : miss} />
             </KpiValue>
-            <p className="mt-auto flex h-9 items-end pb-1">
-              {holdersMonth != null ? (
-                <span className="holders-month">
-                  <svg viewBox="0 0 12 12" className="h-3 w-3" aria-hidden>
-                    <path d="M6 9.5V2.5M6 2.5 3 5.5M6 2.5l3 3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <ReelText text={holdersMonth.toLocaleString(loc)} />
-                </span>
-              ) : null}
-            </p>
+            <p className="mt-auto h-9" />
           </Link>
 
           <article className={clsx(TILE, "group relative max-lg:hidden")} style={enterAt(6)}>
-            <p className="text-[13px] text-[var(--muted)]">
+            <TileName>
               <SwapLine idle={t("home.circulating")} hover={t("home.maxSupply")} />
-            </p>
+            </TileName>
             <p
               className={clsx(
                 "mt-1 whitespace-nowrap text-[22px] font-semibold tabular-nums tracking-tight",
@@ -649,7 +645,7 @@ export function HomeExplorer({
 
           <article className={clsx(TILE, "relative max-lg:hidden")} style={enterAt(7)}>
             <div className={clsx("min-w-0", shareSlices.length >= 1 && "pr-[6.75rem]")}>
-              <p className="text-[13px] text-[var(--muted)]">{t("home.poolsActive")}</p>
+              <TileName>{t("home.poolsActive")}</TileName>
               <KpiValue muted={minerCount == null}>
                 <ReelText text={minerCount != null ? minerCount.toLocaleString(loc) : miss} />
               </KpiValue>
@@ -680,7 +676,7 @@ export function HomeExplorer({
           </article>
 
           <article className={TILE} style={enterAt(8)}>
-            <p className="shrink-0 text-[13px] text-[var(--muted)]">{t("home.hashrate")}</p>
+            <TileName className="shrink-0">{t("home.hashrate")}</TileName>
             <div className="mt-1 flex shrink-0 items-baseline justify-between gap-2">
               <KpiValue muted={spotHash == null}>
                 <ReelText text={spotHash != null ? formatHashrate(spotHash) : miss} />
@@ -806,7 +802,7 @@ export function HomeExplorer({
           className="home-tile-enter home-meet-right mod flex h-full min-h-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-3.5 py-3 max-lg:order-3 lg:col-start-2 lg:row-start-3"
           style={enterAt(11)}
         >
-          <p className="text-[17px] font-semibold tracking-tight">{t("home.versionNodes")}</p>
+          <p className="text-[13px]" style={{ color: HOME.forming }}>{t("home.versionNodes")}</p>
         </section>
         </div>
 
@@ -825,6 +821,14 @@ export function HomeExplorer({
 
 const TILE =
   "home-tile-enter mod flex h-full min-w-0 flex-col rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-3.5 py-3";
+
+function TileName({ className, children }: { className?: string; children: ReactNode }) {
+  return (
+    <p className={clsx("text-[13px]", className)} style={{ color: HOME.forming }}>
+      {children}
+    </p>
+  );
+}
 
 function enterAt(i: number): CSSProperties {
   return { "--enter": i } as CSSProperties;
@@ -857,7 +861,7 @@ function HomeActivityTile({
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] px-4 py-2.5 sm:px-5">
         <div className="relative mb-1 flex h-[22px] shrink-0 items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <h2 className="m-0 text-[17px] font-semibold leading-none tracking-tight">{title}</h2>
+            <h2 className="m-0 text-[13px] leading-none" style={{ color: HOME.forming }}>{title}</h2>
             <Link href={href} className="text-[13px] leading-none text-[var(--muted)] hover:text-[var(--text)]">
               {viewAll}
             </Link>
@@ -908,7 +912,7 @@ function PriceChangeChip({ pct }: { pct: number }) {
   return (
     <span
       className={clsx(
-        "shrink-0 rounded-[8px] px-1.5 py-0.5 text-[12px] font-medium tabular-nums",
+        "shrink-0 rounded-[8px] px-1.5 py-0.5 text-[12px] font-medium leading-none tabular-nums",
         pct >= 0 ? "bg-up/15 text-up" : "bg-down/15 text-down"
       )}
     >
@@ -1090,7 +1094,7 @@ function EpochBar({
       style={style}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="shrink-0 text-[17px] font-semibold leading-none tracking-tight tabular-nums">
+        <p className="shrink-0 text-[13px] leading-none tabular-nums" style={{ color: HOME.forming }}>
           {t("home.epoch")} <ReelText text={n.toLocaleString(loc)} />
         </p>
         <div className="flex min-w-0 items-center gap-3 text-[12px] leading-none tabular-nums">
@@ -1562,7 +1566,7 @@ function HomeMempoolTile({
     >
       <div className="mb-2 flex h-[22px] items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2 overflow-hidden">
-          <h2 className="m-0 shrink-0 text-[17px] font-semibold leading-none tracking-tight">{title}</h2>
+          <h2 className="m-0 shrink-0 text-[13px] leading-none" style={{ color: HOME.forming }}>{title}</h2>
           <span
             className={clsx("mb-px inline-block h-1.5 w-1.5 shrink-0 rounded-full", !reduce && "cadence-live-dot")}
             style={{ background: HOME.forming }}
@@ -1667,7 +1671,7 @@ function BlockCadence({
     >
       <div className="mb-2 flex h-[22px] items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2 overflow-hidden">
-          <h2 className="m-0 shrink-0 text-[17px] font-semibold leading-none tracking-tight">{title}</h2>
+          <h2 className="m-0 shrink-0 text-[13px] leading-none" style={{ color: HOME.forming }}>{title}</h2>
           {active ? (
             <>
               <span className="shrink-0 text-[13px] font-semibold tabular-nums leading-none tracking-tight">

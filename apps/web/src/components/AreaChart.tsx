@@ -42,6 +42,7 @@ export function AreaChart({
   glow = false,
   fill = false,
   showTip = true,
+  activity = false,
 }: {
   points: LinePoint[];
   height?: number;
@@ -63,6 +64,8 @@ export function AreaChart({
   fill?: boolean;
   /** False keeps the axis hair and the hover callback, and hides the date box. */
   showTip?: boolean;
+  /** Same neon stack as the home transactions chart. */
+  activity?: boolean;
 }) {
   const el = useRef<HTMLDivElement>(null);
   const chart = useRef<echarts.ECharts | null>(null);
@@ -115,9 +118,10 @@ export function AreaChart({
             color: stroke,
             name: "",
             day,
-            smooth: 0.15,
-            width: lineWidth,
-            wash: 0.55,
+            smooth: activity ? 0.55 : 0.15,
+            width: activity ? 2 : lineWidth,
+            wash: activity ? 0.2 : 0,
+            scatter: activity ? 0 : 22,
           })
         : [
             {
@@ -136,7 +140,9 @@ export function AreaChart({
         animationDuration: 280,
         animationEasing: "cubicOut",
         grid: compact
-          ? { top: glow ? 4 : 6, right: 2, bottom: glow ? 4 : 4, left: 2 }
+          ? activity
+            ? { top: 18, right: 10, bottom: 8, left: 8 }
+            : { top: glow ? 8 : 6, right: 4, bottom: glow ? 8 : 4, left: 4 }
           : { top: 16, right: 4, bottom: 22, left: 4 },
         tooltip: {
           trigger: "axis",
@@ -176,16 +182,24 @@ export function AreaChart({
         yAxis: {
           type: "value",
           scale: true,
-          show: false,
+          show: activity,
+          axisLine: { show: false },
+          axisTick: { show: false },
+          axisLabel: { show: false },
+          splitLine: activity
+            ? { show: true, lineStyle: { color: chrome.hair, opacity: day ? 0.16 : 0.2, width: 1 } }
+            : { show: false },
           ...(glow
             ? {
                 min: (ext: { min: number; max: number }) => {
                   const span = Math.max(ext.max - ext.min, Math.abs(ext.max) * 0.004, 1e-9);
-                  return ext.min - span * 0.04;
+                  const pad = activity ? span * 0.28 : span * 0.35;
+                  return ext.min - pad;
                 },
                 max: (ext: { min: number; max: number }) => {
                   const span = Math.max(ext.max - ext.min, Math.abs(ext.max) * 0.004, 1e-9);
-                  return ext.max + span * 0.04;
+                  const pad = activity ? span * 0.28 : span * 0.35;
+                  return ext.max + pad;
                 },
               }
             : {}),
@@ -220,7 +234,7 @@ export function AreaChart({
       quietMove.current = onMove;
       node.addEventListener("mousemove", onMove);
     }
-  }, [points, color, compact, binMs, locale, fillOpacity, lineWidth, glow, showTip, ink]);
+  }, [points, color, compact, binMs, locale, fillOpacity, lineWidth, glow, showTip, activity, ink]);
 
   return (
     <div

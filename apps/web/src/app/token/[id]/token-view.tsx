@@ -313,7 +313,10 @@ function DescCard({
     >
       <KpiTileRail />
       <div className="kpi-tile-body flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <p className="relative z-[1] shrink-0 bg-[var(--module)] pb-1 pr-10 truncate text-[13px] leading-[1.15] text-[var(--muted)]">
+        <p
+          className="relative z-[1] shrink-0 truncate bg-[var(--module)] pb-1 pr-10 text-[13px] leading-[1.15]"
+          style={{ color: INK.coral }}
+        >
           {label}
         </p>
         {description ? (

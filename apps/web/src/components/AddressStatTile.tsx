@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "
 import { createPortal } from "react-dom";
 import { KpiTileRail } from "@/components/KpiGrid";
 import clsx from "clsx";
+import { HOME } from "@/lib/palette";
 
 const TIP_W = 220;
 const TIP_PAD = 8;
@@ -140,7 +141,9 @@ export function AddressStatTile({
     >
       <KpiTileRail />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] leading-[1.15] text-[var(--muted)]">{label}</p>
+        <p className="truncate text-[13px] leading-[1.15]" style={{ color: HOME.forming }}>
+          {label}
+        </p>
         <p
           className={clsx(
             "mt-0.5 text-[17px] font-semibold leading-[1.15] tabular-nums tracking-tight",

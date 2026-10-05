@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { HOME } from "@/lib/palette";
 
 /** AdaStat `uk-animation-scale-up` on a page-enter figure. Live text swaps do not replay it. */
 export function KpiNum({ children, className }: { children: ReactNode; className?: string }) {
@@ -75,7 +76,10 @@ export function KpiGrid({
         const body = (
           <div className={clsx("kpi-tile-row flex w-full min-w-0 flex-1 justify-between", dense ? "gap-2" : "gap-3")}>
             <div className="min-w-0 flex-1">
-              <p className={clsx("text-[13px] text-[var(--muted)]", dense && "leading-[1.15]")}>
+              <p
+                className={clsx("text-[13px]", dense && "leading-[1.15]")}
+                style={{ color: HOME.forming }}
+              >
                 {k.label}
               </p>
               <p
