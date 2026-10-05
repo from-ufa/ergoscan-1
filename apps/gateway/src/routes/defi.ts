@@ -2171,8 +2171,8 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
                    ad.address,
                    src.value_nano::text AS nano
               FROM packed.boxes out
-              JOIN packed.tx_inputs i ON i.spent_tx_id = out.creation_tx_id
-              JOIN packed.boxes src ON src.box_id = i.box_id
+              -- The boxes this tx spent. spent_tx_id is indexed; tx_inputs is not.
+              JOIN packed.boxes src ON src.spent_tx_id = out.creation_tx_id
               JOIN packed.addr ad ON ad.id = src.addr_id
              WHERE out.box_id = ANY($1::bytea[])
             `,
