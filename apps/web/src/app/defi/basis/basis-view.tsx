@@ -28,18 +28,6 @@ const TRACKER_REPO = "https://github.com/BetterMoneyLabs/basis-tracker";
 const PAGE = 25;
 type SortKey = "created" | "amount";
 
-function BasisErgApprox({ nano }: { nano: bigint }) {
-  const d = describeRentErg(nano.toString());
-  if (!d.tiny) return <>≈ {d.text}</>;
-  return (
-    <>
-      ≈ {d.sign}0.0
-      <span className="text-[0.85em]">({d.tiny.zeros})</span>
-      {d.tiny.digits} ERG
-    </>
-  );
-}
-
 function fmtUnits(amount: string, decimals: number, locale: string): string {
   const neg = amount.startsWith("-");
   const digits = amount.replace(/^-/, "").replace(/\..*$/, "") || "0";
@@ -443,7 +431,6 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
                     ? fmtUnits(row.collateral.amount, row.collateral.decimals, loc)
                     : "—";
               const urgent = row.status === "refund" || row.status === "refundReady";
-              const worth = row.kind === "token" ? rowErgNano(row, prices) : null;
               const tone =
                 row.status === "quiet"
                   ? { color: "var(--up)", wash: "var(--up)" }
@@ -472,11 +459,6 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
                           {ticker}
                         </span>
                       </span>
-                      {worth != null ? (
-                        <span className="mt-0.5 block truncate text-[12px] tabular-nums" style={{ color: INK.gold }}>
-                          <BasisErgApprox nano={worth} />
-                        </span>
-                      ) : null}
                     </span>
                   </Link>
                   <span
