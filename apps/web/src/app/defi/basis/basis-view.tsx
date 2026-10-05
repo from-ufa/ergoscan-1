@@ -19,7 +19,7 @@ import { describeRentErg, formatFactWhen, formatRelTime, relAgeTone, relAgeToneC
 import { ERG_ZERO, resolveTokenMeta, tokenTickerInk } from "@/lib/token-meta";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { useKeepFresh, usePageSync } from "@/lib/page-sync";
-import { SNAPSHOT_FETCH, useEnterIds } from "@/lib/keyed-enter";
+import { SNAPSHOT_FETCH } from "@/lib/keyed-enter";
 import { basisPackReady, completeBasisPack, ergPerToken } from "@/lib/basis-pack";
 import { getGateway } from "@/lib/config";
 import type { BasisReserve, BasisSnap } from "@/lib/list-snapshots";
@@ -162,11 +162,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
     key: "",
     map: {},
   });
-  const [listReady, setListReady] = useState(false);
-  const opened = useRef(false);
   const packTries = useRef(0);
-  const enter = useEnterIds();
-  const packEnter = useEnterIds();
   const miss = t("home.unavailable");
 
   const pull = useCallback(async () => {
@@ -223,13 +219,6 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
       stop = true;
     };
   }, [ready, packed, snap]);
-  useEffect(() => {
-    if (opened.current || !ready || !packed || !snap?.reserves?.length) return;
-    opened.current = true;
-    enter.mark(snap.reserves.map((row) => row.boxId));
-    packEnter.mark(["pack"]);
-    setListReady(true);
-  }, [ready, packed, snap, enter, packEnter]);
   const heightKey = (snap?.reserves ?? [])
     .filter((row) => row.height != null && row.createdAt == null)
     .map((row) => row.height)
@@ -422,9 +411,8 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
         <p className="text-[13px] text-[var(--muted)]">{t("basis.unavailable")}</p>
       ) : !rows.length ? (
         <p className="text-[13px] text-[var(--muted)]">{t("basis.empty")}</p>
-      ) : !listReady ? null : (
+      ) : (
         <div className="addr-sheet">
-          <div className={packEnter.enterClass("pack")}>
           <div className="addr-pan">
             <div className="addr-head addr-lane addr-lane-x basis-tape text-[12px] font-medium">
               <SortHead
@@ -470,10 +458,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
               return (
                 <div
                   key={row.boxId}
-                  className={clsx(
-                    "addr-lane addr-lane-x basis-tape border-t border-[var(--border-soft)] text-[13px]",
-                    enter.enterClass(row.boxId)
-                  )}
+                  className="addr-lane addr-lane-x basis-tape border-t border-[var(--border-soft)] text-[13px]"
                 >
                   <Link
                     href={`/box/${row.boxId}`}
@@ -556,7 +541,6 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
                 </div>
               );
             })}
-          </div>
           </div>
           <RankWindow
             offset={pageStart}
