@@ -4688,7 +4688,54 @@ html[data-ink="day"] .epoch-left {
   }
 }
 
+/* Basis mark swims the free side of the protocol tile, then turns at each end. */
+.basis-mark-lane {
+  container-type: inline-size;
+}
+.basis-mark-swim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  animation: basis-mark-swim 16s linear infinite;
+}
+.basis-mark-bob {
+  animation: basis-mark-bob 3.4s ease-in-out infinite;
+}
+@keyframes basis-mark-swim {
+  0%,
+  6% {
+    transform: translateX(0) scaleX(1);
+  }
+  44% {
+    transform: translateX(calc(100cqi - 100%)) scaleX(1);
+  }
+  50%,
+  56% {
+    transform: translateX(calc(100cqi - 100%)) scaleX(-1);
+  }
+  94% {
+    transform: translateX(0) scaleX(-1);
+  }
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+}
+@keyframes basis-mark-bob {
+  0%,
+  100% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .basis-mark-swim,
+  .basis-mark-bob,
   .holder-mark .hm-spin,
   .entity-mark .em-spin,
   .fact-mark .fm-spin,
@@ -4743,6 +4790,10 @@ html[data-ink="day"] .epoch-left {
   }
   .kpi-mark.entity-mark .em-spin {
     transform: scale(0.912);
+  }
+  .basis-mark-swim {
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 

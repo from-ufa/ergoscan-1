@@ -4,7 +4,12 @@ import { useCallback, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { Shell } from "@/components/Shell";
 import { KpiGrid } from "@/components/KpiGrid";
-import { KpiMarkScrollText, KpiMarkVault } from "@/components/kpi-marks";
+import {
+  KpiMarkBox,
+  KpiMarkFingerprint,
+  KpiMarkVault,
+  KpiMarkWalletMinimal,
+} from "@/components/kpi-marks";
 import { TokenAvatar } from "@/components/TokenBadge";
 import { INK } from "@/lib/palette";
 import { shortId } from "@/lib/format";
@@ -84,7 +89,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
       value: erg != null ? `${erg} ERG` : miss,
       unavailable: erg == null,
       sub: t("basis.ergSub"),
-      mark: <KpiMarkVault tone={INK.cyan} />,
+      mark: <KpiMarkWalletMinimal tone={INK.cyan} />,
       ink: INK.cyan,
       enter: 1,
     },
@@ -96,7 +101,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
           : miss,
       unavailable: !ready,
       sub: t("basis.tokenSafesSub"),
-      mark: <KpiMarkScrollText tone={INK.violet} />,
+      mark: <KpiMarkBox tone={INK.violet} />,
       ink: INK.violet,
       enter: 2,
     },
@@ -105,7 +110,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
       value: ready && snap?.trackerCount != null ? snap.trackerCount.toLocaleString(loc) : miss,
       unavailable: !ready,
       sub: t("basis.trackersSub"),
-      mark: <KpiMarkScrollText tone={INK.green} />,
+      mark: <KpiMarkFingerprint tone={INK.green} />,
       ink: INK.green,
       enter: 3,
     },
@@ -115,13 +120,13 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
     <Shell>
       <KpiGrid items={kpis} dense className="mb-4 sm:grid-cols-4" />
       <article
-        className="home-tile-enter mb-4 flex min-w-0 items-center gap-4 rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3"
+        className="home-tile-enter mb-4 flex min-w-0 flex-col gap-3 rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3 sm:flex-row sm:items-stretch"
         style={{ "--enter": 4 } as CSSProperties}
       >
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 max-w-3xl">
           <h2 className="text-[13px] font-medium text-[var(--muted)]">{t("basis.protocol")}</h2>
           <p className="mt-2 text-[14px] font-semibold leading-none">Basis</p>
-          <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-[var(--text)]">
+          <p className="mt-2 text-[14px] leading-relaxed text-[var(--text)]">
             {t("basis.protocolBody")}
           </p>
           <a
@@ -133,13 +138,17 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
             {t("basis.link")}
           </a>
         </div>
-        <img
-          src="/basis-mark.png"
-          alt=""
-          width={64}
-          height={96}
-          className="h-24 w-auto shrink-0 object-contain"
-        />
+        <div className="basis-mark-lane relative min-h-28 flex-1 overflow-hidden">
+          <div className="basis-mark-swim">
+            <img
+              src="/basis-mark.png"
+              alt=""
+              width={64}
+              height={96}
+              className="basis-mark-bob h-24 w-auto object-contain"
+            />
+          </div>
+        </div>
       </article>
       <div className="home-tile-enter min-w-0 overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)]">
         {!ready ? (

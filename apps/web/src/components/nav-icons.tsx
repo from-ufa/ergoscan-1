@@ -191,13 +191,21 @@ export function IconStable(props: IconProps) {
   );
 }
 
-/** Basis lockbox — Lucide `lock`. */
+/** Basis — Lucide `vault`. The page is the lockboxes, same mark as the first tile. */
 export function IconBasis(props: IconProps) {
   return glyph(
     props,
     <>
-      <rect width="18" height="11" x="3" y="11" rx="2" {...cap} />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" {...cap} />
+      <rect width="18" height="18" x="3" y="3" rx="2" {...cap} />
+      <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
+      <path d="m7.9 7.9 2.7 2.7" {...cap} />
+      <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
+      <path d="m13.4 10.6 2.7-2.7" {...cap} />
+      <circle cx="7.5" cy="16.5" r=".5" fill="currentColor" />
+      <path d="m7.9 16.1 2.7-2.7" {...cap} />
+      <circle cx="16.5" cy="16.5" r=".5" fill="currentColor" />
+      <path d="m13.4 13.4 2.7 2.7" {...cap} />
+      <circle cx="12" cy="12" r="2" {...cap} />
     </>
   );
 }
