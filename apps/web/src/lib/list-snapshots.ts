@@ -32,6 +32,8 @@ export type BlockListItem = {
   valueNano?: string | number | null;
   /** Output sum minus coinbase. Additive. */
   userValueNano?: string | number | null;
+  /** True when this block spends one LITHOS-COLLAT. Additive. */
+  lithos?: boolean;
 };
 
 export type TxListItem = {
@@ -130,6 +132,8 @@ export type BlockCard = {
   feeNano: string;
   valueNano: string;
   userValueNano?: string;
+  /** True when this block spends one LITHOS-COLLAT. */
+  lithos?: boolean;
   prevTimestamp: number | null;
   tipHeight: number | null;
   payingTxCount: number | null;
@@ -975,6 +979,7 @@ export function parseBlockCard(raw: unknown): BlockCard | null {
     feeNano: r.feeNano != null ? String(r.feeNano) : "0",
     valueNano: r.valueNano != null ? String(r.valueNano) : "0",
     userValueNano: r.userValueNano != null ? String(r.userValueNano) : undefined,
+    lithos: r.lithos === true,
     prevTimestamp: finiteNum(r.prevTimestamp),
     tipHeight: finiteNum(r.tipHeight),
     payingTxCount: finiteNum(r.payingTxCount),

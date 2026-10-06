@@ -303,6 +303,7 @@ export function BlocksView({
               </div>
               <div className="block-lane-pair">
                 <div className="min-w-0">{t("blocks.time")}</div>
+                <div className="lithos-col" aria-hidden />
                 <div className="min-w-0 justify-end">{t("blocks.blockTime")}</div>
               </div>
               <div className="block-lane-pair">
@@ -464,6 +465,17 @@ export function BlockTapeRow({
       <div className="block-lane-pair">
         <div className="min-w-0 px-3">
           <p className="tabular-nums">{intervalMs != null ? formatBlockTime(intervalMs) : "—"}</p>
+        </div>
+        <div className="lithos-col">
+          {row.lithos ? (
+            <Link
+              href="/defi/lithos"
+              title={t("block.chip.lithosHint")}
+              className="lithos-chip chip-press"
+            >
+              {t("block.chip.lithos")}
+            </Link>
+          ) : null}
         </div>
         <div className="min-w-0 px-3 text-right">
           <BlockWhen ts={row.timestamp} now={now} />

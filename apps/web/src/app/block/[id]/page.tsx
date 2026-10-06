@@ -52,6 +52,7 @@ export default async function BlockPage({
         olderRow={olderRow}
         newerRow={newerRow}
         initialHeader={card?.header ?? null}
+        initialLithos={card?.lithos === true}
       />
     </>
   );

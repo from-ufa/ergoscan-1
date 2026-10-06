@@ -73,6 +73,7 @@ type BlockHead = {
   userValueNano?: string;
   prevTimestamp: number | null;
   payingTxCount: number | null;
+  lithos?: boolean;
 };
 
 function loc(locale: string): string {
@@ -170,6 +171,7 @@ function mergeHead(head: BlockHead | null, card: BlockCard): BlockHead {
     userValueNano: card.userValueNano ?? base.userValueNano,
     prevTimestamp: card.prevTimestamp ?? base.prevTimestamp,
     payingTxCount: card.payingTxCount ?? base.payingTxCount,
+    lithos: card.lithos === true,
   };
 }
 
@@ -189,6 +191,7 @@ export function BlockView({
   olderRow,
   newerRow,
   initialHeader = null,
+  initialLithos = false,
 }: {
   id: string;
   initialRow: BlockListItem | null;
@@ -196,6 +199,8 @@ export function BlockView({
   newerRow: BlockListItem | null;
   /** Known on the first paint, so the button strip does not grow after the hop. */
   initialHeader?: BlockHeaderFields | null;
+  /** Known on the first paint, so the Lithos chip does not pop in after the card. */
+  initialLithos?: boolean;
 }) {
   const hopQuiet = useRef(blockHopQuiet);
   const [arrive, setArrive] = useState(false);
@@ -204,13 +209,15 @@ export function BlockView({
   const { locale } = useI18n();
   const { markSynced, tip } = usePageSync();
   const cached = peekBlockRow(id);
-  const [head, setHead] = useState<BlockHead | null>(() =>
-    rowToHead(
+  const [head, setHead] = useState<BlockHead | null>(() => {
+    const row = rowToHead(
       initialRow ?? cached,
       olderRow ?? (initialRow ? peekBlockAtHeight(initialRow.height - 1) : null),
       newerRow ?? (initialRow ? peekBlockAtHeight(initialRow.height + 1) : null)
-    )
-  );
+    );
+    if (!row || !initialLithos) return row;
+    return { ...row, lithos: true };
+  });
   const [tab, setTab] = useState<BlockTab>("txs");
   const [header, setHeader] = useState<BlockHeaderFields | null>(initialHeader);
   const hashApplied = useRef(false);
@@ -464,8 +471,17 @@ export function BlockView({
                 />
               }
             >
-              <h1 className="mt-2 truncate text-[17px] font-semibold leading-none tabular-nums tracking-tight">
+              <h1 className="mt-2 flex min-w-0 items-center gap-2 text-[17px] font-semibold leading-none tabular-nums tracking-tight">
                 <KpiNum>{head.height.toLocaleString(loc(locale))}</KpiNum>
+                {head.lithos ? (
+                  <Link
+                    href="/defi/lithos"
+                    title={t("block.chip.lithosHint")}
+                    className="chip-press shrink-0 rounded-full bg-[var(--wash-strong)] px-1.5 py-0.5 text-[10px] font-semibold leading-none tracking-tight text-[var(--text)]"
+                  >
+                    {t("block.chip.lithos")}
+                  </Link>
+                ) : null}
               </h1>
               <p className="mt-2 flex min-w-0 items-center gap-1">
                 <code className="whitespace-nowrap font-mono text-[12px] leading-none text-accent">

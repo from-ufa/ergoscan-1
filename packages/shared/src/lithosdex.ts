@@ -21,6 +21,14 @@ export const LITHOS_DEX_VENUE = "lithos_dex";
 export const LIT_TOKEN_ID_MAINNET =
   "c1980d829988229516430a47a5eca376060b6ce859616db0936e78ab25cb6de7";
 
+/**
+ * LITHOS-COLLAT, the collateral proposition token.
+ * A Lithos block spends a box that holds amount 1 of this id.
+ * The emission bank holds ~2^63 of the same id; that amount is not the mark.
+ */
+export const LITHOS_COLLAT_TOKEN_ID =
+  "a8a790e784e93ac0e68649181ae3d251e84fb5c741624100e7e945ae1e82dc98";
+
 export const LIT_TOKEN_ID_TESTNET =
   "7b728ca02a23085f1f7093e949535938c55307ab1b61e848008201c5109bd18b";
 

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   LIT_TOKEN_ID_MAINNET,
+  LITHOS_COLLAT_TOKEN_ID,
   LITHOS_LOCKED_LP,
   LITHOS_POOL_NFT_PLACEHOLDER,
   classifyLithosBoxDelta,
@@ -31,6 +32,7 @@ test("placeholders are not live ids", () => {
   assert.equal(isLithosPlaceholderId("0".repeat(64)), true);
   assert.equal(isLithosPlaceholderId(nft), false);
   assert.equal(isLitTokenId(LIT_TOKEN_ID_MAINNET), true);
+  assert.equal(LITHOS_COLLAT_TOKEN_ID, "a8a790e784e93ac0e68649181ae3d251e84fb5c741624100e7e945ae1e82dc98");
 });
 
 test("env pool NFT rejects placeholders and junk", () => {

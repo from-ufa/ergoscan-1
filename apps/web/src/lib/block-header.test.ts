@@ -12,6 +12,23 @@ test("a block card without a header stays a transaction page", () => {
   });
   assert.ok(card);
   assert.equal(card.header, null);
+  assert.equal(card.lithos, false);
+});
+
+test("lithos is only the explicit flag", () => {
+  const card = parseBlockCard({
+    id: "ab".repeat(32),
+    height: 1888828,
+    lithos: true,
+  });
+  assert.ok(card);
+  assert.equal(card.lithos, true);
+  const missing = parseBlockCard({
+    id: "ab".repeat(32),
+    height: 1,
+    lithos: "yes",
+  });
+  assert.equal(missing?.lithos, false);
 });
 
 test("header bytes survive the card parse", () => {

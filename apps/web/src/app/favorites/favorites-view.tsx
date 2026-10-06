@@ -172,6 +172,7 @@ function blockItem(card: NonNullable<ReturnType<typeof parseBlockCard>>): BlockL
     feeNano: card.feeNano,
     valueNano: card.valueNano,
     userValueNano: card.userValueNano,
+    lithos: card.lithos === true,
   };
 }
 
@@ -570,6 +571,7 @@ export function FavoritesView() {
                       </div>
                       <div className="block-lane-pair">
                         {col(t("blocks.time"))}
+                        <div className="lithos-col" aria-hidden />
                         {col(t("blocks.blockTime"), "right")}
                       </div>
                       <div className="block-lane-pair">

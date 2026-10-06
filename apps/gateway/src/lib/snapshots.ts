@@ -33,7 +33,7 @@ import {
   type RentTab,
   type RentWindow,
 } from "./rentIndex.js";
-import { classifyTxShape, txTapeFields, rentTapePaint, MINERS_FEE_ADDRESS, MINERS_FEE_TREE, fillRentWeekGaps, parseRentSeries, parseRentTape, parseRentEpochBoxes, parseRentEpochNano, pickTxLock, type RentTapeCategory, type RentTapeRow, type ShapeBox } from "@ergoscan/shared";
+import { classifyTxShape, txTapeFields, rentTapePaint, MINERS_FEE_ADDRESS, MINERS_FEE_TREE, fillRentWeekGaps, parseRentSeries, parseRentTape, parseRentEpochBoxes, parseRentEpochNano, pickTxLock, LITHOS_COLLAT_TOKEN_ID, type RentTapeCategory, type RentTapeRow, type ShapeBox } from "@ergoscan/shared";
 import { blockHeaderFromRow, type BlockHeaderView } from "./blockHeader.js";
 
 export const SNAP_BLOCKS = "blocks_latest";
@@ -61,6 +61,8 @@ export type BlockListItem = {
   valueNano: string;
   /** Output sum minus coinbase (emission-box recycle). Additive. */
   userValueNano?: string;
+  /** True when this block spends one LITHOS-COLLAT. Additive. */
+  lithos?: boolean;
 };
 
 export type { AddressListItem };
@@ -259,6 +261,34 @@ const BLOCK_TAPE_SQL = `SELECT id, height, timestamp_ms AS timestamp, COALESCE(s
             COALESCE(value_nano, 0)::text AS "valueNano"
      FROM blocks`;
 
+/** Heights in this pack that spend one LITHOS-COLLAT. One lookup for the whole page. */
+async function lithosHeights(heights: number[]): Promise<Set<number>> {
+  if (!packedReadEnabled()) return new Set();
+  const unique = [...new Set(heights.filter((h) => Number.isInteger(h) && h >= 0))];
+  if (!unique.length) return new Set();
+  const rows = await q<{ height: string }>(
+    `SELECT DISTINCT i.spent_height::text AS height
+       FROM packed.tx_inputs i
+       JOIN packed.box_assets ba
+         ON ba.box_id = i.box_id
+        AND ba.token_id = decode($2, 'hex')
+        AND ba.amount = 1
+      WHERE i.spent_height = ANY($1::bigint[])`,
+    [unique, LITHOS_COLLAT_TOKEN_ID]
+  );
+  const hit = new Set<number>();
+  for (const row of rows ?? []) {
+    const h = Number(row.height);
+    if (Number.isInteger(h)) hit.add(h);
+  }
+  return hit;
+}
+
+function markLithos(items: BlockListItem[], hit: Set<number>): BlockListItem[] {
+  if (!hit.size) return items;
+  return items.map((item) => (hit.has(item.height) ? { ...item, lithos: true } : item));
+}
+
 function tapeTake(limit: number): number {
   return Math.max(1, Math.min(TAPE_CAP, Math.floor(Number(limit) || 25)));
 }
@@ -336,7 +366,11 @@ async function selectBlocksPage(
         );
   if (!rows) return null;
   const items = rows.map(mapBlock);
-  return paintUserValue ? attachUserValueNano(items) : items;
+  const valued = paintUserValue ? await attachUserValueNano(items) : items;
+  return markLithos(
+    valued,
+    await lithosHeights(valued.map((item) => item.height))
+  );
 }
 
 export async function selectBlocks(limit: number, paintUserValue = true): Promise<BlockListItem[] | null> {
@@ -694,8 +728,9 @@ export async function getBlocksList(
     const last = page[page.length - 1];
     let hasMore = hasMoreSnap;
     if (!hasMore && last) hasMore = await blocksHaveOlder(last.height);
+    const valued = await attachUserValueNano(page);
     return {
-      blocks: await attachUserValueNano(page),
+      blocks: markLithos(valued, await lithosHeights(valued.map((item) => item.height))),
       hasMore,
       nextCursor: hasMore && last ? String(last.height) : null,
       meta: { height: snap.height, updatedAt: snap.updatedAt },
@@ -733,6 +768,8 @@ export type BlockCard = {
   valueNano: string;
   /** Output sum minus coinbase. Additive. */
   userValueNano?: string;
+  /** True when this block spends one LITHOS-COLLAT. Additive. */
+  lithos?: boolean;
   difficulty: string | null;
   /** Signing header. Null until the indexer has filled this height. */
   header: BlockHeaderView | null;
@@ -871,7 +908,7 @@ export async function getBlockCard(
   const b = head[0];
   const height = n(b.height);
 
-  const [prevRows, nextRows, counts, tip] = await Promise.all([
+  const [prevRows, nextRows, counts, tip, lithosHit] = await Promise.all([
     height > 0
       ? q<{ id: string; timestamp: unknown }>(
           packed
@@ -919,6 +956,7 @@ export async function getBlockCard(
       [height, MINERS_FEE_ADDRESS, MINERS_FEE_TREE]
     ),
     peekChainTip(),
+    lithosHeights([height]),
   ]);
 
   const counted = counts?.[0] ? Number(counts[0].n) : NaN;
@@ -983,6 +1021,7 @@ export async function getBlockCard(
       hasMore: skip + txs.length < txCount,
     },
     updatedAt: tip?.updatedAt ?? null,
+    lithos: lithosHit.has(height),
     source: "index",
   };
   const [painted] = await attachUserValueNano([

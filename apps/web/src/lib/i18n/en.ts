@@ -832,6 +832,8 @@ export const en: Record<string, string> = {
   "blocks.empty": "No recent blocks.",
   "blocks.packTape": "Blocks window",
   "blocks.packHint": "25 at a time, newest first. Indexed chain — not a 50-block cap.",
+  "block.chip.lithos": "Lithos",
+  "block.chip.lithosHint": "This block spends Lithos collateral",
   "block.card.output": "Output",
   "block.card.miner": "Miner",
   "block.card.fees": "Fees",
