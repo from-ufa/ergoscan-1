@@ -61,7 +61,7 @@ import {
 } from "../lib/indexDb.js";
 import { rentWriterHealth } from "../lib/rentIndex.js";
 import { addressName } from "../lib/names.js";
-import { BLOCK_TX_PACK, getAddressesPage, getBlockCard, getBlocksList, getHolderBands, getHomePage, getRentPage, getStatusSnapshot, parseBlockHeightCursor, peekChainTip, rentTapeMarks } from "../lib/snapshots.js";
+import { BLOCK_TX_PACK, getAddressesPage, getBlockCard, getBlockSections, getBlocksList, getHolderBands, getHomePage, getRentPage, getStatusSnapshot, parseBlockHeightCursor, peekChainTip, rentTapeMarks } from "../lib/snapshots.js";
 import { publicIndexerStatus } from "../lib/public-health.js";
 import { holderFilterTotal } from "../lib/addressListFilter.js";
 import { cacheList, cacheNoStore, cacheTip, cacheTokens } from "../lib/httpCache.js";
@@ -722,6 +722,21 @@ export function registerChainRoutes(app: Express, deps: ChainDeps) {
       return;
     }
     res.json(got.blocks);
+  });
+
+  app.get("/v1/blocks/:id/sections", async (req, res) => {
+    const id = String(req.params.id ?? "").trim();
+    const got = await getBlockSections(id);
+    cacheNoStore(res);
+    if (got == null) {
+      res.status(503).json({ error: "stale", stale: true });
+      return;
+    }
+    if (got === "missing") {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
+    res.json(got);
   });
 
   app.get("/v1/blocks/:id", async (req, res) => {

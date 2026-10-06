@@ -83,7 +83,9 @@ CREATE TABLE IF NOT EXISTS packed.blocks (
   extension_hash     bytea,
   pow_w              bytea,
   pow_n              bytea,
-  pow_d              numeric
+  pow_d              numeric,
+  extension          bytea,
+  ad_proofs          bytea
 )${ts};
 ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS version smallint;
 ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS n_bits bigint;
@@ -95,6 +97,8 @@ ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS extension_hash bytea;
 ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS pow_w bytea;
 ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS pow_n bytea;
 ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS pow_d numeric;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS extension bytea;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS ad_proofs bytea;
 
 CREATE TABLE IF NOT EXISTS packed.transactions (
   id             bytea PRIMARY KEY,

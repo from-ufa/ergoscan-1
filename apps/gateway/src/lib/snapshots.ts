@@ -795,6 +795,27 @@ async function tokenCountsForTxIds(ids: string[]): Promise<Map<string, number> |
   return m;
 }
 
+export async function getBlockSections(
+  id: string
+): Promise<{ extension: string | null; adProofs: string | null } | "missing" | null> {
+  const key = String(id ?? "").trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(key)) return "missing";
+  const rows = await q<{ extension: string | null; adProofs: string | null }>(
+    `SELECT encode(extension, 'hex') AS extension,
+            encode(ad_proofs, 'hex') AS "adProofs"
+       FROM packed.blocks
+      WHERE id = decode($1, 'hex')
+      LIMIT 1`,
+    [key]
+  );
+  if (!rows) return null;
+  if (!rows[0]) return "missing";
+  return {
+    extension: rows[0].extension,
+    adProofs: rows[0].adProofs,
+  };
+}
+
 export async function getBlockCard(
   idOrHeight: string,
   limit = BLOCK_TX_PACK,

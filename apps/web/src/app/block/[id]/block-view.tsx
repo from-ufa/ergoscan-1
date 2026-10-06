@@ -31,6 +31,7 @@ import { lookupAddress } from "@/lib/address-book";
 import { minerEmissionAtHeight, ERGO_MAX_BLOCK_SIZE } from "@/lib/ergo-emission";
 import { INK } from "@/lib/palette";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
+import { splitExtension } from "@/lib/extension-section";
 import { readHashTab, setHashTab } from "@/lib/hash-tab";
 import { useChainTipRefresh, useKeepFresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, enteringIds, snapshotPath, useEnterIds } from "@/lib/keyed-enter";
@@ -51,7 +52,7 @@ import {
   putBlockWindow,
 } from "@/lib/block-list-cache";
 
-const BLOCK_TABS = ["txs", "header"] as const;
+const BLOCK_TABS = ["txs", "header", "extension", "adproof"] as const;
 
 /** First open of a block may settle in. Arrow hops must not replay that motion. */
 let blockHopQuiet = false;
@@ -242,8 +243,8 @@ export function BlockView({
           : enteringIds(prev, pack);
       txReadyRef.current = true;
       txsRef.current = pack;
-      if (!hopQuiet.current && first) packEnter.mark(["pack"]);
-      if (!hopQuiet.current) enter.mark(ids);
+      if (first) packEnter.mark(["pack"]);
+      enter.mark(ids);
       setTxs(pack);
       setTxReady(true);
     },
@@ -274,8 +275,10 @@ export function BlockView({
           const nextHeader = next.header ?? null;
           setHeader(nextHeader);
           if (!nextHeader) setTab((cur) => (cur === "header" ? "txs" : cur));
-          else if (!hashApplied.current && readHashTab(BLOCK_TABS, "txs") === "header") {
-            setTab("header");
+          if (!hashApplied.current) {
+            const hashed = readHashTab(BLOCK_TABS, "txs");
+            if (hashed === "header" && nextHeader) setTab("header");
+            else if (hashed === "extension" || hashed === "adproof") setTab(hashed);
           }
           hashApplied.current = true;
           setHead((prev) => mergeHead(prev, next));
@@ -461,10 +464,10 @@ export function BlockView({
                 />
               }
             >
-              <h1 className="mt-0.5 truncate text-[17px] font-semibold leading-none tabular-nums tracking-tight">
+              <h1 className="mt-2 truncate text-[17px] font-semibold leading-none tabular-nums tracking-tight">
                 <KpiNum>{head.height.toLocaleString(loc(locale))}</KpiNum>
               </h1>
-              <p className="mt-0.5 flex min-w-0 items-center gap-1">
+              <p className="mt-2 flex min-w-0 items-center gap-1">
                 <code className="whitespace-nowrap font-mono text-[12px] leading-none text-accent">
                   {shortId(head.id, 8)}
                 </code>
@@ -478,16 +481,21 @@ export function BlockView({
               </p>
             </AddrFactCard>
             <SegBar
-              cols={header ? 4 : 3}
-              className={clsx("shrink-0", header && "block-switch")}
+              cols={header ? 3 : 2}
+              className="block-switch shrink-0"
             >
               <a
                 href="#txs"
                 onClick={(e) => {
+                  const rows = txsRef.current;
+                  if (rows.length) {
+                    packEnter.mark(["pack"]);
+                    enter.mark(rows.map((row) => row.id));
+                  }
                   setHashTab("txs", e);
                   setTab("txs");
                 }}
-                className={segItem(tab === "txs" || !header)}
+                className={segItem(tab === "txs")}
               >
                 {t("block.tab.txs")}
               </a>
@@ -518,26 +526,12 @@ export function BlockView({
                 storageKey={BLOCK_HOP_KEY}
                 onPrefetch={(href) => prefetchBlockCard(href.replace(/^\/block\//, ""))}
               />
-              <HopNav
-                dir="fwd"
-                pageId={head.id}
-                href={nextHref}
-                label={t("block.nav.forward")}
-                hint={
-                  nextHref
-                    ? t("blocks.next") +
-                      " · " +
-                      (head.height + 1).toLocaleString(loc(locale))
-                    : undefined
-                }
-                storageKey={BLOCK_HOP_KEY}
-                onPrefetch={(href) => prefetchBlockCard(href.replace(/^\/block\//, ""))}
-              />
             </SegBar>
           </div>
 
+          <div className="col-span-2 flex min-h-0 flex-col gap-2 lg:col-span-1 lg:row-span-2">
           <AddrFactCard
-            className="col-span-2 overflow-hidden lg:col-span-1 lg:row-span-2"
+            className="min-h-0 h-auto flex-1 overflow-hidden"
             enter={arrive ? 1 : undefined}
             label={t("block.card.output")}
             ink={INK.cyan}
@@ -561,6 +555,44 @@ export function BlockView({
               </p>
             ) : null}
           </AddrFactCard>
+            <SegBar cols={3} className="block-switch shrink-0">
+              <HopNav
+                dir="fwd"
+                pageId={head.id}
+                href={nextHref}
+                label={t("block.nav.forward")}
+                hint={
+                  nextHref
+                    ? t("blocks.next") +
+                      " · " +
+                      (head.height + 1).toLocaleString(loc(locale))
+                    : undefined
+                }
+                storageKey={BLOCK_HOP_KEY}
+                onPrefetch={(href) => prefetchBlockCard(href.replace(/^\/block\//, ""))}
+              />
+              <a
+                href="#extension"
+                onClick={(e) => {
+                  setHashTab("extension", e);
+                  setTab("extension");
+                }}
+                className={segItem(tab === "extension")}
+              >
+                {t("block.tab.extension")}
+              </a>
+              <a
+                href="#adproof"
+                onClick={(e) => {
+                  setHashTab("adproof", e);
+                  setTab("adproof");
+                }}
+                className={segItem(tab === "adproof")}
+              >
+                {t("block.tab.adproof")}
+              </a>
+            </SegBar>
+          </div>
 
           <AddrFactCard
             enter={arrive ? 2 : undefined}
@@ -637,6 +669,8 @@ export function BlockView({
 
       {tab === "header" && header ? (
         <BlockHeaderSheet header={header} t={t} />
+      ) : tab === "extension" || tab === "adproof" ? (
+        <BlockSectionSheet id={head?.id ?? id} part={tab} digest={header?.extensionHash ?? null} />
       ) : (
         <>
           {!txReady && !err ? null : !txs.length && !err ? (
@@ -708,6 +742,140 @@ export function BlockView({
         </>
       )}
     </Shell>
+  );
+}
+
+function BlockSectionSheet({
+  id,
+  part,
+  digest,
+}: {
+  id: string;
+  part: "extension" | "adproof";
+  digest: string | null;
+}) {
+  const t = useT();
+  const { locale } = useI18n();
+  const slot = `${id}:${part}`;
+  const [pack, setPack] = useState<{ slot: string; hex: string | null | undefined }>({
+    slot,
+    hex: undefined,
+  });
+  if (pack.slot !== slot) setPack({ slot, hex: undefined });
+  const hex = pack.slot === slot ? pack.hex : undefined;
+  useEffect(() => {
+    let stop = false;
+    const path = `/v1/blocks/${encodeURIComponent(id)}/sections`;
+    fetch(`${getGateway()}${path}`, SNAPSHOT_FETCH)
+      .then(async (r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.json() as Promise<{ extension?: string | null; adProofs?: string | null }>;
+      })
+      .then((body) => {
+        if (stop) return;
+        const raw = part === "extension" ? body.extension : body.adProofs;
+        setPack({ slot, hex: typeof raw === "string" && raw.length > 0 ? raw : null });
+      })
+      .catch(() => {
+        if (!stop) setPack({ slot, hex: null });
+      });
+    return () => {
+      stop = true;
+    };
+  }, [id, part, slot]);
+  if (hex === undefined) return null;
+  const title = t(part === "extension" ? "block.tab.extension" : "block.tab.adproof");
+  const bytes = hex ? hex.length / 2 : 0;
+  return (
+    <section className="hdr-doc" aria-label={title}>
+      <div className="hdr-sheet">
+        <p className="hdr-band">
+          {title}
+          {hex ? ` · ${t("block.section.bytes").replace("{n}", bytes.toLocaleString(locale === "ru" ? "ru-RU" : "en-US"))}` : ""}
+        </p>
+        {hex && part === "adproof" ? (
+          <ProofPane hex={hex} copyLabel={t("tx.copy")} copiedLabel={t("tx.copied")} />
+        ) : hex && part === "extension" && splitExtension(hex) ? (
+          <ExtensionRows hex={hex} digest={digest} t={t} />
+        ) : hex ? (
+          <div className="hdr-row">
+            <pre className="hdr-hex">{hex}</pre>
+            <CopyChip text={hex} copyLabel={t("tx.copy")} copiedLabel={t("tx.copied")} />
+          </div>
+        ) : hex === null ? (
+          <p className="hdr-row">
+            <span className="hdr-empty">{t("block.section.pending")}</span>
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function ProofPane({
+  hex,
+  copyLabel,
+  copiedLabel,
+}: {
+  hex: string;
+  copyLabel: string;
+  copiedLabel: string;
+}) {
+  const [ok, setOk] = useState(false);
+  return (
+    <>
+      <pre className="hdr-proof">{hex}</pre>
+      <div className="hdr-proof-end">
+        <button
+          type="button"
+          className="hdr-proof-copy chip-press"
+          onClick={() => {
+            void navigator.clipboard?.writeText(hex).then(() => {
+              setOk(true);
+              window.setTimeout(() => setOk(false), 1200);
+            });
+          }}
+        >
+          {ok ? copiedLabel : copyLabel}
+        </button>
+      </div>
+    </>
+  );
+}
+
+function ExtensionRows({
+  hex,
+  digest,
+  t,
+}: {
+  hex: string;
+  digest: string | null;
+  t: ReturnType<typeof useT>;
+}) {
+  const parts = splitExtension(hex);
+  if (!parts) return null;
+  const copyLabel = t("tx.copy");
+  const copiedLabel = t("tx.copied");
+  const tones = ["teal", "cyan", "sky", "green"];
+  const rows = [
+    { label: t("block.ext.headerId"), value: parts.headerId, tone: "violet" },
+    { label: t("block.ext.digest"), value: digest ?? "", tone: "gold" },
+    ...parts.fields.map((field, i) => ({
+      label: field.key,
+      value: field.value,
+      tone: tones[i % tones.length]!,
+    })),
+  ];
+  return (
+    <div className="hdr-rows">
+      {rows.map((row, i) => (
+        <div className={`hdr-row is-${row.tone}`} key={`${row.label}-${i}`}>
+          <div className="hdr-k">{row.label}</div>
+          {row.value ? <code className="hdr-hex">{row.value}</code> : <span className="hdr-empty">—</span>}
+          {row.value ? <CopyChip text={row.value} copyLabel={copyLabel} copiedLabel={copiedLabel} /> : <span />}
+        </div>
+      ))}
+    </div>
   );
 }
 

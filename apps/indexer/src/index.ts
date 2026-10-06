@@ -92,6 +92,7 @@ import {
 } from "./tokenIssuance.js";
 import { maybeBackfillAddressTxSpends } from "./addressTxSpendBackfill.js";
 import { headerBytesFromNode, maybeBackfillBlockHeaders } from "./headerBackfill.js";
+import { maybeBackfillBlockSections, sectionBytesFromBlock } from "./sectionBackfill.js";
 import {
   longAddressTxSlotEnabled,
   maybeBackfillLongAddressTx,
@@ -243,6 +244,8 @@ type NodeFullBlock = {
     size?: number;
     transactions?: NodeTx[];
   };
+  extension?: { headerId?: string; fields?: unknown };
+  adProofs?: unknown;
 };
 
 type FetchedBlock = {
@@ -1211,6 +1214,7 @@ export async function indexHeight(
       }
     }
     const hdr = headerBytesFromNode(h);
+    const sections = sectionBytesFromBlock(full);
     const headerParams = [
       h.height,
       blockId,
@@ -1231,6 +1235,8 @@ export async function indexHeight(
       hdr.powW,
       hdr.powN,
       hdr.powD,
+      sections.extension,
+      sections.adProofs,
     ];
     if (textChainHeadersEnabled()) {
       await client.query(
@@ -1255,11 +1261,11 @@ export async function indexHeight(
            height, id, parent_id, timestamp_ms, size, tx_count, difficulty,
            miner_pk, miner_address,
            version, n_bits, votes, state_root, ad_proofs_root, transactions_root,
-           extension_hash, pow_w, pow_n, pow_d
+           extension_hash, pow_w, pow_n, pow_d, extension, ad_proofs
          )
          VALUES (
            $1, packed.hex32($2), packed.hex32($7), $3, $4, $5, $6, $8, $9,
-           $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+           $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
          )
          ON CONFLICT (height) DO UPDATE SET
            id = EXCLUDED.id,
@@ -1279,7 +1285,9 @@ export async function indexHeight(
            extension_hash = COALESCE(EXCLUDED.extension_hash, packed.blocks.extension_hash),
            pow_w = COALESCE(EXCLUDED.pow_w, packed.blocks.pow_w),
            pow_n = COALESCE(EXCLUDED.pow_n, packed.blocks.pow_n),
-           pow_d = COALESCE(EXCLUDED.pow_d, packed.blocks.pow_d)
+           pow_d = COALESCE(EXCLUDED.pow_d, packed.blocks.pow_d),
+           extension = COALESCE(EXCLUDED.extension, packed.blocks.extension),
+           ad_proofs = COALESCE(EXCLUDED.ad_proofs, packed.blocks.ad_proofs)
          WHERE packed.blocks.id = EXCLUDED.id`,
         headerParams
       );
@@ -2998,6 +3006,12 @@ async function loop(pool: Pool): Promise<boolean> {
     await maybeBackfillBlockHeaders(pool);
   } catch (e) {
     console.warn("[indexer] block header", String(e));
+  }
+
+  try {
+    await maybeBackfillBlockSections(pool);
+  } catch (e) {
+    console.warn("[indexer] block section", String(e));
   }
 
   // Long P2S history: dedicated writer. Tip keeps ADDRESS_TX_LONG=0.

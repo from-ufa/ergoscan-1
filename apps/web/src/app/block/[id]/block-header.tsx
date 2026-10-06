@@ -67,6 +67,7 @@ function HexRow({
   copyLabel,
   copiedLabel,
   numeric = false,
+  tone,
 }: {
   label: string;
   value: string;
@@ -74,9 +75,10 @@ function HexRow({
   copyLabel: string;
   copiedLabel: string;
   numeric?: boolean;
+  tone?: string;
 }) {
   return (
-    <div className="hdr-row">
+    <div className={tone ? `hdr-row is-${tone}` : "hdr-row"}>
       <div className="hdr-k">{label}</div>
       {value ? (
         <code className={numeric ? "hdr-num" : "hdr-hex"}>{value}</code>
@@ -101,26 +103,26 @@ export function BlockHeaderSheet({
 }) {
   const copyLabel = t("tx.copy");
   const copiedLabel = t("tx.copied");
-  const roots: { label: string; value: string }[] = [
-    { label: t("block.header.state"), value: header.stateRoot },
-    { label: t("block.header.txRoot"), value: header.transactionsRoot },
-    { label: t("block.header.ad"), value: header.adProofsRoot },
-    { label: t("block.header.extension"), value: header.extensionHash },
+  const roots: { label: string; value: string; tone: string }[] = [
+    { label: t("block.header.state"), value: header.stateRoot, tone: "violet" },
+    { label: t("block.header.txRoot"), value: header.transactionsRoot, tone: "cyan" },
+    { label: t("block.header.ad"), value: header.adProofsRoot, tone: "teal" },
+    { label: t("block.header.extension"), value: header.extensionHash, tone: "gold" },
   ];
-  const proof: { label: string; value: string; copy: string; numeric?: boolean }[] = [
-    { label: "pk", value: header.powPk ?? "", copy: header.powPk ?? "" },
-    { label: "w", value: header.powW ?? "", copy: header.powW ?? "" },
-    { label: "n", value: header.powN ?? "", copy: header.powN ?? "" },
-    { label: "d", value: grouped(header.powD), copy: header.powD ?? "", numeric: true },
+  const proof: { label: string; value: string; copy: string; numeric?: boolean; tone: string }[] = [
+    { label: "pk", value: header.powPk ?? "", copy: header.powPk ?? "", tone: "sky" },
+    { label: "w", value: header.powW ?? "", copy: header.powW ?? "", tone: "green" },
+    { label: "n", value: header.powN ?? "", copy: header.powN ?? "", tone: "gold" },
+    { label: "d", value: grouped(header.powD), copy: header.powD ?? "", numeric: true, tone: "coral" },
   ];
   return (
     <section className="hdr-doc" aria-label={t("block.tab.header")}>
       <dl className="hdr-facts">
-        <div className="hdr-fact">
+        <div className="hdr-fact is-violet">
           <dt>{t("block.header.version")}</dt>
           <dd>{header.version ?? "—"}</dd>
         </div>
-        <div className="hdr-fact">
+        <div className="hdr-fact is-sky">
           <dt>{t("block.header.votes")}</dt>
           <dd>
             {header.votes.length ? (
@@ -136,11 +138,11 @@ export function BlockHeaderSheet({
             )}
           </dd>
         </div>
-        <div className="hdr-fact">
+        <div className="hdr-fact is-gold">
           <dt>{t("block.header.bits")}</dt>
           <dd>{grouped(header.nBits) || "—"}</dd>
         </div>
-        <div className="hdr-fact">
+        <div className="hdr-fact is-teal">
           <dt>{t("block.header.difficulty")}</dt>
           <dd>{grouped(header.difficulty) || "—"}</dd>
         </div>
@@ -156,6 +158,7 @@ export function BlockHeaderSheet({
               copyText={row.value}
               copyLabel={copyLabel}
               copiedLabel={copiedLabel}
+              tone={row.tone}
             />
           ))}
         </div>
@@ -170,6 +173,7 @@ export function BlockHeaderSheet({
               copyLabel={copyLabel}
               copiedLabel={copiedLabel}
               numeric={row.numeric}
+              tone={row.tone}
             />
           ))}
         </div>
