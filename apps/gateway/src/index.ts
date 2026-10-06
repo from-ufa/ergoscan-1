@@ -128,6 +128,15 @@ app.use((req, res, next) => {
   ) {
     return next();
   }
+  // API-contour GraphQL has its own read budget. The shared 120 cap turned a
+  // wallet page into an empty list.
+  if (
+    process.env.API_CONTOUR === "1" &&
+    req.method === "POST" &&
+    (req.path === "/graphql" || req.path === "/v1/graphql")
+  ) {
+    return next();
+  }
   const forwarded = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim();
   const internal = !forwarded && isLoopback(req.socket.remoteAddress);
   const ip = internal ? "internal" : forwarded || req.socket.remoteAddress || "unknown";

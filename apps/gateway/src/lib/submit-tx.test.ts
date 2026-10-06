@@ -3,7 +3,9 @@ import { test } from "node:test";
 import {
   isSubmitTxQuery,
   publicSubmitFail,
+  resetGraphqlReadLimiterForTests,
   resetSubmitLimiterForTests,
+  takeGraphqlReadSlot,
   takeSubmitSlot,
   validateSignedTx,
 } from "./submit-tx.js";
@@ -89,6 +91,17 @@ test("submit limiter counts REST and GraphQL against one IP", () => {
   if (blocked.ok === false) assert.equal(blocked.reason, "inflight");
   if (inflight.ok) inflight.release();
   assert.equal(isSubmitTxQuery("mutation { submitTx(signedJson: $s) { id } }"), true);
+});
+
+test("graphql reads have their own minute budget", () => {
+  resetGraphqlReadLimiterForTests();
+  resetSubmitLimiterForTests();
+  assert.equal(takeGraphqlReadSlot("9.9.9.9", 2).ok, true);
+  assert.equal(takeGraphqlReadSlot("9.9.9.9", 2).ok, true);
+  const blocked = takeGraphqlReadSlot("9.9.9.9", 2);
+  assert.equal(blocked.ok, false);
+  if (!blocked.ok) assert.ok(blocked.retryAfterSec >= 1);
+  assert.equal(takeSubmitSlot("9.9.9.9", 1, 1).ok, true);
 });
 
 test("client submit errors are stable codes, not node text", () => {

@@ -213,8 +213,8 @@ const OPS: Op[] = [
     path: "/graphql",
     title: { en: "Nautilus query", ru: "Запрос Nautilus" },
     blurb: {
-      en: "POST /api/graphql. Version 0.5.5. Amounts are strings.",
-      ru: "POST /api/graphql. Версия 0.5.5. Суммы — строки.",
+      en: "POST /api/graphql. Version 0.5.5. Amounts are strings. Reads: 2000 per minute, separate from REST.",
+      ru: "POST /api/graphql. Версия 0.5.5. Суммы — строки. Чтение: 2000 в минуту, отдельно от REST.",
     },
     fields: [
       {
@@ -353,8 +353,8 @@ export function ApiSite() {
         <p className="mt-3 font-mono text-[13px] text-[var(--text)]">{ORIGIN}/api/v1</p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {(loc === "ru"
-            ? ["Без ключа", "CORS *", "120 / мин", "Суммы — строки"]
-            : ["No key", "CORS *", "120 / min", "Amounts are strings"]
+            ? ["Без ключа", "CORS *", "REST 120 / мин", "GraphQL 2000 / мин", "Суммы — строки"]
+            : ["No key", "CORS *", "REST 120 / min", "GraphQL 2000 / min", "Amounts are strings"]
           ).map((chip) => (
             <span
               key={chip}

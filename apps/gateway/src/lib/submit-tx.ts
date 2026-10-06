@@ -119,6 +119,47 @@ export function isSubmitTxQuery(query: string): boolean {
   return /\b(submitTx|submitTransaction|checkTransaction)\s*\(/i.test(query);
 }
 
+/**
+ * GraphQL reads on the API contour. A wallet walks pages of 50, address
+ * chunks of 20, headers, and token ids. The REST cap of 120/min ended that
+ * walk as an empty page. 2000 lets one sync finish; the DB role still allows
+ * 8 connections. Submit stays on takeSubmitSlot.
+ */
+export const GRAPHQL_READ_PER_MIN = Math.max(
+  1,
+  Number(process.env.GRAPHQL_READ_PER_MIN ?? 2000) || 2000
+);
+
+type ReadRow = { n: number; reset: number };
+const gqlReads = new Map<string, ReadRow>();
+
+export function resetGraphqlReadLimiterForTests(): void {
+  gqlReads.clear();
+}
+
+export function takeGraphqlReadSlot(
+  ip: string,
+  perMin = GRAPHQL_READ_PER_MIN
+):
+  | { ok: true; limit: number; remaining: number }
+  | { ok: false; limit: number; retryAfterSec: number } {
+  const now = Date.now();
+  let row = gqlReads.get(ip);
+  if (!row || now > row.reset) {
+    row = { n: 0, reset: now + WINDOW_MS };
+    gqlReads.set(ip, row);
+  }
+  if (row.n >= perMin) {
+    return {
+      ok: false,
+      limit: perMin,
+      retryAfterSec: Math.max(1, Math.ceil((row.reset - now) / 1000)),
+    };
+  }
+  row.n += 1;
+  return { ok: true, limit: perMin, remaining: Math.max(0, perMin - row.n) };
+}
+
 type SlotRow = { n: number; reset: number; inflight: number };
 const slots = new Map<string, SlotRow>();
 const WINDOW_MS = 60_000;

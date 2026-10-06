@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { parse, validate } from "graphql";
 import { isSubmitTxQuery } from "../lib/submit-tx.js";
-import { headerFromRow, nautilusRoot, nautilusSchema, runNautilus, votesFromHex, type NautilusCtx } from "./nautilus.js";
+import { MINERS_FEE_ADDRESS, MINERS_FEE_TREE } from "@ergoscan/shared";
+import { headerFromRow, nautilusRoot, nautilusSchema, relevantOutputs, runNautilus, votesFromHex, type NautilusCtx } from "./nautilus.js";
 
 const ctx: NautilusCtx = {
   getRawMempool: () => new Map(),
@@ -40,7 +41,7 @@ test("a stored header keeps signing fields as strings", () => {
   assert.equal(header.difficulty, "251431680475136");
   assert.equal(header.timestamp, "1700000000000");
   assert.deepEqual(header.votes, [0, 0, 0]);
-  assert.equal((header.powSolutions as { d: number }).d, 0);
+  assert.equal((header.powSolutions as { d: string }).d, "0");
 });
 
 test("Nautilus documents validate against the wallet schema", () => {
@@ -111,6 +112,23 @@ test("info version is the Nautilus minimum and boxes need a filter", async () =>
   const boxes = await root.boxes({ spent: false, take: 10 }, ctx);
   assert.deepEqual(boxes, []);
   assert.equal(called, false);
+});
+
+test("relevant outputs keep the wallet boxes and the miner fee", () => {
+  const mine = "9mine";
+  const kept = relevantOutputs(
+    [
+      { boxId: "mine", address: mine, ergoTree: "0a", value: "10" },
+      { boxId: "other", address: "9other", ergoTree: "0b", value: "20" },
+      { boxId: "fee", address: MINERS_FEE_ADDRESS, ergoTree: MINERS_FEE_TREE, value: "1100000" },
+      { boxId: "fee-tree", address: "", ergoTree: MINERS_FEE_TREE.toUpperCase(), value: "1000000" },
+    ],
+    new Set([mine])
+  );
+  assert.deepEqual(
+    kept.map((box) => box.boxId),
+    ["mine", "fee", "fee-tree"]
+  );
 });
 
 test("submit mutations share the submit limiter name", () => {

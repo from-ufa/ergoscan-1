@@ -4,7 +4,12 @@ import { cacheNoStore } from "../lib/httpCache.js";
 import { parseGraphqlBody, runGraphql } from "../graphql/execute.js";
 import { runNautilus, type NautilusCtx } from "../graphql/nautilus.js";
 import type { GraphqlCtx } from "../graphql/resolvers.js";
-import { isSubmitTxQuery, requestIp, takeSubmitSlot } from "../lib/submit-tx.js";
+import {
+  isSubmitTxQuery,
+  requestIp,
+  takeGraphqlReadSlot,
+  takeSubmitSlot,
+} from "../lib/submit-tx.js";
 
 export type GraphqlDeps = {
   getRawMempool: () => Map<string, RawTx>;
@@ -31,7 +36,9 @@ export function registerGraphqlRoutes(app: Express, deps: GraphqlDeps): void {
       res.status(400).json({ errors: [{ message: parsed.error }] });
       return;
     }
-    const slot = isSubmitTxQuery(parsed.query) ? takeSubmitSlot(requestIp(req)) : null;
+    const ip = requestIp(req);
+    const submit = isSubmitTxQuery(parsed.query);
+    const slot = submit ? takeSubmitSlot(ip) : null;
     if (slot && !slot.ok) {
       res.status(429).json({
         errors: [{ message: "rate_limited" }],
@@ -39,6 +46,27 @@ export function registerGraphqlRoutes(app: Express, deps: GraphqlDeps): void {
         retryAfterSec: slot.retryAfterSec,
       });
       return;
+    }
+    if (apiContour && !submit) {
+      const read = takeGraphqlReadSlot(ip);
+      res.setHeader("X-RateLimit-Limit", String(read.limit));
+      res.setHeader(
+        "X-RateLimit-Remaining",
+        String(read.ok ? read.remaining : 0)
+      );
+      if (!read.ok) {
+        res.setHeader("Retry-After", String(read.retryAfterSec));
+        res.status(200).json({
+          errors: [
+            {
+              message: "rate_limited",
+              extensions: { retryAfterSec: read.retryAfterSec },
+            },
+          ],
+          data: null,
+        });
+        return;
+      }
     }
     try {
       const result = apiContour

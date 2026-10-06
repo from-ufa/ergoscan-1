@@ -3,7 +3,7 @@
  * Amounts stay decimal strings. No gix scan.
  */
 import { graphql, parse, specifiedRules, validate, buildSchema, type GraphQLSchema } from "graphql";
-import type { RawTx } from "@ergoscan/shared";
+import { isMinerFeeBox, type RawTx } from "@ergoscan/shared";
 import { getIndexPool } from "../lib/indexDb.js";
 import { validateSignedTx } from "../lib/submit-tx.js";
 import { depthError, documentDepth } from "./depth.js";
@@ -90,10 +90,9 @@ export function votesFromHex(hex: unknown): number[] {
   return out;
 }
 
-function powD(raw: unknown): number | string {
+function powD(raw: unknown): string {
   const s = raw == null ? "" : String(raw);
-  if (!/^\d+$/.test(s)) return 0;
-  if (s.length <= 15) return Number(s);
+  if (!/^\d+$/.test(s)) return "0";
   return s;
 }
 
@@ -516,6 +515,16 @@ async function boxesByTx(sql: Sql, column: "creation_tx_id" | "spent_tx_id", ids
   return grouped;
 }
 
+/** Wallet history asks for its own outputs plus the miner-fee box. Nautilus reads the fee from that box's ergoTree. */
+export function relevantOutputs(outputs: Row[], addresses: Set<string>): Row[] {
+  return outputs.filter((box) => {
+    const address = String(box.address ?? "");
+    if (addresses.has(address)) return true;
+    const ergoTree = typeof box.ergoTree === "string" ? box.ergoTree : "";
+    return isMinerFeeBox({ address, ergoTree });
+  });
+}
+
 function txObject(
   row: Row,
   inputs: Row[],
@@ -537,9 +546,7 @@ function txObject(
     })),
     dataInputs,
     outputs(filter?: { relevantOnly?: boolean }) {
-      if (filter?.relevantOnly && addresses.size) {
-        return outputs.filter((box) => addresses.has(String(box.address ?? "")));
-      }
+      if (filter?.relevantOnly && addresses.size) return relevantOutputs(outputs, addresses);
       return outputs;
     },
   };
@@ -738,7 +745,8 @@ function mempoolTransactions(txs: RawTx[], args: Row, spent: Set<string>): Row[]
       index: 0,
       inputs,
       dataInputs: (tx.dataInputs ?? []).map((input) => ({ boxId: (input.boxId ?? "").toLowerCase() })).filter((input) => input.boxId),
-      outputs() {
+      outputs(filter?: { relevantOnly?: boolean }) {
+        if (filter?.relevantOnly && addresses.size) return relevantOutputs(outputs, addresses);
         return outputs;
       },
     });
