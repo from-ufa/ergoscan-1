@@ -105,6 +105,39 @@ export function resolveNameAddresses(
   return [...rows.values()].sort((a, b) => a.address.localeCompare(b.address));
 }
 
+/** Old installs keyed names_address by the address text. A Lithos-length P2S does not fit that btree key. */
+const NAMES_ADDRESS_KEY_SQL = `
+ALTER TABLE names_address ADD COLUMN IF NOT EXISTS addr_md5 text;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+      FROM pg_constraint c
+      JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+     WHERE c.conrelid = 'names_address'::regclass
+       AND c.contype = 'p'
+       AND a.attname = 'address'
+  ) THEN
+    ALTER TABLE names_address DROP CONSTRAINT names_address_pkey;
+  END IF;
+END $$;
+UPDATE names_address SET addr_md5 = md5(address) WHERE addr_md5 IS NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+      FROM pg_constraint c
+      JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+     WHERE c.conrelid = 'names_address'::regclass
+       AND c.contype = 'p'
+       AND a.attname = 'addr_md5'
+  ) THEN
+    ALTER TABLE names_address ALTER COLUMN addr_md5 SET NOT NULL;
+    ALTER TABLE names_address ADD PRIMARY KEY (addr_md5);
+  END IF;
+END $$;
+`;
+
 export const NAMES_SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS names_registry (
   match_kind   TEXT NOT NULL CHECK (match_kind IN ('address', 'template', 'token')),
@@ -122,7 +155,8 @@ CREATE TABLE IF NOT EXISTS names_registry (
   PRIMARY KEY (match_kind, match_value)
 );
 CREATE TABLE IF NOT EXISTS names_address (
-  address      TEXT PRIMARY KEY,
+  addr_md5     TEXT PRIMARY KEY,
+  address      TEXT NOT NULL,
   match_kind   TEXT NOT NULL,
   match_value  TEXT NOT NULL,
   first_height BIGINT,
@@ -199,6 +233,7 @@ export async function syncNameRegistry(
   const c = await pool.connect();
   try {
     await c.query("BEGIN");
+    await c.query(NAMES_ADDRESS_KEY_SQL);
     await c.query("DELETE FROM names_registry");
     await c.query(
       `INSERT INTO names_registry (match_kind, match_value, name, kind, project_id, project_name, category,
@@ -222,8 +257,10 @@ export async function syncNameRegistry(
     );
     await c.query("DELETE FROM names_address");
     await c.query(
-      `INSERT INTO names_address (address, match_kind, match_value, first_height, last_height, current)
-       SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::bigint[], $5::bigint[], $6::boolean[])`,
+      `INSERT INTO names_address (addr_md5, address, match_kind, match_value, first_height, last_height, current)
+       SELECT md5(u.address), u.address, u.match_kind, u.match_value, u.first_height, u.last_height, u.current
+         FROM unnest($1::text[], $2::text[], $3::text[], $4::bigint[], $5::bigint[], $6::boolean[])
+           AS u(address, match_kind, match_value, first_height, last_height, current)`,
       [
         rows.map((r) => r.address),
         rows.map((r) => r.matchKind),

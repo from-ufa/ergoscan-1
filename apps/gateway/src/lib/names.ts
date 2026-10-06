@@ -76,7 +76,7 @@ export async function addressName(address: string): Promise<AddressName | null> 
     `SELECT ${ROW_COLS}, n.match_kind AS via, n.current
        FROM names_address n
        JOIN names_registry r ON r.match_kind = n.match_kind AND r.match_value = n.match_value
-      WHERE n.address = $1`,
+      WHERE n.addr_md5 = md5($1) AND n.address = $1`,
     [address]
   );
   if (direct[0]) return nameFromRow(direct[0]);
@@ -122,12 +122,16 @@ export async function namesStats(): Promise<NameStats[] | null> {
       by_whom: string;
       file: string;
     }>(
-      `SELECT n.address, s.nanoerg::text AS nanoerg, s.token_count, s.tx_count,
+      `SELECT n.address,
+              COALESCE(s.nanoerg, sl.nanoerg)::text AS nanoerg,
+              COALESCE(s.token_count, sl.token_count) AS token_count,
+              COALESCE(s.tx_count, sl.tx_count) AS tx_count,
               b.timestamp_ms::text AS last_ts, r.project_name, r.by_whom, r.file
          FROM names_address n
          JOIN names_registry r ON r.match_kind = n.match_kind AND r.match_value = n.match_value
          LEFT JOIN address_summary s ON s.address = n.address
-         LEFT JOIN packed.blocks b ON b.height = s.last_height`
+         LEFT JOIN address_summary_long sl ON sl.addr_md5 = n.addr_md5 AND sl.address = n.address
+         LEFT JOIN packed.blocks b ON b.height = COALESCE(s.last_height, sl.last_height)`
     );
     const items = r.rows.map((x) => ({
       address: x.address,
