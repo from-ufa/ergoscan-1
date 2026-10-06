@@ -11,6 +11,9 @@ import {
   addressUnspentBoxesCursor,
   ergoTreeForAddress,
   getAddressSummary,
+  getBoxById,
+  getTxById,
+  getTxHeads,
   parseKeysetCursor,
   tokenMetaMany,
   tokensBySymbol,
@@ -22,6 +25,7 @@ import {
   unspentBoxesByGix,
   unspentBoxesByLastEpochs,
   type GixStreamBox,
+  type IdxBoxRow,
 } from "../lib/indexDb.js";
 import { parseGixWindow } from "../lib/gix.js";
 import { ergoTreeFromAddress, normErgoTree } from "../lib/ergoAddress.js";
@@ -46,6 +50,8 @@ export type CompatDeps = {
   getRawMempool: () => Map<string, RawTx>;
   getNodeInfoRaw: () => Record<string, unknown>;
   submitTx: (body: unknown) => Promise<unknown>;
+  /** Public API host. Box and tx by id use the explorer document, not the site card. */
+  apiContour?: boolean;
 };
 
 function qInt(v: unknown, fallback: number, min: number, max: number): number {
@@ -585,6 +591,107 @@ export function registerCompatRoutes(app: Express, deps: CompatDeps): void {
       res.status(501).json(notImplemented(path));
     });
   }
+
+  if (deps.apiContour) {
+    app.get("/v1/boxes/:id", async (req, res, next) => {
+      const id = String(req.params.id ?? "").trim().toLowerCase();
+      if (!/^[0-9a-f]{64}$/.test(id)) {
+        next();
+        return;
+      }
+      const idx = await getBoxById(id);
+      if (!idx) {
+        cacheNoStore(res);
+        res.status(404).json({ error: "not_found" });
+        return;
+      }
+      const head = idx.creationTxId ? (await getTxHeads([idx.creationTxId])).get(idx.creationTxId) : undefined;
+      cacheNoStore(res);
+      res.json(mapExplorerBox(indexedBox(idx, head?.blockId ?? null)));
+    });
+
+    app.get("/v1/transactions/:id", async (req, res, next) => {
+      const id = String(req.params.id ?? "").trim().toLowerCase();
+      if (!/^[0-9a-f]{64}$/.test(id)) {
+        next();
+        return;
+      }
+      const idx = await getTxById(id);
+      if (idx) {
+        cacheNoStore(res);
+        res.json(
+          mapExplorerTx({
+            id: idx.id,
+            blockId: idx.blockId,
+            inclusionHeight: idx.inclusionHeight,
+            timestamp: idx.timestamp,
+            index: idx.indexInBlock,
+            gix: idx.gix,
+            size: idx.size,
+            inputs: idx.inputs.map((b) => indexedBox(b, idx.blockId)),
+            outputs: idx.outputs.map((b) => indexedBox(b, idx.blockId)),
+          })
+        );
+        return;
+      }
+      const mem = deps.getRawMempool().get(id);
+      if (!mem) {
+        cacheNoStore(res);
+        res.status(404).json({ error: "not_found" });
+        return;
+      }
+      cacheNoStore(res);
+      res.json(
+        mapExplorerTx({
+          id: mem.id,
+          size: mem.size ?? null,
+          inputs: (mem.inputs ?? []).map(rawBox),
+          outputs: (mem.outputs ?? []).map(rawBox),
+        })
+      );
+    });
+  }
+}
+
+function indexedBox(b: IdxBoxRow, blockId: string | null) {
+  return {
+    boxId: b.boxId,
+    value: b.value,
+    creationHeight: b.creationHeight,
+    address: b.address,
+    ergoTree: b.ergoTree,
+    transactionId: b.creationTxId,
+    index: b.index,
+    gix: b.gix,
+    blockId,
+    additionalRegisters: b.additionalRegisters,
+    assets: b.assets,
+    spentTransactionId: b.spentTxId,
+  };
+}
+
+function rawBox(b: {
+  boxId?: string;
+  value?: number | string;
+  ergoTree?: string;
+  address?: string;
+  additionalRegisters?: Record<string, string>;
+  creationHeight?: number;
+  transactionId?: string;
+  index?: number;
+  assets?: { tokenId: string; amount: number | string }[];
+}) {
+  return {
+    boxId: b.boxId ?? "",
+    value: b.value ?? "0",
+    creationHeight: b.creationHeight ?? null,
+    address: b.address ?? null,
+    ergoTree: b.ergoTree ?? null,
+    transactionId: b.transactionId ?? null,
+    index: b.index ?? null,
+    additionalRegisters: b.additionalRegisters,
+    assets: b.assets ?? [],
+  };
 }
 
 /** P2PK and P2S decode locally. Only P2SH needs a box from the index. */

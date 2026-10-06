@@ -730,6 +730,7 @@ registerCompatRoutes(app, {
   getRawMempool: () => rawMempool,
   getNodeInfoRaw: () => nodeInfoRaw,
   submitTx: (body) => nodePost("/transactions", body, 20_000),
+  apiContour: process.env.API_CONTOUR === "1",
 });
 
 registerMediaRoutes(app);

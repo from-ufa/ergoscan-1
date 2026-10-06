@@ -202,6 +202,37 @@ describe("explorerCompat", () => {
     assert.equal(sharePctOfEmission(21_000_000, null), null);
   });
 
+  it("wallet box and tx keep official names and string amounts", () => {
+    const box = mapExplorerBox({
+      boxId: "ab".repeat(32),
+      value: "242695253860240",
+      creationHeight: 100,
+      address: "9addr",
+      ergoTree: "00",
+      transactionId: "cd".repeat(32),
+      index: 1,
+      assets: [{ tokenId: "ef".repeat(32), amount: "10" }],
+      additionalRegisters: { R4: "0702" },
+    });
+    for (const key of ["boxId", "value", "ergoTree", "assets", "additionalRegisters", "creationHeight", "transactionId", "index", "address"]) {
+      assert.ok(key in box, key);
+    }
+    assert.equal(typeof box.value, "string");
+    assert.equal(box.assets[0]?.amount, "10");
+    const tx = mapExplorerTx({
+      id: "cd".repeat(32),
+      inclusionHeight: 100,
+      index: 2,
+      size: 400,
+      inputs: [],
+      outputs: [{ boxId: "ab".repeat(32), value: "1" }],
+    });
+    for (const key of ["id", "inclusionHeight", "index", "inputs", "outputs", "size"]) {
+      assert.ok(key in tx, key);
+    }
+    assert.equal(tx.outputs[0]?.value, "1");
+  });
+
   it("notImplemented is a stable 501 body", () => {
     const n = notImplemented("boxes.search");
     assert.equal(n.error, "not_implemented");
