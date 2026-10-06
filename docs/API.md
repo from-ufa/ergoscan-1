@@ -1,6 +1,8 @@
 # ErgoScan public API
 
-Gateway `:4400`. Caddy: `/v1/*` and `/api/*` → gateway. `/api/v1/*` is the same router as `/v1/*`.
+Wallets use **https://api.ergoscan.me**. Human contract: https://api.ergoscan.me/docs. OpenAPI on that host points at the same origin. `/api/v1/*` is the same router as `/v1/*`.
+
+The site stays on gateway `:4400` (`ergoscan.me/v1` for pages). The public API is a second process, `API_CONTOUR=1`, role `ergoscan_api`. On that process, `GET /boxes/{id}` and `GET /transactions/{id}` are the explorer document. On the site they stay the page card.
 
 This file is the API contract. Pages and writers are described in the repository README.
 
@@ -89,7 +91,8 @@ Same gateway. Not a port of nautls / SigmaSpace / `gql.ergoplatform.com`. GET �
 | --- | --- | --- |
 | `GET /boxes/unspent/byAddress/{addr}` | same | `addressUnspentBoxesCursor` + `address_summary.box_count` |
 | `GET /boxes/unspent/unconfirmed/byAddress/{addr}` | same | mempool RAM outputs |
-| `GET /boxes/{id}` | native card | index → mempool RAM. Additive `settlementHeight` / `blockId`, `registersTyped`, ErgoTree constants/script/template hash (SHA-256 of template bytes). Rent clock stays declared `creationHeight`. Lists unchanged. |
+| `GET /boxes/{id}` | site: native card. API host: explorer document | Site card keeps `registersTyped`, rent, ErgoTree constants/script/template hash. API host uses `mapExplorerBox`: string `value`, `ergoTree`, `mainChain`. Lists unchanged. |
+| `GET /transactions/{id}` | site: native card. API host: explorer document | API host uses `mapExplorerTx` (`index`, `inputs`, `outputs`, string amounts). `dataInputs` is an empty list. |
 | `GET /boxes/unspent/byTokenId/{id}` | already existed | `unspentBoxesByTokenId` |
 | `GET /boxes/byAddress/{addr}` | same | address-filtered boxes, spent included, small page |
 | `GET /assets` | official deprecated catalog | `listTokensCatalog` → TokenInfo; does **not** change `/v1/tokens` |

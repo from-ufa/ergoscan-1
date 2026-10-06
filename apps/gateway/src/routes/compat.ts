@@ -4,6 +4,7 @@
  */
 import type { Express, Request, Response } from "express";
 import type { RawTx } from "@ergoscan/shared";
+import { apiContractHtml } from "../lib/api-contract.js";
 import { cacheList, cacheNoStore, cacheTip } from "../lib/httpCache.js";
 import {
   addressBalanceConfirmed,
@@ -593,6 +594,11 @@ export function registerCompatRoutes(app: Express, deps: CompatDeps): void {
   }
 
   if (deps.apiContour) {
+    app.get(["/", "/docs", "/docs/", "/v1/docs", "/v1/docs/"], (_req, res) => {
+      res.setHeader("Cache-Control", "public, max-age=60");
+      res.type("html").send(apiContractHtml());
+    });
+
     app.get("/v1/boxes/:id", async (req, res, next) => {
       const id = String(req.params.id ?? "").trim().toLowerCase();
       if (!/^[0-9a-f]{64}$/.test(id)) {

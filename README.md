@@ -21,15 +21,15 @@ ErgoScan is an explorer for Ergo (ERG). It covers blocks, transactions, addresse
 
 It is an index, not a proxy of another explorer and not a façade in front of a node. One Postgres database holds the chain. Pages and the public API read that database. A user GET does not call the node. The only user write is submitting a transaction.
 
-Wallet and dApp traffic uses the same host: `https://ergoscan.me/api/v1/…`. The suffixes match the explorer API. GraphQL is `POST /v1/graphql`.
+Wallets and dApps use `https://api.ergoscan.me/api/v1/…`. The suffixes match the official explorer API. Explorer pages keep reading `https://ergoscan.me/v1`. GraphQL is `POST /v1/graphql`.
 
 There is no API key and no plan to apply for.
 
 | | |
 |---|---|
-| Base | `https://ergoscan.me/api/v1` — the same router as `/v1` |
-| Docs | [ergoscan.me/docs](https://ergoscan.me/docs) |
-| OpenAPI | [ergoscan.me/openapi.json](https://ergoscan.me/openapi.json) |
+| Base | `https://api.ergoscan.me/api/v1` — the same router as `/v1` |
+| Docs | [api.ergoscan.me/docs](https://api.ergoscan.me/docs) |
+| OpenAPI | [api.ergoscan.me/openapi.json](https://api.ergoscan.me/openapi.json) |
 | Contract | [`docs/API.md`](./docs/API.md) |
 | Reads | 120 / minute / IP |
 | Submit | 10 / minute, 2 in flight (REST and GraphQL `submitTx`) |

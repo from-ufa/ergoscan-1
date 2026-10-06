@@ -15,6 +15,7 @@ import {
   type RawTx,
 } from "@ergoscan/shared";
 import type { SubblockEngine } from "../lib/subblocks.js";
+import { API_PUBLIC_ORIGIN, apiContractMarkdown } from "../lib/api-contract.js";
 import { OPENAPI_INFO_DESCRIPTION } from "../lib/openapi-intro.js";
 import { parseHolderCursor } from "../lib/holder-cursor.js";
 import { priceForToken, poolsForToken } from "../lib/market.js";
@@ -798,13 +799,15 @@ function openapiForDocs() {
     }
     paths[path] = tagged;
   }
+  const api = process.env.API_CONTOUR === "1";
   return {
     ...OPENAPI_SPEC,
     info: {
       ...OPENAPI_SPEC.info,
       title: "ErgoScan API",
-      description: OPENAPI_INFO_DESCRIPTION,
+      description: api ? apiContractMarkdown() : OPENAPI_INFO_DESCRIPTION,
     },
+    servers: api ? [{ url: API_PUBLIC_ORIGIN }] : OPENAPI_SPEC.servers,
     tags: [
       { name: "ErgoScan", description: "Native product routes. What the site uses." },
       {
