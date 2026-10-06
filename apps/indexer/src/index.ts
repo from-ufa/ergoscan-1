@@ -91,6 +91,7 @@ import {
   tokenRowFromOutputAsset,
 } from "./tokenIssuance.js";
 import { maybeBackfillAddressTxSpends } from "./addressTxSpendBackfill.js";
+import { headerBytesFromNode, maybeBackfillBlockHeaders } from "./headerBackfill.js";
 import {
   longAddressTxSlotEnabled,
   maybeBackfillLongAddressTx,
@@ -229,7 +230,14 @@ type NodeFullBlock = {
     timestamp?: number;
     parentId?: string;
     difficulty?: string | number;
-    powSolutions?: { pk?: string };
+    powSolutions?: { pk?: string; w?: string; n?: string; d?: number | string };
+    version?: number;
+    nBits?: number | string;
+    votes?: string | number[];
+    stateRoot?: string;
+    adProofsRoot?: string;
+    transactionsRoot?: string;
+    extensionHash?: string;
   };
   blockTransactions?: {
     size?: number;
@@ -1202,6 +1210,7 @@ export async function indexHeight(
         );
       }
     }
+    const hdr = headerBytesFromNode(h);
     const headerParams = [
       h.height,
       blockId,
@@ -1212,6 +1221,16 @@ export async function indexHeight(
       h.parentId ?? null,
       minerPk,
       minerAddress,
+      hdr.version,
+      hdr.nBits,
+      hdr.votes,
+      hdr.stateRoot,
+      hdr.adProofsRoot,
+      hdr.transactionsRoot,
+      hdr.extensionHash,
+      hdr.powW,
+      hdr.powN,
+      hdr.powD,
     ];
     if (textChainHeadersEnabled()) {
       await client.query(
@@ -1227,16 +1246,21 @@ export async function indexHeight(
            miner_pk = COALESCE(EXCLUDED.miner_pk, blocks.miner_pk),
            miner_address = COALESCE(EXCLUDED.miner_address, blocks.miner_address)
          WHERE blocks.id = EXCLUDED.id`,
-        headerParams
+        headerParams.slice(0, 9)
       );
     }
     if (packedWriteEnabled() && !textChainHeadersEnabled()) {
       await client.query(
         `INSERT INTO packed.blocks (
            height, id, parent_id, timestamp_ms, size, tx_count, difficulty,
-           miner_pk, miner_address
+           miner_pk, miner_address,
+           version, n_bits, votes, state_root, ad_proofs_root, transactions_root,
+           extension_hash, pow_w, pow_n, pow_d
          )
-         VALUES ($1, packed.hex32($2), packed.hex32($7), $3, $4, $5, $6, $8, $9)
+         VALUES (
+           $1, packed.hex32($2), packed.hex32($7), $3, $4, $5, $6, $8, $9,
+           $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+         )
          ON CONFLICT (height) DO UPDATE SET
            id = EXCLUDED.id,
            parent_id = EXCLUDED.parent_id,
@@ -1245,7 +1269,17 @@ export async function indexHeight(
            tx_count = EXCLUDED.tx_count,
            difficulty = EXCLUDED.difficulty,
            miner_pk = COALESCE(EXCLUDED.miner_pk, packed.blocks.miner_pk),
-           miner_address = COALESCE(EXCLUDED.miner_address, packed.blocks.miner_address)
+           miner_address = COALESCE(EXCLUDED.miner_address, packed.blocks.miner_address),
+           version = COALESCE(EXCLUDED.version, packed.blocks.version),
+           n_bits = COALESCE(EXCLUDED.n_bits, packed.blocks.n_bits),
+           votes = COALESCE(EXCLUDED.votes, packed.blocks.votes),
+           state_root = COALESCE(EXCLUDED.state_root, packed.blocks.state_root),
+           ad_proofs_root = COALESCE(EXCLUDED.ad_proofs_root, packed.blocks.ad_proofs_root),
+           transactions_root = COALESCE(EXCLUDED.transactions_root, packed.blocks.transactions_root),
+           extension_hash = COALESCE(EXCLUDED.extension_hash, packed.blocks.extension_hash),
+           pow_w = COALESCE(EXCLUDED.pow_w, packed.blocks.pow_w),
+           pow_n = COALESCE(EXCLUDED.pow_n, packed.blocks.pow_n),
+           pow_d = COALESCE(EXCLUDED.pow_d, packed.blocks.pow_d)
          WHERE packed.blocks.id = EXCLUDED.id`,
         headerParams
       );
@@ -2958,6 +2992,12 @@ async function loop(pool: Pool): Promise<boolean> {
     await maybeBackfillAddressTxSpends(pool);
   } catch (e) {
     console.warn("[indexer] address_tx spend bf", String(e));
+  }
+
+  try {
+    await maybeBackfillBlockHeaders(pool);
+  } catch (e) {
+    console.warn("[indexer] block header", String(e));
   }
 
   // Long P2S history: dedicated writer. Tip keeps ADDRESS_TX_LONG=0.

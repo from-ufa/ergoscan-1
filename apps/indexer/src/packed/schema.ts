@@ -73,8 +73,28 @@ CREATE TABLE IF NOT EXISTS packed.blocks (
   miner_pk       text,
   miner_address  text,
   fee_nano       numeric NOT NULL DEFAULT 0,
-  value_nano     numeric NOT NULL DEFAULT 0
+  value_nano     numeric NOT NULL DEFAULT 0,
+  version            smallint,
+  n_bits             bigint,
+  votes              bytea,
+  state_root         bytea,
+  ad_proofs_root     bytea,
+  transactions_root  bytea,
+  extension_hash     bytea,
+  pow_w              bytea,
+  pow_n              bytea,
+  pow_d              numeric
 )${ts};
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS version smallint;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS n_bits bigint;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS votes bytea;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS state_root bytea;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS ad_proofs_root bytea;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS transactions_root bytea;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS extension_hash bytea;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS pow_w bytea;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS pow_n bytea;
+ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS pow_d numeric;
 
 CREATE TABLE IF NOT EXISTS packed.transactions (
   id             bytea PRIMARY KEY,
