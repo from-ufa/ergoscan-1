@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { ApiSite } from "@/components/ApiSite";
 import { HomeExplorer } from "@/components/HomeExplorer";
 import { JsonLd } from "@/components/JsonLd";
 import type { ChainStats, PoolShare } from "@/lib/chain-stats";
@@ -134,6 +136,16 @@ function marketFromHome(home: {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  const host = ((await headers()).get("host") ?? "").split(":")[0];
+  if (host === "api.ergoscan.me") {
+    return {
+      title: "API",
+      description:
+        "ErgoScan wallet API. The same paths as the official Ergo explorer. Decimal string amounts. No key.",
+      alternates: { canonical: "https://api.ergoscan.me/" },
+      openGraph: { url: "https://api.ergoscan.me/" },
+    };
+  }
   const home = await cachedHome();
   const height = home.height;
   return {
@@ -152,6 +164,8 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ preview?: string }>;
 }) {
+  const host = ((await headers()).get("host") ?? "").split(":")[0];
+  if (host === "api.ergoscan.me") return <ApiSite />;
   const [{ preview }, home] = await Promise.all([searchParams, cachedHome()]);
   const market = marketFromHome(home);
   const price = home.priceSeries ?? [];

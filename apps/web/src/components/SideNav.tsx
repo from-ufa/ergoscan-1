@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useT } from "@/lib/i18n/I18nProvider";
+import { explorerHref, useSiteHost } from "@/lib/site-host";
 import { HOME, INK } from "@/lib/palette";
 import { usePaperPress } from "@/lib/use-paper-press";
 import { NavIcon, type NavIconId } from "./nav-icons";
@@ -260,7 +261,11 @@ function NavRow({
   depth?: number;
 }) {
   const t = useT();
-  const active = pathActive(path, item);
+  const { api } = useSiteHost();
+  const href = api && item.key === "nav.api" ? "/" : explorerHref(item.href, api);
+  const active =
+    (api && item.key === "nav.api" && (path === "/" || path === "/docs")) ||
+    pathActive(path, item);
   const label = t(item.key);
   const nested = depth > 0;
   const { armed, disarm, bind } = usePaperPress(true);
@@ -290,10 +295,10 @@ function NavRow({
     </>
   );
 
-  if (item.external) {
+  if (href.startsWith("http")) {
     return (
       <a
-        href={item.href}
+        href={href}
         target="_blank"
         rel="noreferrer"
         title={collapsed ? label : undefined}
@@ -311,7 +316,7 @@ function NavRow({
 
   return (
     <Link
-      href={item.href}
+      href={href}
       data-scout={item.href === "/addresses" ? "addresses" : undefined}
       title={collapsed ? label : undefined}
       {...bind}
@@ -345,6 +350,8 @@ function NavBranch({
   depth?: number;
 }) {
   const t = useT();
+  const { api } = useSiteHost();
+  const href = explorerHref(item.href, api);
   const kids = item.children ?? [];
   const under = branchUnder(item, path);
   const [open, setOpen] = useState(under);
@@ -391,7 +398,7 @@ function NavBranch({
       {item.linkLabel && !collapsed ? (
         <div className={rowClass}>
           <Link
-            href={item.href}
+            href={href}
             {...bind}
             onClick={() => {
               onNavigate?.();

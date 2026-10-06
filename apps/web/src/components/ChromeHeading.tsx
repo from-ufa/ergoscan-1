@@ -4,14 +4,18 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { chromeFor } from "@/lib/chrome";
 import { useT } from "@/lib/i18n/I18nProvider";
+import { useSiteHost } from "@/lib/site-host";
 
 const EASE: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
 export function ChromeHeading() {
   const path = usePathname();
   const t = useT();
+  const { api } = useSiteHost();
   const reduce = useReducedMotion();
-  const { titleKey, heading } = chromeFor(path);
+  const chrome = chromeFor(path);
+  const titleKey = api ? "nav.api" : chrome.titleKey;
+  const heading = api ? false : chrome.heading;
   const title = t(titleKey);
   const Tag = heading ? "h1" : "p";
 

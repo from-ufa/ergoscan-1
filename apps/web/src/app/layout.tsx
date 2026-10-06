@@ -5,6 +5,7 @@ import { Providers } from "@/components/Providers";
 import { RegistryBook } from "@/components/RegistryBook";
 import { fetchRegistryRows } from "@/lib/names-registry";
 import { Shell } from "@/components/Shell";
+import { SiteHostProvider } from "@/lib/site-host";
 import {
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -135,9 +136,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="antialiased">
         <Providers>
-          <RegistryBook rows={registryRows}>
-            <Shell>{children}</Shell>
-          </RegistryBook>
+          <SiteHostProvider>
+            <RegistryBook rows={registryRows}>
+              <Shell>{children}</Shell>
+            </RegistryBook>
+          </SiteHostProvider>
         </Providers>
       </body>
     </html>

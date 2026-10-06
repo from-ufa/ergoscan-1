@@ -18,6 +18,7 @@ import clsx from "clsx";
 import { getGateway } from "@/lib/config";
 import { formatRelTime, shortId } from "@/lib/format";
 import { useT } from "@/lib/i18n/I18nProvider";
+import { explorerHref, useSiteHost } from "@/lib/site-host";
 import { enteringIds, useEnterIds } from "@/lib/keyed-enter";
 import {
   IconBlocks,
@@ -265,6 +266,7 @@ function ListHead({
 export function CommandPalette() {
   const router = useRouter();
   const t = useT();
+  const { api } = useSiteHost();
   const reduce = useReducedMotion();
   const enter = useEnterIds();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -482,11 +484,15 @@ export function CommandPalette() {
       setRecents(readRecents());
       close();
       const path = safePath(h.path);
-      const dest = path ?? `/search?q=${encodeURIComponent(h.id)}`;
+      const dest = explorerHref(path ?? `/search?q=${encodeURIComponent(h.id)}`, api);
+      if (dest.startsWith("http")) {
+        window.location.assign(dest);
+        return;
+      }
       noteRouteNavigation(dest);
       router.push(dest);
     },
-    [router, close]
+    [router, close, api]
   );
 
   const onInputKey = (e: InputKeyEvent<HTMLInputElement>) => {
@@ -808,12 +814,13 @@ export function CommandPalette() {
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
                             close();
-                            if (x.href.startsWith("http")) {
-                              window.location.assign(x.href);
+                            const href = x.key === "nav.api" ? x.href : explorerHref(x.href, api);
+                            if (href.startsWith("http")) {
+                              window.location.assign(href);
                               return;
                             }
-                            noteRouteNavigation(x.href);
-                            router.push(x.href);
+                            noteRouteNavigation(href);
+                            router.push(href);
                           }}
                           className="chip-press overflow-hidden rounded-full bg-[var(--wash)] px-3.5 py-1.5 text-[12px] font-medium text-[var(--muted)] transition-opacity hover:text-[var(--text)]"
                         >
