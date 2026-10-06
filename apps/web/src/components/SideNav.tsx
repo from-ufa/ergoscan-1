@@ -16,6 +16,8 @@ type NavLeaf = {
   icon: NavIconId;
   match?: string[];
   exact?: boolean;
+  /** Leaves the explorer. The wallet API lives on its own host. */
+  external?: boolean;
 };
 
 type NavItem = NavLeaf & {
@@ -127,7 +129,8 @@ const NAV_FOOT: NavItem[] = [
   },
   { href: "/settings", key: "nav.settings", icon: "settings", match: ["/settings"] },
   { href: "/about", key: "nav.about", icon: "about", match: ["/about"] },
-  { href: "/docs", key: "nav.docs", icon: "api", match: ["/docs"] },
+  { href: "https://api.ergoscan.me/docs", key: "nav.api", icon: "api", external: true },
+  { href: "/docs", key: "nav.docs", icon: "learn", match: ["/docs"] },
   { href: "/status", key: "nav.status", icon: "status", match: ["/status"] },
 ];
 
@@ -262,27 +265,16 @@ function NavRow({
   const label = t(item.key);
   const nested = depth > 0;
   const { armed, disarm, bind } = usePaperPress(true);
-
-  return (
-    <Link
-      href={item.href}
-      data-scout={item.href === "/addresses" ? "addresses" : undefined}
-      title={collapsed ? label : undefined}
-      {...bind}
-      onClick={() => {
-        onNavigate?.();
-        disarm();
-      }}
-      aria-current={active ? "page" : undefined}
-      className={clsx(
-        "nav-row nav-row--press plane-drop relative flex items-center overflow-hidden rounded-[10px]",
-        "transition-[padding,gap,justify-content] duration-[420ms] ease-[var(--ease)]",
-        rowPad(depth, collapsed),
-        armed && "is-armed",
-        active && "is-pressed",
-        active ? "text-[var(--text)]" : "text-[var(--muted)] hover:text-[var(--text)]"
-      )}
-    >
+  const className = clsx(
+    "nav-row nav-row--press plane-drop relative flex items-center overflow-hidden rounded-[10px]",
+    "transition-[padding,gap,justify-content] duration-[420ms] ease-[var(--ease)]",
+    rowPad(depth, collapsed),
+    armed && "is-armed",
+    active && "is-pressed",
+    active ? "text-[var(--text)]" : "text-[var(--muted)] hover:text-[var(--text)]"
+  );
+  const body = (
+    <>
       <span className="nav-glyph relative z-[1] inline-flex shrink-0">
         <NavIcon id={item.icon} className={nested ? "size-[18px] text-accent" : "size-[22px] text-accent"} />
       </span>
@@ -296,6 +288,42 @@ function NavRow({
       >
         {label}
       </span>
+    </>
+  );
+
+  if (item.external) {
+    return (
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noreferrer"
+        title={collapsed ? label : undefined}
+        {...bind}
+        onClick={() => {
+          onNavigate?.();
+          disarm();
+        }}
+        className={className}
+      >
+        {body}
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      href={item.href}
+      data-scout={item.href === "/addresses" ? "addresses" : undefined}
+      title={collapsed ? label : undefined}
+      {...bind}
+      onClick={() => {
+        onNavigate?.();
+        disarm();
+      }}
+      aria-current={active ? "page" : undefined}
+      className={className}
+    >
+      {body}
     </Link>
   );
 }

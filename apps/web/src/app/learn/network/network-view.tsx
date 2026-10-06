@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, type CSSProperties } from "react";
-import Link from "next/link";
 import { AddrFactCard } from "@/components/AddrFactCard";
 import { Shell } from "@/components/Shell";
 import { INK } from "@/lib/palette";
@@ -47,12 +46,12 @@ export function NetworkView() {
           <p className="mt-1.5 max-w-3xl text-[12px] leading-snug text-[var(--muted-2)]">
             {t("network.lead")}
           </p>
-          <Link
-            href="/docs"
+          <a
+            href="https://api.ergoscan.me/docs"
             className="mt-3 inline-flex rounded-[10px] bg-[var(--wash)] px-3 py-2 text-[12px] text-[var(--accent)] transition-colors duration-[400ms] hover:bg-[var(--wash-mid)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
             {t("network.ours")}
-          </Link>
+          </a>
         </AddrFactCard>
 
         {NETWORK_KINDS.map((kind, i) => (

@@ -181,9 +181,9 @@ export const LIST_PAGES: Record<
       "Independent Ergo blockchain explorer: who builds ErgoScan, what it indexes, and what comes next.",
   },
   "/docs": {
-    title: "API",
+    title: "Routes",
     description:
-      "ErgoScan public API. No signup, no key. Open REST at /api/v1. Contract: units, CORS, auth, cursor, 120 reads/min, submit 10/min.",
+      "HTTP routes the ErgoScan explorer reads on ergoscan.me. A wallet uses https://api.ergoscan.me.",
   },
   "/rent": {
     title: "Storage rent",

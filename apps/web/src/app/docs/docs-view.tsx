@@ -12,6 +12,7 @@ import { getGateway } from "@/lib/config";
 import { INK } from "@/lib/palette";
 import {
   DOCS_ACCESS_LINKS,
+  DOCS_WALLET,
   DOCS_EXAMPLE_URLS,
   DOCS_LIMIT_ROWS,
   DOCS_PUBLIC_BASE,
@@ -93,6 +94,12 @@ export function DocsView() {
           <p className="mt-1.5 text-[12px] leading-snug text-[var(--muted-2)]">
             {t("docs.lead")}
           </p>
+          <a
+            href={DOCS_WALLET}
+            className="mt-2 inline-block text-[13px] text-[var(--accent)] transition-colors duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:text-[var(--soft)]"
+          >
+            {t("docs.api.go")}
+          </a>
         </AddrFactCard>
 
         <SegBar>

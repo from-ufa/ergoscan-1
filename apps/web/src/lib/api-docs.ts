@@ -2,6 +2,7 @@ import { readHashTab } from "./hash-tab";
 
 /** Public host. Same router as `/v1`. */
 export const DOCS_PUBLIC_BASE = "https://ergoscan.me/api/v1";
+export const DOCS_WALLET = "https://api.ergoscan.me/docs";
 export const DOCS_WS = "wss://ergoscan.me/v1/stream";
 export const DOCS_OPENAPI = "https://ergoscan.me/openapi.json";
 
@@ -41,6 +42,7 @@ export const DOCS_EXAMPLE_URLS = [
 ] as const;
 
 export const DOCS_ACCESS_LINKS = [
+  { id: "wallet", href: DOCS_WALLET },
   { id: "docs", href: "https://ergoscan.me/docs" },
   { id: "openapi", href: DOCS_OPENAPI },
   { id: "graphql", href: `${DOCS_PUBLIC_BASE}/graphql` },

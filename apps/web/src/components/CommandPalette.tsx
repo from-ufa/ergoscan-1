@@ -541,6 +541,7 @@ export function CommandPalette() {
     { key: "nav.learn", href: "/learn" },
     { key: "nav.network", href: "/learn/network" },
     { key: "nav.about", href: "/about" },
+    { key: "nav.api", href: "https://api.ergoscan.me/docs" },
     { key: "nav.docs", href: "/docs" },
     { key: "nav.status", href: "/status" },
   ];
@@ -808,6 +809,10 @@ export function CommandPalette() {
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
                             close();
+                            if (x.href.startsWith("http")) {
+                              window.location.assign(x.href);
+                              return;
+                            }
                             noteRouteNavigation(x.href);
                             router.push(x.href);
                           }}

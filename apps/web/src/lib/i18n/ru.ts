@@ -88,7 +88,8 @@ export const ru: Record<string, string> = {
   "nav.learn": "Как читать",
   "nav.network": "Сеть",
   "nav.about": "О нас",
-  "nav.docs": "API",
+  "nav.api": "API",
+  "nav.docs": "Маршруты",
   "nav.status": "Статус",
   "nav.operators": "Для операторов",
   "nav.nodes": "Ноды",
@@ -1235,7 +1236,7 @@ export const ru: Record<string, string> = {
   "status.refresh": "Проверить сейчас",
   "status.refreshing": "Проверяем…",
   "status.method": "Методология доказательств",
-  "status.api": "Публичный API",
+  "status.api": "Маршруты",
   "status.graphql": "GraphQL",
   "status.checked": "Проверено",
   "learn.eyebrow": "Доказательства, не обещания",
@@ -1275,9 +1276,9 @@ export const ru: Record<string, string> = {
     "«Live nodes» на главной — не перепись сети Ergo. Это TCP-сессии нашей ноды плюс хосты, которые часовой обход счёл досягаемыми за последние два часа. Входящие без объявленного адреса в число не входят. Чужой список — другая выборка.",
   "learn.verify.title": "Воспроизведи утверждение",
   "learn.verify.body":
-    "В Status проверь свежесть и покрытие, затем открой публичный API или GraphQL за сущностью или метрикой. GraphQL читает тот же индекс, что REST.",
+    "В Status проверь свежесть и покрытие, затем открой список маршрутов или ответ GraphQL за сущностью или метрикой. GraphQL читает тот же индекс, что REST.",
   "learn.verify.status": "Открыть статус",
-  "learn.verify.api": "Контракт API",
+  "learn.verify.api": "Маршруты",
   "learn.verify.graphql": "GraphQL",
   "network.eyebrow": "Вне ErgoScan",
   "network.title": "Обозреватели, API, GraphQL",
@@ -1508,9 +1509,9 @@ export const ru: Record<string, string> = {
   "box.inclusion": "Вход и выход",
 
   "docs.eyebrow": "Ergo mainnet",
-  "docs.title": "Публичный API",
-  "docs.lead":
-    "Регистрации нет. Ключа нет. Кошелёк или скрипт смотрят на этот хост.",
+  "docs.title": "Маршруты",
+  "docs.lead": "Маршруты, которыми этот проводник читает данные.",
+  "docs.api.go": "API кошелька · api.ergoscan.me",
   "docs.tab.start": "Старт",
   "docs.tab.wallet": "Кошелёк",
   "docs.tab.chain": "Цепь",
@@ -1518,21 +1519,22 @@ export const ru: Record<string, string> = {
   "docs.tab.more": "Ещё",
   "docs.intro.title": "Введение",
   "docs.intro.body":
-    "Данные ErgoScan: блоки, боксы, транзы, адреса, токены, NFT, Spectrum DEX, Rosen, оракулы, storage rent, мемпул. Бесплатно. Без регистрации. Без ключа. Тот же хост, что проводник.",
+    "Блоки, боксы, транзакции, адреса, токены, NFT, Spectrum DEX, Rosen, оракулы, storage rent, мемпул. Эти маршруты кормят страницы проводника. Бесплатно. Без регистрации. Без ключа.",
   "docs.intro.attr": "Ссылка на ErgoScan приветствуется. Не обязательна.",
-  "docs.access.docs": "Доки",
+  "docs.access.wallet": "API",
+  "docs.access.docs": "Маршруты",
   "docs.access.openapi": "OpenAPI",
   "docs.access.graphql": "GraphQL · POST",
   "docs.access.ws": "WebSocket",
   "docs.base": "База",
   "docs.base.note": "/api/v1 и /v1 — один роутер.",
-  "docs.spec.title": "Контракт API",
+  "docs.spec.title": "На этом хосте",
   "docs.spec.format":
     "OpenAPI 3 — /openapi.json. GraphQL только POST (/v1/graphql, /api/v1/graphql). GET GraphQL — 405.",
   "docs.spec.same":
-    "/api/v1 и /v1 — один роутер. Пути кошелька (unspent, balance, submit, headers) на этом хосте.",
+    "/api/v1 и /v1 — один роутер на этом хосте. Ими живут страницы проводника. Кошелёк ходит на https://api.ergoscan.me/api/v1. Там бокс и транзакция по id — документ проводника.",
   "docs.spec.index":
-    "Ответы из нашего Postgres и RAM мемпула. Это API проводника ErgoScan, не live-прокси другого сайта.",
+    "Ответы из нашего Postgres и RAM мемпула. Этот хост кормит страницы проводника.",
   "docs.spec.amounts":
     "nanoERG и сырые количества токенов — десятичные строки. Разбирать через BigInt. JSON Number ломает LP и emission.",
   "docs.spec.times":
@@ -1566,7 +1568,7 @@ export const ru: Record<string, string> = {
   "docs.try.title": "Примеры",
   "docs.machines.title": "Машины",
   "docs.machines.body":
-    "Тот же контракт лежит в OpenAPI info.description. Дальше — пути и схемы. В схемах суммы — строки.",
+    "OpenAPI на этом хосте перечисляет эти маршруты. Спецификация кошелька — https://api.ergoscan.me/openapi.json. В схемах суммы — строки.",
   "docs.open": "Открыть",
   "docs.more.lead":
     "Свой GraphQL, DEX, Rosen, оракулы, storage rent, снимки страниц, IPFS-медиа, WebSocket.",

@@ -87,7 +87,8 @@ export const en: Record<string, string> = {
   "nav.learn": "How to read",
   "nav.network": "Network",
   "nav.about": "About",
-  "nav.docs": "API",
+  "nav.api": "API",
+  "nav.docs": "Routes",
   "nav.status": "Status",
   "nav.operators": "For operators",
   "nav.nodes": "Nodes",
@@ -1233,7 +1234,7 @@ export const en: Record<string, string> = {
   "status.refresh": "Check now",
   "status.refreshing": "Checking…",
   "status.method": "Evidence methodology",
-  "status.api": "Public API",
+  "status.api": "Routes",
   "status.graphql": "GraphQL",
   "status.checked": "Checked",
   "learn.eyebrow": "Evidence, not promises",
@@ -1273,9 +1274,9 @@ export const en: Record<string, string> = {
     "Home “Live nodes” is not a census of the Ergo network. It is this node’s TCP sessions plus hosts the hourly crawl found reachable in the last two hours. Peers that never advertise an address do not appear. Another explorer’s list is a different sample.",
   "learn.verify.title": "Reproduce the claim",
   "learn.verify.body":
-    "Use Status for freshness and coverage, then open the public API or GraphQL response behind an entity or metric. GraphQL reads the same index as REST.",
+    "Use Status for freshness and coverage, then open the route list or a GraphQL response behind an entity or metric. GraphQL reads the same index as REST.",
   "learn.verify.status": "Open status",
-  "learn.verify.api": "Read API contract",
+  "learn.verify.api": "Routes",
   "learn.verify.graphql": "GraphQL",
   "network.eyebrow": "Outside ErgoScan",
   "network.title": "Explorers, API, GraphQL",
@@ -1506,9 +1507,9 @@ export const en: Record<string, string> = {
   "box.inclusion": "In and out",
 
   "docs.eyebrow": "Ergo mainnet",
-  "docs.title": "Public API",
-  "docs.lead":
-    "No signup. No key. Point a wallet or script at this host.",
+  "docs.title": "Routes",
+  "docs.lead": "Routes this explorer reads on this host.",
+  "docs.api.go": "Wallet API · api.ergoscan.me",
   "docs.tab.start": "Start",
   "docs.tab.wallet": "Wallet",
   "docs.tab.chain": "Chain",
@@ -1516,21 +1517,22 @@ export const en: Record<string, string> = {
   "docs.tab.more": "More",
   "docs.intro.title": "Introduction",
   "docs.intro.body":
-    "Access ErgoScan data: blocks, boxes, transactions, addresses, tokens, NFTs, Spectrum DEX, Rosen, oracles, storage rent, mempool. Free. No signup. No key. Same host as the explorer.",
+    "Blocks, boxes, transactions, addresses, tokens, NFTs, Spectrum DEX, Rosen, oracles, storage rent, mempool. These routes feed the explorer pages. Free. No signup. No key.",
   "docs.intro.attr": "A link to ErgoScan is welcome. It is not required.",
-  "docs.access.docs": "Docs",
+  "docs.access.wallet": "API",
+  "docs.access.docs": "Routes",
   "docs.access.openapi": "OpenAPI",
   "docs.access.graphql": "GraphQL · POST",
   "docs.access.ws": "WebSocket",
   "docs.base": "Base",
   "docs.base.note": "/api/v1 and /v1 are the same router.",
-  "docs.spec.title": "API Specification",
+  "docs.spec.title": "On this host",
   "docs.spec.format":
     "OpenAPI 3 at /openapi.json. GraphQL is POST only (/v1/graphql, /api/v1/graphql). GET GraphQL is 405.",
   "docs.spec.same":
-    "/api/v1 and /v1 are the same router. Wallet paths (unspent, balance, submit, headers) live on this host.",
+    "/api/v1 and /v1 are the same router on this host. They feed the explorer pages. A wallet calls https://api.ergoscan.me/api/v1. There, a box and a transaction by id are the explorer document.",
   "docs.spec.index":
-    "Responses come from our Postgres index and mempool RAM. This is the ErgoScan explorer API, not a live proxy of another site.",
+    "Responses come from our Postgres index and mempool RAM. This host feeds the explorer pages.",
   "docs.spec.amounts":
     "nanoERG and token raw amounts are decimal strings. Parse with BigInt. JSON numbers overflow LP and emission.",
   "docs.spec.times":
@@ -1564,7 +1566,7 @@ export const en: Record<string, string> = {
   "docs.try.title": "Examples",
   "docs.machines.title": "Machines",
   "docs.machines.body":
-    "The same contract is in OpenAPI info.description. Paths and schemas follow. Amounts in schemas are strings.",
+    "OpenAPI on this host lists these routes. The wallet spec is https://api.ergoscan.me/openapi.json. Amounts in schemas are strings.",
   "docs.open": "Open",
   "docs.more.lead":
     "Our GraphQL, DEX, Rosen, oracles, storage rent, page snapshots, IPFS media, WebSocket.",
