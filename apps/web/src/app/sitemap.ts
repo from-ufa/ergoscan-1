@@ -42,8 +42,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const out: MetadataRoute.Sitemap = SITEMAP_STATIC.map((path) =>
     loc(path, {
-      changeFrequency: path === "/" ? "always" : path === "/docs" || path.startsWith("/learn") || path === "/about" ? "weekly" : "hourly",
-      priority: path === "/" ? 1 : path === "/docs" ? 0.8 : 0.7,
+      changeFrequency: path === "/" ? "always" : path.startsWith("/learn") || path === "/about" ? "weekly" : "hourly",
+      priority: path === "/" ? 1 : 0.7,
     })
   );
 

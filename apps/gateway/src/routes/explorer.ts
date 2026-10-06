@@ -755,10 +755,6 @@ export function registerExplorerRoutes(app: Express, deps: ExplorerDeps) {
   app.get("/openapi.json", (_req, res) => {
     res.json(openapiForDocs());
   });
-
-  app.get(["/v1/docs", "/v1/docs/"], (_req, res) => {
-    res.redirect(302, "/docs");
-  });
 }
 
 const COMPAT_PATHS = [

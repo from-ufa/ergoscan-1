@@ -1,22 +1,22 @@
 /**
  * Public API contract in OpenAPI `info.description`.
- * Same facts as /docs Start. English only (machine spec).
+ * English machine spec for the site gateway. The wallet contract is api.ergoscan.me.
  * No ops hosts, node bind, disk, or Caddy internals.
  */
 export const OPENAPI_INFO_DESCRIPTION = [
   "# Introduction",
   "Access ErgoScan data such as blocks, boxes, transactions, addresses, tokens, NFTs, Spectrum DEX, Rosen, oracles, storage rent and mempool.",
   "",
-  "Routes the ErgoScan explorer reads on https://ergoscan.me. No signup. No key. Human list: https://ergoscan.me/docs",
+  "The explorer pages read this host. No signup. No key.",
   "",
-  "A wallet uses https://api.ergoscan.me. There, a box and a transaction by id are the explorer document.",
+  "A wallet uses https://api.ergoscan.me. Human contract: https://api.ergoscan.me/docs. There, a box and a transaction by id are the explorer document.",
   "",
   "A link to ErgoScan is welcome. It is not required.",
   "",
   "# API Specification",
-  "This API is documented in **OpenAPI format** at https://ergoscan.me/openapi.json",
+  "This host is documented in **OpenAPI format** at https://ergoscan.me/openapi.json",
   "",
-  "Human docs: https://ergoscan.me/docs",
+  "Wallet spec: https://api.ergoscan.me/openapi.json",
   "",
   "`/api/v1/*` and `/v1/*` are the same router. GraphQL is **POST** only (`/v1/graphql`, `/api/v1/graphql`). GET GraphQL returns 405.",
   "",

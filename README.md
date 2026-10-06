@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://ergoscan.me"><img src="https://img.shields.io/badge/live-ergoscan.me-3ca2ff?style=flat-square" alt="Live" /></a>
-  <a href="https://ergoscan.me/docs"><img src="https://img.shields.io/badge/API-docs-ff8a65?style=flat-square" alt="API" /></a>
+  <a href="https://api.ergoscan.me/docs"><img src="https://img.shields.io/badge/API-docs-ff8a65?style=flat-square" alt="API" /></a>
   <a href="https://ergoscan.me/status"><img src="https://img.shields.io/badge/status-public-5ee6a4?style=flat-square" alt="Status" /></a>
 </p>
 
@@ -71,7 +71,6 @@ Contract names come from the open [ergo-names](https://github.com/kayolo-ergosca
 | [`/oracles`](https://ergoscan.me/oracles) | USD v1, USD v2, and XAU/ERG pools. [GORT](https://ergoscan.me/oracles/xau-erg/gort) and [DORT](https://ergoscan.me/oracles/erg-usd/dort) buyback boxes |
 | [`/rent`](https://ergoscan.me/rent) | Storage rent due and collected |
 | [`/search`](https://ergoscan.me/search) | Resolve a hash, address, or token name from the index |
-| [`/docs`](https://ergoscan.me/docs) | API |
 | [`/status`](https://ergoscan.me/status) | Public health |
 | [`/learn`](https://ergoscan.me/learn) | How to read a claim. [Network](https://ergoscan.me/learn/network) lists public explorers, APIs, and GraphQL endpoints |
 | [`/about`](https://ergoscan.me/about) | Who builds ErgoScan |

@@ -130,7 +130,6 @@ const NAV_FOOT: NavItem[] = [
   { href: "/settings", key: "nav.settings", icon: "settings", match: ["/settings"] },
   { href: "/about", key: "nav.about", icon: "about", match: ["/about"] },
   { href: "https://api.ergoscan.me/docs", key: "nav.api", icon: "api", external: true },
-  { href: "/docs", key: "nav.docs", icon: "learn", match: ["/docs"] },
   { href: "/status", key: "nav.status", icon: "status", match: ["/status"] },
 ];
 

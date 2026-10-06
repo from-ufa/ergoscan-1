@@ -138,18 +138,6 @@ export function LearnView() {
               >
                 {t("learn.verify.status")}
               </Link>
-              <Link
-                href="/docs"
-                className="rounded-[10px] bg-[var(--wash)] px-3 py-2 text-[12px] text-[var(--accent)] transition-colors duration-[400ms] hover:bg-[var(--wash-mid)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-              >
-                {t("learn.verify.api")}
-              </Link>
-              <Link
-                href="/docs#more"
-                className="rounded-[10px] bg-[var(--wash)] px-3 py-2 text-[12px] text-[var(--accent)] transition-colors duration-[400ms] hover:bg-[var(--wash-mid)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-              >
-                {t("learn.verify.graphql")}
-              </Link>
               <a
                 href={publicGatewayHref("/v1/indexer/status")}
                 target="_blank"

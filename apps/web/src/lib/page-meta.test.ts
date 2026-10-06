@@ -81,7 +81,7 @@ test("token miss is noindex", () => {
 
 test("sitemap static paths are indexable list pages plus home", () => {
   assert.ok(SITEMAP_STATIC.includes("/"));
-  assert.ok(SITEMAP_STATIC.includes("/docs"));
+  assert.equal(SITEMAP_STATIC.includes("/docs"), false);
   assert.equal(SITEMAP_STATIC.includes("/search"), false);
   assert.equal(SITEMAP_STATIC.includes("/address/x"), false);
   for (const path of SITEMAP_STATIC) {

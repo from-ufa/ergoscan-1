@@ -136,12 +136,6 @@ export function StatusView({ initial }: { initial: TrustBoard }) {
             <Link href="/learn#evidence" className="text-[var(--accent)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">
               {t("status.method")}
             </Link>
-            <Link href="/docs" className="text-[var(--accent)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">
-              {t("status.api")}
-            </Link>
-            <Link href="/docs#more" className="text-[var(--accent)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">
-              {t("status.graphql")}
-            </Link>
             <span className="font-mono text-[11px] text-[var(--muted-2)]">
               {t("status.checked")}{" "}
               {utcText(board.checkedAtMs, locale)}

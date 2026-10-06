@@ -542,7 +542,6 @@ export function CommandPalette() {
     { key: "nav.network", href: "/learn/network" },
     { key: "nav.about", href: "/about" },
     { key: "nav.api", href: "https://api.ergoscan.me/docs" },
-    { key: "nav.docs", href: "/docs" },
     { key: "nav.status", href: "/status" },
   ];
 

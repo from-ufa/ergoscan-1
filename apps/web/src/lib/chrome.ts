@@ -43,7 +43,6 @@ export function chromeFor(path: string): { titleKey: string; heading: boolean } 
     "/learn/network": "nav.network",
     "/about": "nav.about",
     "/settings": "nav.settings",
-    "/docs": "nav.docs",
     "/status": "nav.status",
     "/nfts": "nav.nfts",
     "/rent": "nav.rentUpcoming",

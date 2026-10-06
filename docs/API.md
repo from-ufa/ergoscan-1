@@ -126,9 +126,8 @@ Never `JSON.parse` large integers into JS `Number` on the way out. Official expl
 
 ## OpenAPI
 
-Human page: **https://ergoscan.me/docs** (same Shell as the rest of the site). Start tab is the public contract: Introduction, Specification, CORS, Authentication, Pagination, Rate Limit.  
-`/api/v1/docs` and `/v1/docs` redirect there.  
-`GET /openapi.json` carries the same English contract in `info.description` (`apps/gateway/src/lib/openapi-intro.ts`), then paths and `components.schemas` (`TokenInfo`, `TotalBalance`, `EpochInfo`, `OutputInfo`, `NetworkState`). Amounts in schemas are strings. No node bind, disk, or ops hosts in that intro.
+Wallet contract: **https://api.ergoscan.me/docs**. The explorer does not publish its page routes.  
+`GET /openapi.json` on the API host is the machine spec. Amounts in schemas are strings. No node bind, disk, or ops hosts in that intro.
 
 ## Ship / ops
 

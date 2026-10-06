@@ -180,11 +180,6 @@ export const LIST_PAGES: Record<
     description:
       "Independent Ergo blockchain explorer: who builds ErgoScan, what it indexes, and what comes next.",
   },
-  "/docs": {
-    title: "Routes",
-    description:
-      "HTTP routes the ErgoScan explorer reads on ergoscan.me. A wallet uses https://api.ergoscan.me.",
-  },
   "/rent": {
     title: "Storage rent",
     description: "Ergo storage rent coming due: 24h, 7d, and 30d, plus tokens that cannot pay the fee.",
@@ -361,7 +356,6 @@ export const SITEMAP_STATIC = [
   "/learn",
   "/learn/network",
   "/about",
-  "/docs",
   "/rent",
   "/rent/history",
   "/fees",

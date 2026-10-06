@@ -88,7 +88,6 @@ export const en: Record<string, string> = {
   "nav.network": "Network",
   "nav.about": "About",
   "nav.api": "API",
-  "nav.docs": "Routes",
   "nav.status": "Status",
   "nav.operators": "For operators",
   "nav.nodes": "Nodes",
@@ -1234,8 +1233,6 @@ export const en: Record<string, string> = {
   "status.refresh": "Check now",
   "status.refreshing": "Checking…",
   "status.method": "Evidence methodology",
-  "status.api": "Routes",
-  "status.graphql": "GraphQL",
   "status.checked": "Checked",
   "learn.eyebrow": "Evidence, not promises",
   "learn.title": "How to read ErgoScan",
@@ -1274,10 +1271,8 @@ export const en: Record<string, string> = {
     "Home “Live nodes” is not a census of the Ergo network. It is this node’s TCP sessions plus hosts the hourly crawl found reachable in the last two hours. Peers that never advertise an address do not appear. Another explorer’s list is a different sample.",
   "learn.verify.title": "Reproduce the claim",
   "learn.verify.body":
-    "Use Status for freshness and coverage, then open the route list or a GraphQL response behind an entity or metric. GraphQL reads the same index as REST.",
+    "Use Status for freshness and coverage. GraphQL reads the same index as REST: POST /v1/graphql.",
   "learn.verify.status": "Open status",
-  "learn.verify.api": "Routes",
-  "learn.verify.graphql": "GraphQL",
   "network.eyebrow": "Outside ErgoScan",
   "network.title": "Explorers, API, GraphQL",
   "network.lead":
@@ -1506,79 +1501,6 @@ export const en: Record<string, string> = {
   "box.out": "Out",
   "box.inclusion": "In and out",
 
-  "docs.eyebrow": "Ergo mainnet",
-  "docs.title": "Routes",
-  "docs.lead": "Routes this explorer reads on this host.",
-  "docs.api.go": "Wallet API · api.ergoscan.me",
-  "docs.tab.start": "Start",
-  "docs.tab.wallet": "Wallet",
-  "docs.tab.chain": "Chain",
-  "docs.tab.tokens": "Tokens",
-  "docs.tab.more": "More",
-  "docs.intro.title": "Introduction",
-  "docs.intro.body":
-    "Blocks, boxes, transactions, addresses, tokens, NFTs, Spectrum DEX, Rosen, oracles, storage rent, mempool. These routes feed the explorer pages. Free. No signup. No key.",
-  "docs.intro.attr": "A link to ErgoScan is welcome. It is not required.",
-  "docs.access.wallet": "API",
-  "docs.access.docs": "Routes",
-  "docs.access.openapi": "OpenAPI",
-  "docs.access.graphql": "GraphQL · POST",
-  "docs.access.ws": "WebSocket",
-  "docs.base": "Base",
-  "docs.base.note": "/api/v1 and /v1 are the same router.",
-  "docs.spec.title": "On this host",
-  "docs.spec.format":
-    "OpenAPI 3 at /openapi.json. GraphQL is POST only (/v1/graphql, /api/v1/graphql). GET GraphQL is 405.",
-  "docs.spec.same":
-    "/api/v1 and /v1 are the same router on this host. They feed the explorer pages. A wallet calls https://api.ergoscan.me/api/v1. There, a box and a transaction by id are the explorer document.",
-  "docs.spec.index":
-    "Responses come from our Postgres index and mempool RAM. This host feeds the explorer pages.",
-  "docs.spec.amounts":
-    "nanoERG and token raw amounts are decimal strings. Parse with BigInt. JSON numbers overflow LP and emission.",
-  "docs.spec.times":
-    "Heights, global indexes, and sizes are JSON numbers. Timestamps are unix milliseconds (UTC).",
-  "docs.spec.write":
-    "User GET does not call the node. The only user write is POST /mempool/transactions/submit and GraphQL submitTx. Client errors: rejected or submit_failed.",
-  "docs.spec.address":
-    "An address that fails the Ergo checksum returns 400 { error: bad_address, reason: checksum }. A valid address with no history returns an empty result.",
-  "docs.spec.stable":
-    "Existing fields stay. New fields and paths may appear. GET /tokens catalog shape is frozen.",
-  "docs.spec.gql":
-    "GraphQL reads the same index. Depth ≤ 7. gix windows ≤ 10 000 (4s). submitTx shares the submit limit.",
-  "docs.cors.title": "Cross-Origin Resource Sharing",
-  "docs.cors.body":
-    "CORS is open: Access-Control-Allow-Origin: *. Wallets and dApps call from the browser. Do not send cookies or credentials.",
-  "docs.auth.title": "Authentication",
-  "docs.auth.body": "None. No API key. No paid plan.",
-  "docs.page.title": "Pagination",
-  "docs.page.body":
-    "Keyset cursor. If another page exists, JSON has hasMore: true and nextCursor. Repeat with ?cursor=<nextCursor>. Wallet lists also take limit ≤ 100 and offset ≤ 500 as a small skip on an address index — not OFFSET down the chain. Prefer cursor.",
-  "docs.rate.title": "Rate Limit",
-  "docs.rate.body":
-    "Reads: 120 requests per minute per IP. The window is one minute. Submit (REST + GraphQL submitTx): 10 per minute, 2 in flight, one shared bucket. Over limit: 429 { error: \"rate_limited\", retryAfterSec }. Reads also send X-RateLimit-Limit and X-RateLimit-Remaining. WebSocket /v1/stream and /v1/media/ are not in the read bucket.",
-  "docs.limit.rate.k": "Reads",
-  "docs.limit.rate.v": "120 requests / minute / IP",
-  "docs.limit.submit.k": "Submit",
-  "docs.limit.submit.v":
-    "10 / minute, 2 in flight. REST submit and GraphQL submitTx share this bucket.",
-  "docs.limit.over.k": "Over limit",
-  "docs.limit.over.v": "429, JSON { error: rate_limited, retryAfterSec }",
-  "docs.try.title": "Examples",
-  "docs.machines.title": "Machines",
-  "docs.machines.body":
-    "OpenAPI on this host lists these routes. The wallet spec is https://api.ergoscan.me/openapi.json. Amounts in schemas are strings.",
-  "docs.open": "Open",
-  "docs.more.lead":
-    "Our GraphQL, DEX, Rosen, oracles, storage rent, page snapshots, IPFS media, WebSocket.",
-  "docs.more.oracles.title": "Three oracle feeds",
-  "docs.more.oracles.body":
-    "The oracle writer owns schema oracle (ergusd, erg-usd, xau-erg) and one CoinGecko write into snapshot_kv.market. Indexer only copies market into home. Two USD answers: USD v1 pool 011d3364 versus USD v2 6a2b821b — do not mix them.",
-  "docs.more.oracles.coop": "Erg-USD pool snap, operators (P2PK from R4), ticks. ?range=7d|30d",
-  "docs.more.oracles.eip": "Erg-USD quote from snapshot_kv.market. Same writer. Page /oracles/ergusd.",
-  "docs.src.index": "index",
-  "docs.src.ram": "ram",
-  "docs.src.node": "node",
-  "docs.src.snapshot": "snapshot",
   "nav.gort": "GORT",
   "nav.dort": "DORT",
   "buyback.titleGort": "GORT buyback",

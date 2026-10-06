@@ -89,7 +89,6 @@ export const ru: Record<string, string> = {
   "nav.network": "Сеть",
   "nav.about": "О нас",
   "nav.api": "API",
-  "nav.docs": "Маршруты",
   "nav.status": "Статус",
   "nav.operators": "Для операторов",
   "nav.nodes": "Ноды",
@@ -1236,8 +1235,6 @@ export const ru: Record<string, string> = {
   "status.refresh": "Проверить сейчас",
   "status.refreshing": "Проверяем…",
   "status.method": "Методология доказательств",
-  "status.api": "Маршруты",
-  "status.graphql": "GraphQL",
   "status.checked": "Проверено",
   "learn.eyebrow": "Доказательства, не обещания",
   "learn.title": "Как читать ErgoScan",
@@ -1276,10 +1273,8 @@ export const ru: Record<string, string> = {
     "«Live nodes» на главной — не перепись сети Ergo. Это TCP-сессии нашей ноды плюс хосты, которые часовой обход счёл досягаемыми за последние два часа. Входящие без объявленного адреса в число не входят. Чужой список — другая выборка.",
   "learn.verify.title": "Воспроизведи утверждение",
   "learn.verify.body":
-    "В Status проверь свежесть и покрытие, затем открой список маршрутов или ответ GraphQL за сущностью или метрикой. GraphQL читает тот же индекс, что REST.",
+    "В Status проверь свежесть и покрытие. GraphQL читает тот же индекс, что REST: POST /v1/graphql.",
   "learn.verify.status": "Открыть статус",
-  "learn.verify.api": "Маршруты",
-  "learn.verify.graphql": "GraphQL",
   "network.eyebrow": "Вне ErgoScan",
   "network.title": "Обозреватели, API, GraphQL",
   "network.lead":
@@ -1508,79 +1503,6 @@ export const ru: Record<string, string> = {
   "box.out": "Выход",
   "box.inclusion": "Вход и выход",
 
-  "docs.eyebrow": "Ergo mainnet",
-  "docs.title": "Маршруты",
-  "docs.lead": "Маршруты, которыми этот проводник читает данные.",
-  "docs.api.go": "API кошелька · api.ergoscan.me",
-  "docs.tab.start": "Старт",
-  "docs.tab.wallet": "Кошелёк",
-  "docs.tab.chain": "Цепь",
-  "docs.tab.tokens": "Токены",
-  "docs.tab.more": "Ещё",
-  "docs.intro.title": "Введение",
-  "docs.intro.body":
-    "Блоки, боксы, транзакции, адреса, токены, NFT, Spectrum DEX, Rosen, оракулы, storage rent, мемпул. Эти маршруты кормят страницы проводника. Бесплатно. Без регистрации. Без ключа.",
-  "docs.intro.attr": "Ссылка на ErgoScan приветствуется. Не обязательна.",
-  "docs.access.wallet": "API",
-  "docs.access.docs": "Маршруты",
-  "docs.access.openapi": "OpenAPI",
-  "docs.access.graphql": "GraphQL · POST",
-  "docs.access.ws": "WebSocket",
-  "docs.base": "База",
-  "docs.base.note": "/api/v1 и /v1 — один роутер.",
-  "docs.spec.title": "На этом хосте",
-  "docs.spec.format":
-    "OpenAPI 3 — /openapi.json. GraphQL только POST (/v1/graphql, /api/v1/graphql). GET GraphQL — 405.",
-  "docs.spec.same":
-    "/api/v1 и /v1 — один роутер на этом хосте. Ими живут страницы проводника. Кошелёк ходит на https://api.ergoscan.me/api/v1. Там бокс и транзакция по id — документ проводника.",
-  "docs.spec.index":
-    "Ответы из нашего Postgres и RAM мемпула. Этот хост кормит страницы проводника.",
-  "docs.spec.amounts":
-    "nanoERG и сырые количества токенов — десятичные строки. Разбирать через BigInt. JSON Number ломает LP и emission.",
-  "docs.spec.times":
-    "Высоты, global index и размеры — JSON-числа. Время — unix-миллисекунды (UTC).",
-  "docs.spec.write":
-    "Пользовательский GET ноду не вызывает. Единственная пользовательская запись — POST /mempool/transactions/submit и GraphQL submitTx. Ошибки клиенту: rejected или submit_failed.",
-  "docs.spec.address":
-    "Адрес, у которого не сходится контрольная сумма Ergo, получает 400 { error: bad_address, reason: checksum }. Валидный адрес без истории получает пустой ответ.",
-  "docs.spec.stable":
-    "Существующие поля не переименовываем и не удаляем. Новые поля и пути можно добавлять. Форма GET /tokens фиксирована.",
-  "docs.spec.gql":
-    "GraphQL читает тот же индекс. Глубина ≤ 7. Окна gix ≤ 10 000 (4 с). submitTx — тот же лимит, что REST submit.",
-  "docs.cors.title": "Cross-Origin Resource Sharing",
-  "docs.cors.body":
-    "CORS открыт: Access-Control-Allow-Origin: *. Кошелёк и dApp зовут из браузера. Cookie и credentials не слать.",
-  "docs.auth.title": "Аутентификация",
-  "docs.auth.body": "Нет. Нет API-ключа. Нет платного плана.",
-  "docs.page.title": "Пагинация",
-  "docs.page.body":
-    "Keyset cursor. Если есть следующая страница — hasMore: true и nextCursor. Повторить с ?cursor=<nextCursor>. Списки кошелька ещё принимают limit ≤ 100 и offset ≤ 500 как короткий skip по индексу адреса — не OFFSET вниз по цепи. Лучше cursor.",
-  "docs.rate.title": "Лимит запросов",
-  "docs.rate.body":
-    "Чтения: 120 запросов в минуту на IP. Окно — минута. Submit (REST + GraphQL submitTx): 10 в минуту, 2 одновременно, один бакет. Перебор: 429 { error: \"rate_limited\", retryAfterSec }. На чтениях ещё X-RateLimit-Limit и X-RateLimit-Remaining. WebSocket /v1/stream и /v1/media/ в бакет чтений не входят.",
-  "docs.limit.rate.k": "Чтения",
-  "docs.limit.rate.v": "120 запросов / минуту / IP",
-  "docs.limit.submit.k": "Submit",
-  "docs.limit.submit.v":
-    "10 / минуту, 2 одновременно. REST submit и GraphQL submitTx — один бакет.",
-  "docs.limit.over.k": "Если перебрал",
-  "docs.limit.over.v": "429, JSON { error: rate_limited, retryAfterSec }",
-  "docs.try.title": "Примеры",
-  "docs.machines.title": "Машины",
-  "docs.machines.body":
-    "OpenAPI на этом хосте перечисляет эти маршруты. Спецификация кошелька — https://api.ergoscan.me/openapi.json. В схемах суммы — строки.",
-  "docs.open": "Открыть",
-  "docs.more.lead":
-    "Свой GraphQL, DEX, Rosen, оракулы, storage rent, снимки страниц, IPFS-медиа, WebSocket.",
-  "docs.more.oracles.title": "Три корма оракулов",
-  "docs.more.oracles.body":
-    "Писатель оракулов владеет schema oracle (ergusd, erg-usd, xau-erg) и одним CoinGecko в snapshot_kv.market. Индексер только копирует market в home. Два ответа USD: USD v1 пул 011d3364 и USD v2 6a2b821b — не смешивать.",
-  "docs.more.oracles.coop": "Снимок пула Erg-USD, операторы (P2PK из R4), тики. ?range=7d|30d",
-  "docs.more.oracles.eip": "Курс Erg-USD из snapshot_kv.market. Тот же писатель. Страница /oracles/ergusd.",
-  "docs.src.index": "индекс",
-  "docs.src.ram": "ram",
-  "docs.src.node": "нода",
-  "docs.src.snapshot": "снимок",
   "nav.gort": "GORT",
   "nav.dort": "DORT",
   "buyback.titleGort": "Выкуп GORT",
