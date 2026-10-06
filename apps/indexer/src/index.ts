@@ -190,8 +190,12 @@ type Pool = ReturnType<typeof createPool>;
 type Client = pg.PoolClient;
 type Queryable = { query: pg.Pool["query"] };
 
-/** btree ~1/3 page; keep address_tx keys under this (emission is 318). */
-const MAX_ADDRESS_TX_LEN = 2000;
+/**
+ * Packed address_tx is keyed by addr_id, not the address text.
+ * 8000 matches the checksum cap. The text summary btree still stops at 2000;
+ * longer addresses bump address_summary_long.
+ */
+const MAX_ADDRESS_TX_LEN = 8000;
 
 type NodeTx = {
   id?: string;

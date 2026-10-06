@@ -460,24 +460,57 @@ async function bumpAddressTxCounts(
     }
   }
   if (!bump.size) return;
-  const addrs = [...bump.keys()];
-  await client.query(
-    `INSERT INTO address_summary (
-       address, nanoerg, box_count, token_count, tx_count,
-       first_height, last_height, updated_at
-     )
-     SELECT u.address, 0, 0, 0, u.n, u.min_h, u.max_h, now()
-     FROM unnest($1::text[], $2::int[], $3::bigint[], $4::bigint[])
-       AS u(address, n, min_h, max_h)
-     ON CONFLICT (address) DO UPDATE SET
-       ${ADDRESS_SUMMARY_TX_BUMP_SET}`,
-    [
-      addrs,
-      addrs.map((a) => bump.get(a)?.n ?? 0),
-      addrs.map((a) => bump.get(a)?.minH ?? 0),
-      addrs.map((a) => bump.get(a)?.maxH ?? 0),
-    ]
-  );
+  const short: string[] = [];
+  const long: string[] = [];
+  for (const address of bump.keys()) {
+    if (address.length > 2000) long.push(address);
+    else short.push(address);
+  }
+  const args = (addrs: string[]) => [
+    addrs,
+    addrs.map((a) => bump.get(a)?.n ?? 0),
+    addrs.map((a) => bump.get(a)?.minH ?? 0),
+    addrs.map((a) => bump.get(a)?.maxH ?? 0),
+  ];
+  if (short.length) {
+    await client.query(
+      `INSERT INTO address_summary (
+         address, nanoerg, box_count, token_count, tx_count,
+         first_height, last_height, updated_at
+       )
+       SELECT u.address, 0, 0, 0, u.n, u.min_h, u.max_h, now()
+       FROM unnest($1::text[], $2::int[], $3::bigint[], $4::bigint[])
+         AS u(address, n, min_h, max_h)
+       ON CONFLICT (address) DO UPDATE SET
+         ${ADDRESS_SUMMARY_TX_BUMP_SET}`,
+      args(short)
+    );
+  }
+  if (long.length) {
+    await client.query(
+      `INSERT INTO address_summary_long (
+         addr_md5, address, nanoerg, box_count, token_count, tx_count,
+         first_height, last_height, updated_at
+       )
+       SELECT md5(u.address), u.address, 0, 0, 0, u.n, u.min_h, u.max_h, now()
+       FROM unnest($1::text[], $2::int[], $3::bigint[], $4::bigint[])
+         AS u(address, n, min_h, max_h)
+       ON CONFLICT (addr_md5) DO UPDATE SET
+         tx_count = address_summary_long.tx_count + EXCLUDED.tx_count,
+         last_height = CASE
+           WHEN address_summary_long.last_height IS NULL THEN EXCLUDED.last_height
+           WHEN EXCLUDED.last_height IS NULL THEN address_summary_long.last_height
+           ELSE GREATEST(address_summary_long.last_height, EXCLUDED.last_height)
+         END,
+         first_height = CASE
+           WHEN address_summary_long.first_height IS NULL THEN EXCLUDED.first_height
+           WHEN EXCLUDED.first_height IS NULL THEN address_summary_long.first_height
+           ELSE LEAST(address_summary_long.first_height, EXCLUDED.first_height)
+         END,
+         updated_at = now()`,
+      args(long)
+    );
+  }
 }
 
 export async function upsertAddressTxMany(
