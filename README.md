@@ -21,7 +21,7 @@ ErgoScan is an explorer for Ergo (ERG). It covers blocks, transactions, addresse
 
 It is an index, not a proxy of another explorer and not a façade in front of a node. One Postgres database holds the chain. Pages and the public API read that database. A user GET does not call the node. The only user write is submitting a transaction.
 
-Wallets and dApps use `https://api.ergoscan.me/api/v1/…`. The suffixes match the official explorer API. Explorer pages keep reading `https://ergoscan.me/v1`. GraphQL is `POST /v1/graphql`.
+Wallets and dApps use `https://api.ergoscan.me/api/v1/…`. The suffixes match the official explorer API. Explorer pages keep reading `https://ergoscan.me/v1`. Wallet GraphQL is Nautilus 0.5.5 at `POST https://api.ergoscan.me/api/graphql`. The site process still answers its own schema at `POST /v1/graphql`.
 
 There is no API key and no plan to apply for.
 
@@ -31,9 +31,9 @@ There is no API key and no plan to apply for.
 | Docs | [api.ergoscan.me/docs](https://api.ergoscan.me/docs) |
 | OpenAPI | [api.ergoscan.me/openapi.json](https://api.ergoscan.me/openapi.json) |
 | Contract | [`docs/API.md`](./docs/API.md) |
-| Reads | 120 / minute / IP |
-| Submit | 10 / minute, 2 in flight (REST and GraphQL `submitTx`) |
-| Over limit | `429` `{ error: rate_limited, retryAfterSec }` |
+| REST reads | 120 / minute / IP. Over limit: `429` `{ error: rate_limited, retryAfterSec }` |
+| GraphQL reads | 2000 / minute / IP on the API host, separate from REST. Over limit: HTTP 200 `{ errors: [{ message: "rate_limited", extensions: { retryAfterSec } }], data: null }` |
+| Submit | 10 / minute, 2 in flight (REST and GraphQL submit) |
 | CORS | `*` |
 | Amounts | decimal strings |
 | Time | unix milliseconds, UTC |
@@ -66,7 +66,7 @@ Contract names come from the open [ergo-names](https://github.com/kayolo-ergosca
 | [`/tokens`](https://ergoscan.me/tokens) | Token catalog |
 | [`/token`](https://ergoscan.me/tokens) | One token: holders, transfers, swaps, mint and burn |
 | [`/nfts`](https://ergoscan.me/nfts) | Gallery of emission-1 tokens. Artwork is read from the index |
-| [`/defi`](https://ergoscan.me/defi) | ErgoDex (Spectrum), Lithos, pool cards, AgeUSD bank |
+| [`/defi`](https://ergoscan.me/defi/spectrum) | ErgoDex (Spectrum). [`/defi/lithos`](https://ergoscan.me/defi/lithos) is Lithos fills, [`/defi/pool`](https://ergoscan.me/defi/pool) is pool cards, [`/defi/stable`](https://ergoscan.me/defi/stable) is the AgeUSD bank. `/defi` opens Spectrum |
 | [`/rosen`](https://ergoscan.me/rosen) | Rosen Event Triggers seen on Ergo |
 | [`/oracles`](https://ergoscan.me/oracles) | USD v1, USD v2, and XAU/ERG pools. [GORT](https://ergoscan.me/oracles/xau-erg/gort) and [DORT](https://ergoscan.me/oracles/erg-usd/dort) buyback boxes |
 | [`/rent`](https://ergoscan.me/rent) | Storage rent due and collected |
@@ -91,7 +91,7 @@ Ergo node
           ↓
        Postgres
           ↑
- gateway     /v1 · /api/v1 · GraphQL · WebSocket
+ gateway     site pages, and api.ergoscan.me for the wallet API + Nautilus
  web         Next.js  →  ergoscan.me
 ```
 
@@ -100,7 +100,7 @@ The gateway reads Postgres and keeps the mempool in RAM. It does not serve user 
 | Package | Role |
 |---------|------|
 | `@ergoscan/web` | Next.js UI |
-| `@ergoscan/gateway` | REST, GraphQL, WebSocket |
+| `@ergoscan/gateway` | REST, GraphQL, WebSocket. The site and `api.ergoscan.me` are two processes of this package |
 | `@ergoscan/indexer` | Chain and catalogs |
 | `@ergoscan/defi-projector` | DEX and AgeUSD bank |
 | `@ergoscan/rosen-projector` | Rosen events |

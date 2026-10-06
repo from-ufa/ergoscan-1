@@ -23,24 +23,22 @@ Official OpenAPI (reference only): `https://api.ergoplatform.com/api/v1/docs/`.
 ## Architecture
 
 ```
-wallet / dApp / UI
-        │
-        ▼
- Caddy :443
-        │  /v1/*  /api/*
-        ▼
- Gateway :4400
-   native product routes     official-compat aliases
-   /defi /rosen /oracles /nfts  /boxes/unspent/byAddress
-   /page/* /graph /resolve   /addresses/:id/balance/total
-   /v1/tokens/:id (card)     /tokens/bySymbol /epochs/params
-        │                    /blocks/headers /networkStats
-        │                    POST /mempool/transactions/submit
-        ▼
- Postgres ergoscan (read)
-   public.* snapshots + tables
-   defi.*  rosen.*  oracle.*
-        │
+wallet / dApp                         explorer pages
+        │                                    │
+        ▼                                    ▼
+ Caddy api.ergoscan.me              Caddy ergoscan.me
+        │  /api/*  /v1/*                    │  /v1/*
+        ▼                                    ▼
+ Gateway :4401  API_CONTOUR=1      Gateway :4400
+   official-compat + Nautilus        page cards, explorer GraphQL
+   POST /api/graphql                 POST /v1/graphql
+        │                                    │
+        └──────────────┬─────────────────────┘
+                       ▼
+              Postgres ergoscan (read)
+                public.* snapshots + tables
+                defi.*  rosen.*  oracle.*
+                       │
  Mempool RAM  ← node /transactions/unconfirmed (poll only)
  Submit tx    → node POST /transactions   (this POST only)
 ```
@@ -77,13 +75,17 @@ Wallet/dApp drop-in. Same path after `/api/v1` as explorer. Response **shape** f
 
 Those routes return `501` with a stable error so a client can detect the hole instead of hanging.
 
-### Our GraphQL (`POST /v1/graphql`)
+### GraphQL
 
-Same gateway. Not a port of nautls / SigmaSpace / `gql.ergoplatform.com`. GET → 405.
+Two schemas. GET on either path is 405.
+
+**API host** (`API_CONTOUR=1`, public `POST https://api.ergoscan.me/api/graphql`, and `/graphql` plus `/v1/graphql` on that process): Nautilus 0.5.5. Amounts are decimal strings, including `powSolutions.d`. `relevantOnly` keeps the queried addresses and the miner-fee output. Reads use `GRAPHQL_READ_PER_MIN` (default 2000), separate from the REST cap of 120. Exhaustion is HTTP 200 `{ errors: [{ message: "rate_limited", extensions: { retryAfterSec } }], data: null }`. Submit (`submitTransaction`, `checkTransaction`, `submitTx`) stays on the submit limiter, 10/minute. `inputs.proofBytes` is `""`; spending proofs are not in the index.
+
+**Site** (`POST /v1/graphql` on `:4400`): the explorer schema, not Nautilus.
 
 - **Live roots:** `info`, `state`, `box(id)`, `transaction(id)`, `address(id)` (balance + unspent/txs keyset), `token(id)`, `boxesByGix` / `transactionsByGix`, `mempool`, `oracles`, `defi`, `rosen`. Mutation `submitTx(signedJson)` — the only node write. Same shape-check, `SUBMIT_PER_MIN`, and `rejected`/`submit_failed` as REST submit.
 - **Laws:** decimal strings, no `COUNT` / seq-scan on `boxes`, no ErgoTree filter, depth ≤ 7, gix window ≤ 10000 / 4s. `maxBoxGix` is ours (`*_gix_next − 1`).
-- **Not live:** `boxes(spent:)`, template hash, registers search, nested `Box.transaction`, Fleet/Nautilus drop-in names. No second GraphQL phase is planned.
+- **Not live on this schema:** `boxes(spent:)`, template hash, registers search, nested `Box.transaction`.
 
 ## Official-compat map
 
