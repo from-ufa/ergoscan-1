@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import type { RawTx } from "@ergoscan/shared";
 import { cacheNoStore } from "../lib/httpCache.js";
 import { parseGraphqlBody, runGraphql } from "../graphql/execute.js";
+import { runNautilus, type NautilusCtx } from "../graphql/nautilus.js";
 import type { GraphqlCtx } from "../graphql/resolvers.js";
 import { isSubmitTxQuery, requestIp, takeSubmitSlot } from "../lib/submit-tx.js";
 
@@ -9,14 +10,17 @@ export type GraphqlDeps = {
   getRawMempool: () => Map<string, RawTx>;
   getFullHeight: () => number | null | undefined;
   submitTx: (body: unknown) => Promise<unknown>;
+  checkTx?: (body: unknown) => Promise<unknown>;
   network: string;
 };
 
 export function registerGraphqlRoutes(app: Express, deps: GraphqlDeps): void {
-  const ctx: GraphqlCtx = {
+  const apiContour = process.env.API_CONTOUR === "1";
+  const ctx: GraphqlCtx & NautilusCtx = {
     getRawMempool: deps.getRawMempool,
     getFullHeight: deps.getFullHeight,
     submitTx: deps.submitTx,
+    checkTx: deps.checkTx,
     network: deps.network,
   };
 
@@ -37,7 +41,9 @@ export function registerGraphqlRoutes(app: Express, deps: GraphqlDeps): void {
       return;
     }
     try {
-      const result = await runGraphql(parsed.query, parsed.variables, parsed.operationName, ctx);
+      const result = apiContour
+        ? await runNautilus(parsed.query, parsed.variables, parsed.operationName, ctx)
+        : await runGraphql(parsed.query, parsed.variables, parsed.operationName, ctx);
       res.status(200).json(result);
     } finally {
       if (slot && slot.ok) slot.release();
@@ -49,7 +55,9 @@ export function registerGraphqlRoutes(app: Express, deps: GraphqlDeps): void {
     res.status(405).json({
       error: "use POST",
       path: "/v1/graphql",
-      note: "Our schema on this gateway. Not nautls / SigmaSpace. Body: { query, variables? }.",
+      note: apiContour
+        ? "Wallet schema. POST { query, variables? }."
+        : "Our schema on this gateway. Not nautls / SigmaSpace. Body: { query, variables? }.",
     });
   };
 

@@ -775,6 +775,7 @@ registerGraphqlRoutes(app, {
   getRawMempool: () => rawMempool,
   getFullHeight: () => nodeInfo.fullHeight,
   submitTx: (body) => nodePost("/transactions", body, 20_000),
+  checkTx: (body) => nodePost("/transactions/check", body, 20_000),
   network: NETWORK,
 });
 

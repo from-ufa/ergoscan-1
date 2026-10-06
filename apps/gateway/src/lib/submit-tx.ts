@@ -116,7 +116,7 @@ export function logSubmitFail(e: unknown): void {
 }
 
 export function isSubmitTxQuery(query: string): boolean {
-  return /\bsubmitTx\s*\(/i.test(query);
+  return /\b(submitTx|submitTransaction|checkTransaction)\s*\(/i.test(query);
 }
 
 type SlotRow = { n: number; reset: number; inflight: number };
