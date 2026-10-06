@@ -5097,6 +5097,188 @@ html[data-ink="day"] .epoch-left {
   }
 }
 
+/* Block header tab: glance numbers, then the bytes a signer checks. */
+.hdr-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+.hdr-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+@media (min-width: 1024px) {
+  .hdr-facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.hdr-fact {
+  min-width: 0;
+  border-radius: 20px;
+  background: var(--wash-faint);
+  padding: 12px 14px;
+}
+.hdr-fact dt {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--muted);
+}
+.hdr-fact dd {
+  margin: 8px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 1024px) {
+  .block-switch.grid {
+    display: flex;
+  }
+  .block-switch > a {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    font-size: 12px;
+  }
+  .block-switch > .block-hop {
+    flex: 0 0 2.15rem;
+  }
+}
+.hdr-votes {
+  display: flex;
+  gap: 6px;
+}
+.hdr-vote {
+  min-width: 1.75rem;
+  padding: 1px 0 2px;
+  border-radius: 8px;
+  background: var(--wash);
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.3;
+}
+.hdr-vote.is-on {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.hdr-sheet {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--module);
+}
+.hdr-band {
+  margin: 0;
+  padding: 14px 14px 2px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--muted);
+}
+.hdr-band.is-split {
+  border-top: 1px solid var(--border);
+}
+.hdr-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: start;
+  padding: 10px 14px 12px;
+}
+.hdr-rows .hdr-row + .hdr-row {
+  border-top: 1px solid var(--border);
+}
+.hdr-k {
+  grid-column: 1;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.hdr-hex,
+.hdr-num,
+.hdr-empty {
+  grid-column: 1;
+  min-width: 0;
+}
+.hdr-row > button,
+.hdr-row > span:last-child {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+.hdr-hex,
+.hdr-num {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.hdr-hex {
+  word-break: break-all;
+}
+.hdr-num {
+  font-variant-numeric: tabular-nums;
+}
+.hdr-empty {
+  color: var(--muted-2);
+}
+@media (min-width: 640px) {
+  .hdr-row {
+    grid-template-columns: 11.5rem minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  .hdr-k,
+  .hdr-hex,
+  .hdr-num,
+  .hdr-empty {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .hdr-row > button,
+  .hdr-row > span:last-child {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@keyframes hdr-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hdr-doc .hdr-fact,
+.hdr-doc .hdr-sheet {
+  animation: hdr-drop 460ms var(--ease) both;
+}
+.hdr-doc .hdr-fact:nth-child(2) {
+  animation-delay: 50ms;
+}
+.hdr-doc .hdr-fact:nth-child(3) {
+  animation-delay: 100ms;
+}
+.hdr-doc .hdr-fact:nth-child(4) {
+  animation-delay: 150ms;
+}
+.hdr-doc .hdr-sheet {
+  animation-delay: 120ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hdr-doc .hdr-fact,
+  .hdr-doc .hdr-sheet {
+    animation: none;
+  }
+}
+
 /* Box card — payload slabs, R4–R9 bank, period fuse. */
 .box-tab {
   display: flex;

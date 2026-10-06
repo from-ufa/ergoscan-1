@@ -9,6 +9,7 @@ import { AddrFactCard } from "@/components/AddrFactCard";
 import { AddrFactMark } from "@/components/AddrFactMark";
 import { HopNav } from "@/components/HopNav";
 import { SegBar, segItem } from "@/components/SegBar";
+import { BlockHeaderSheet } from "./block-header";
 import { TxBallPit } from "@/components/TxBallPit";
 import { TxLaneRow } from "@/components/TxLaneRow";
 import { BlockMarkMiner, BlockMarkOutput } from "@/components/block-marks";
@@ -30,12 +31,14 @@ import { lookupAddress } from "@/lib/address-book";
 import { minerEmissionAtHeight, ERGO_MAX_BLOCK_SIZE } from "@/lib/ergo-emission";
 import { INK } from "@/lib/palette";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
+import { readHashTab, setHashTab } from "@/lib/hash-tab";
 import { useChainTipRefresh, useKeepFresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, enteringIds, snapshotPath, useEnterIds } from "@/lib/keyed-enter";
 import {
   BLOCK_TX_PACK,
   parseBlockCard,
   type BlockCard,
+  type BlockHeaderFields,
   type BlockListItem,
   type TxListItem,
 } from "@/lib/list-snapshots";
@@ -48,7 +51,10 @@ import {
   putBlockWindow,
 } from "@/lib/block-list-cache";
 
-const BLOCK_TABS = ["txs"] as const;
+const BLOCK_TABS = ["txs", "header"] as const;
+
+/** First open of a block may settle in. Arrow hops must not replay that motion. */
+let blockHopQuiet = false;
 type BlockTab = (typeof BLOCK_TABS)[number];
 
 type BlockHead = {
@@ -181,12 +187,17 @@ export function BlockView({
   initialRow,
   olderRow,
   newerRow,
+  initialHeader = null,
 }: {
   id: string;
   initialRow: BlockListItem | null;
   olderRow: BlockListItem | null;
   newerRow: BlockListItem | null;
+  /** Known on the first paint, so the button strip does not grow after the hop. */
+  initialHeader?: BlockHeaderFields | null;
 }) {
+  const hopQuiet = useRef(blockHopQuiet);
+  const [arrive, setArrive] = useState(false);
   const t = useT();
   const blockFav = useFavoriteOf("blocks", id);
   const { locale } = useI18n();
@@ -199,7 +210,9 @@ export function BlockView({
       newerRow ?? (initialRow ? peekBlockAtHeight(initialRow.height + 1) : null)
     )
   );
-  const [tab] = useState<BlockTab>("txs");
+  const [tab, setTab] = useState<BlockTab>("txs");
+  const [header, setHeader] = useState<BlockHeaderFields | null>(initialHeader);
+  const hashApplied = useRef(false);
   const [txs, setTxs] = useState<TxListItem[]>([]);
   const [txTotal, setTxTotal] = useState(initialRow?.txCount ?? 0);
   const [txReady, setTxReady] = useState(false);
@@ -229,8 +242,8 @@ export function BlockView({
           : enteringIds(prev, pack);
       txReadyRef.current = true;
       txsRef.current = pack;
-      if (first) packEnter.mark(["pack"]);
-      enter.mark(ids);
+      if (!hopQuiet.current && first) packEnter.mark(["pack"]);
+      if (!hopQuiet.current) enter.mark(ids);
       setTxs(pack);
       setTxReady(true);
     },
@@ -258,6 +271,13 @@ export function BlockView({
           if (!next) throw new Error("bad_payload");
           if (!headerOnly && want !== offsetRef.current) return;
           putBlockCard(next);
+          const nextHeader = next.header ?? null;
+          setHeader(nextHeader);
+          if (!nextHeader) setTab((cur) => (cur === "header" ? "txs" : cur));
+          else if (!hashApplied.current && readHashTab(BLOCK_TABS, "txs") === "header") {
+            setTab("header");
+          }
+          hashApplied.current = true;
           setHead((prev) => mergeHead(prev, next));
           setTxTotal(next.pagination.total || next.txCount);
           setErr(null);
@@ -300,6 +320,10 @@ export function BlockView({
   }, [id]);
 
   const painted = useRef(false);
+  useLayoutEffect(() => {
+    if (!hopQuiet.current) setArrive(true);
+    blockHopQuiet = true;
+  }, []);
   useEffect(() => {
     if (painted.current) return;
     painted.current = true;
@@ -425,7 +449,7 @@ export function BlockView({
           <div className="col-span-2 flex min-h-0 flex-col gap-2 lg:col-span-1 lg:row-span-2">
             <AddrFactCard
               className="min-h-0 h-auto flex-1"
-              enter={0}
+              enter={arrive ? 0 : undefined}
               label={t("blocks.height")}
               ink={INK.violet}
               asideLead="block"
@@ -453,12 +477,32 @@ export function BlockView({
                 />
               </p>
             </AddrFactCard>
-            <SegBar cols={3} className="shrink-0">
-              {BLOCK_TABS.map((idTab) => (
-                <span key={idTab} className={segItem(true)}>
-                  {t(`block.tab.${idTab}`)}
-                </span>
-              ))}
+            <SegBar
+              cols={header ? 4 : 3}
+              className={clsx("shrink-0", header && "block-switch")}
+            >
+              <a
+                href="#txs"
+                onClick={(e) => {
+                  setHashTab("txs", e);
+                  setTab("txs");
+                }}
+                className={segItem(tab === "txs" || !header)}
+              >
+                {t("block.tab.txs")}
+              </a>
+              {header ? (
+                <a
+                  href="#header"
+                  onClick={(e) => {
+                    setHashTab("header", e);
+                    setTab("header");
+                  }}
+                  className={segItem(tab === "header")}
+                >
+                  {t("block.tab.header")}
+                </a>
+              ) : null}
               <HopNav
                 dir="back"
                 pageId={head.id}
@@ -494,7 +538,7 @@ export function BlockView({
 
           <AddrFactCard
             className="col-span-2 overflow-hidden lg:col-span-1 lg:row-span-2"
-            enter={1}
+            enter={arrive ? 1 : undefined}
             label={t("block.card.output")}
             ink={INK.cyan}
             mark={<BlockMarkOutput className="h-10 w-10" />}
@@ -519,7 +563,7 @@ export function BlockView({
           </AddrFactCard>
 
           <AddrFactCard
-            enter={2}
+            enter={arrive ? 2 : undefined}
             label={t("block.card.miner")}
             ink={INK.sky}
             mark={<BlockMarkMiner className="h-9 w-9" />}
@@ -545,7 +589,7 @@ export function BlockView({
           </AddrFactCard>
 
           <AddrFactCard
-            enter={3}
+            enter={arrive ? 3 : undefined}
             label={t("block.card.fees")}
             ink={INK.gold}
             mark={<KpiMarkFees className="h-9 w-9" />}
@@ -562,7 +606,7 @@ export function BlockView({
           </AddrFactCard>
 
           <AddrFactCard
-            enter={4}
+            enter={arrive ? 4 : undefined}
             label={t("block.card.size")}
             ink={INK.green}
             mark={<KpiMarkPayload className="h-9 w-9" />}
@@ -576,7 +620,7 @@ export function BlockView({
           </AddrFactCard>
 
           <AddrFactCard
-            enter={5}
+            enter={arrive ? 5 : undefined}
             label={t("block.card.time")}
             ink={INK.teal}
             mark={<AddrFactMark id="clock" className="h-9 w-9" />}
@@ -591,7 +635,9 @@ export function BlockView({
         </div>
       )}
 
-      {tab === "txs" && (
+      {tab === "header" && header ? (
+        <BlockHeaderSheet header={header} t={t} />
+      ) : (
         <>
           {!txReady && !err ? null : !txs.length && !err ? (
             <p className="mt-6 text-[var(--muted)]">{t("block.noTxs")}</p>

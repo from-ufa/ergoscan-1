@@ -55,6 +55,68 @@ export type TxListItem = {
 
 export const BLOCK_TX_PACK = 25;
 
+export type BlockHeaderFields = {
+  version: number | null;
+  nBits: string | null;
+  votes: number[];
+  difficulty: string | null;
+  stateRoot: string;
+  adProofsRoot: string;
+  transactionsRoot: string;
+  extensionHash: string;
+  powPk: string | null;
+  powW: string | null;
+  powN: string | null;
+  powD: string | null;
+};
+
+function asHex(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim().toLowerCase();
+  if (!s || !/^[0-9a-f]+$/.test(s) || s.length % 2 !== 0) return null;
+  return s;
+}
+
+function asDigits(v: unknown): string | null {
+  if (typeof v === "number" && Number.isFinite(v)) return String(Math.trunc(v));
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  return /^-?\d+$/.test(s) ? s : null;
+}
+
+function asVotes(v: unknown): number[] {
+  if (!Array.isArray(v)) return [];
+  const out: number[] = [];
+  for (const x of v) {
+    const n = typeof x === "number" ? x : Number(x);
+    if (!Number.isInteger(n) || n < 0 || n > 255) return [];
+    out.push(n);
+  }
+  return out;
+}
+
+export function parseBlockHeader(raw: unknown): BlockHeaderFields | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  const stateRoot = asHex(r.stateRoot);
+  if (!stateRoot) return null;
+  const version = r.version == null || r.version === "" ? null : Number(r.version);
+  return {
+    version: version != null && Number.isInteger(version) ? version : null,
+    nBits: asDigits(r.nBits),
+    votes: asVotes(r.votes),
+    difficulty: asDigits(r.difficulty),
+    stateRoot,
+    adProofsRoot: asHex(r.adProofsRoot) ?? "",
+    transactionsRoot: asHex(r.transactionsRoot) ?? "",
+    extensionHash: asHex(r.extensionHash) ?? "",
+    powPk: asHex(r.powPk),
+    powW: asHex(r.powW),
+    powN: asHex(r.powN),
+    powD: asDigits(r.powD),
+  };
+}
+
 export type BlockCard = {
   id: string;
   height: number;
@@ -71,6 +133,8 @@ export type BlockCard = {
   prevTimestamp: number | null;
   tipHeight: number | null;
   payingTxCount: number | null;
+  /** Signing header. Missing until the indexer has filled this height. */
+  header?: BlockHeaderFields | null;
   transactions: string[];
   txs: TxListItem[];
   pagination: {
@@ -914,6 +978,7 @@ export function parseBlockCard(raw: unknown): BlockCard | null {
     prevTimestamp: finiteNum(r.prevTimestamp),
     tipHeight: finiteNum(r.tipHeight),
     payingTxCount: finiteNum(r.payingTxCount),
+    header: parseBlockHeader(r.header),
     transactions: Array.isArray(r.transactions)
       ? r.transactions.filter((x): x is string => typeof x === "string")
       : txs.map((t) => t.id),

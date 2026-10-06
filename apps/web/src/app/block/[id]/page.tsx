@@ -34,7 +34,8 @@ export default async function BlockPage({
     initialRow != null
       ? list.find((row) => row.height === initialRow.height + 1) ?? null
       : null;
-  const meta = blockPageMeta(key, await cachedBlock(key));
+  const card = await cachedBlock(key);
+  const meta = blockPageMeta(key, card);
   return (
     <>
       <JsonLd
@@ -50,6 +51,7 @@ export default async function BlockPage({
         initialRow={initialRow}
         olderRow={olderRow}
         newerRow={newerRow}
+        initialHeader={card?.header ?? null}
       />
     </>
   );
