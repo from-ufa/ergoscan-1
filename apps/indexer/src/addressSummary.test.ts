@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   ADDR_TX_LAST_HEIGHT_SQL,
+  UNSPENT_VALUE_INDEX,
   isHugeSummaryAddress,
 } from "./addressSummary.js";
 import { ADDRESS_SUMMARY_TX_BUMP_SET } from "./batchSql.js";
@@ -12,6 +13,11 @@ test("address_tx last is LIMIT 1, not MAX over the whole history", () => {
   assert.doesNotMatch(ADDR_TX_LAST_HEIGHT_SQL, /\bMAX\s*\(/i);
   assert.doesNotMatch(ADDR_TX_LAST_HEIGHT_SQL, /JOIN packed\.address_tx/);
   assert.match(ADDR_TX_LAST_HEIGHT_SQL, /x\.addr_id = \(SELECT ad\.id FROM packed\.addr ad/);
+});
+
+test("fat ERG sums use the packed unspent index", () => {
+  assert.equal(UNSPENT_VALUE_INDEX.schema, "packed");
+  assert.equal(UNSPENT_VALUE_INDEX.name, "packed_boxes_unspent_addr_value_idx");
 });
 
 test("a P2S longer than 2000 chars is stored by hash, not skipped", () => {

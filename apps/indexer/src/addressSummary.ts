@@ -65,12 +65,18 @@ export async function ensureLongAddressLookup(pool: pg.Pool): Promise<void> {
   console.log(`[indexer] boxes_unspent_long_md5_idx ready ${Date.now() - t0}ms`);
 }
 
-/** Skip SUM on these until boxes_unspent_value_idx is indisvalid. */
+/**
+ * Skip the unspent SUM only when the packed covering index is not valid.
+ * The old public.boxes index is gone; looking it up skipped every whale.
+ */
 export const FAT_SUMMARY_BOX_COUNT = 4000;
 
-const BOXES_UNSPENT_VALUE_IDX = "boxes_unspent_value_idx";
+export const UNSPENT_VALUE_INDEX = {
+  schema: "packed",
+  name: "packed_boxes_unspent_addr_value_idx",
+} as const;
 
-/** True only when the covering index exists and pg_index.indisvalid. */
+/** True only when the packed covering index exists and pg_index.indisvalid. */
 export async function isBoxesUnspentValueIdxValid(db: Queryable): Promise<boolean> {
   const r = await db.query<{ indisvalid: boolean }>(
     `SELECT i.indisvalid
@@ -78,8 +84,8 @@ export async function isBoxesUnspentValueIdxValid(db: Queryable): Promise<boolea
        JOIN pg_class c ON c.oid = i.indexrelid
        JOIN pg_namespace n ON n.oid = c.relnamespace
       WHERE c.relname = $1
-        AND n.nspname = 'public'`,
-    [BOXES_UNSPENT_VALUE_IDX]
+        AND n.nspname = $2`,
+    [UNSPENT_VALUE_INDEX.name, UNSPENT_VALUE_INDEX.schema]
   );
   return r.rows[0]?.indisvalid === true;
 }
