@@ -92,13 +92,27 @@ SELECT
   (SELECT encode(id, 'hex') FROM packed.transactions
     WHERE height = $1 AND index_in_block = $3 LIMIT 1) AS next_id`;
 
+const PACKED_BLOCK_HEADER_COLS = `
+       version,
+       n_bits::text AS "nBits",
+       encode(votes, 'hex') AS votes,
+       encode(state_root, 'hex') AS "stateRoot",
+       encode(ad_proofs_root, 'hex') AS "adProofsRoot",
+       encode(transactions_root, 'hex') AS "transactionsRoot",
+       encode(extension_hash, 'hex') AS "extensionHash",
+       miner_pk AS "powPk",
+       encode(pow_w, 'hex') AS "powW",
+       encode(pow_n, 'hex') AS "powN",
+       pow_d::text AS "powD"`;
+
 export const PACKED_BLOCK_BY_HEIGHT_SQL = `
 SELECT encode(id, 'hex') AS id, height, timestamp_ms AS timestamp,
        COALESCE(size, 0) AS size, tx_count AS "txCount",
        encode(parent_id, 'hex') AS "parentId",
        miner_address AS "minerAddress", difficulty,
        COALESCE(fee_nano, 0)::text AS "feeNano",
-       COALESCE(value_nano, 0)::text AS "valueNano"
+       COALESCE(value_nano, 0)::text AS "valueNano",
+       ${PACKED_BLOCK_HEADER_COLS}
   FROM packed.blocks
  WHERE height = $1
  LIMIT 1`;
@@ -109,7 +123,8 @@ SELECT encode(id, 'hex') AS id, height, timestamp_ms AS timestamp,
        encode(parent_id, 'hex') AS "parentId",
        miner_address AS "minerAddress", difficulty,
        COALESCE(fee_nano, 0)::text AS "feeNano",
-       COALESCE(value_nano, 0)::text AS "valueNano"
+       COALESCE(value_nano, 0)::text AS "valueNano",
+       ${PACKED_BLOCK_HEADER_COLS}
   FROM packed.blocks
  WHERE id = decode(lower($1), 'hex')
  LIMIT 1`;

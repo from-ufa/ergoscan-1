@@ -34,6 +34,7 @@ import {
   type RentWindow,
 } from "./rentIndex.js";
 import { classifyTxShape, txTapeFields, rentTapePaint, MINERS_FEE_ADDRESS, MINERS_FEE_TREE, fillRentWeekGaps, parseRentSeries, parseRentTape, parseRentEpochBoxes, parseRentEpochNano, pickTxLock, type RentTapeCategory, type RentTapeRow, type ShapeBox } from "@ergoscan/shared";
+import { blockHeaderFromRow, type BlockHeaderView } from "./blockHeader.js";
 
 export const SNAP_BLOCKS = "blocks_latest";
 export const SNAP_TXS = "txs_recent";
@@ -733,6 +734,8 @@ export type BlockCard = {
   /** Output sum minus coinbase. Additive. */
   userValueNano?: string;
   difficulty: string | null;
+  /** Signing header. Null until the indexer has filled this height. */
+  header: BlockHeaderView | null;
   prevTimestamp: number | null;
   tipHeight: number | null;
   payingTxCount: number | null;
@@ -816,6 +819,17 @@ export async function getBlockCard(
     difficulty: string | null;
     feeNano: string | null;
     valueNano: string | null;
+    version?: unknown;
+    nBits?: unknown;
+    votes?: unknown;
+    stateRoot?: unknown;
+    adProofsRoot?: unknown;
+    transactionsRoot?: unknown;
+    extensionHash?: unknown;
+    powPk?: unknown;
+    powW?: unknown;
+    powN?: unknown;
+    powD?: unknown;
   }>(
     packed
       ? byHeight
@@ -935,6 +949,7 @@ export async function getBlockCard(
     feeNano: nanoDigits(counts?.[0]?.fee_nano ?? b.feeNano),
     valueNano: nanoDigits(b.valueNano),
     difficulty: b.difficulty && String(b.difficulty).length ? String(b.difficulty) : null,
+    header: blockHeaderFromRow(b),
     prevTimestamp: prevRows?.[0] ? nNull(prevRows[0].timestamp) : null,
     tipHeight: tip?.height ?? null,
     payingTxCount,
