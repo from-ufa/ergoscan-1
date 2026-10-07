@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     return [
       { source: "/richlist", destination: "/addresses", permanent: true },
       { source: "/operators/oracles", destination: "/oracles", permanent: false },
+      // Nautilus opens /transactions/:id and /addresses/:id. Our pages are /tx and /address.
+      { source: "/transactions/:id", destination: "/tx/:id", permanent: true },
+      { source: "/addresses/:id", destination: "/address/:id", permanent: true },
     ];
   },
 };
