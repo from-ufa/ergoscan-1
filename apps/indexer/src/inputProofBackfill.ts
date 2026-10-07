@@ -1,17 +1,18 @@
 /**
  * Spending-proof bytes on packed.tx_inputs.
  * Live tip writes them with the spend. History walks packed.blocks from
- * genesis and stops at last_height. Source is the local node full block.
+ * genesis and stops at last_height. Source is the node transactions
+ * section, not the full block: ad proofs are not needed here.
  * An empty proof stays NULL. Cursor is indexer_state.input_proof_height.
- * One short bite per tick. Does not touch block_section_height.
+ * One bite per tick. Does not touch block_section_height.
  */
 import type pg from "pg";
 
 const HEIGHT_KEY = "input_proof_height";
 const LAG_SKIP = 8;
-const BATCH = 6;
-const FETCHES = 4;
-const BUDGET_MS = 800;
+const BATCH = 32;
+const FETCHES = 16;
+const BUDGET_MS = 3500;
 
 const NODE = (process.env.ERGO_NODE_URL || "http://127.0.0.1:9053").replace(/\/$/, "");
 
@@ -20,12 +21,27 @@ type NodeInput = {
   spendingProof?: { proofBytes?: string };
 };
 
+type NodeTx = { inputs?: NodeInput[] };
+
 type NodeBlock = {
   header?: { id?: string };
-  blockTransactions?: {
-    transactions?: Array<{ inputs?: NodeInput[] }>;
-  };
+  headerId?: string;
+  blockTransactions?: { transactions?: NodeTx[] };
+  transactions?: NodeTx[];
 };
+
+function blockTxs(block: NodeBlock | null | undefined): NodeTx[] | null {
+  if (!block) return null;
+  if (Array.isArray(block.transactions)) return block.transactions;
+  if (block.blockTransactions && Array.isArray(block.blockTransactions.transactions)) {
+    return block.blockTransactions.transactions;
+  }
+  return null;
+}
+
+export function blockHeaderId(block: NodeBlock | null | undefined): string {
+  return (block?.header?.id || block?.headerId || "").trim().toLowerCase();
+}
 
 export function spendingProofHex(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
@@ -38,7 +54,9 @@ export function spendingProofHex(raw: unknown): string | null {
 export function inputProofsFromBlock(block: NodeBlock | null | undefined): { boxId: string; proof: string }[] {
   const out: { boxId: string; proof: string }[] = [];
   const seen = new Set<string>();
-  for (const tx of block?.blockTransactions?.transactions ?? []) {
+  const txs = blockTxs(block);
+  if (!txs) return out;
+  for (const tx of txs) {
     for (const input of tx.inputs ?? []) {
       const boxId = (input.boxId ?? "").trim().toLowerCase();
       const proof = spendingProofHex(input.spendingProof?.proofBytes);
@@ -68,7 +86,7 @@ async function setState(db: Queryable, key: string, value: string): Promise<void
 }
 
 async function fetchBlock(headerId: string): Promise<NodeBlock> {
-  const res = await fetch(`${NODE}/blocks/${headerId}`, {
+  const res = await fetch(`${NODE}/blocks/${headerId}/transactions`, {
     signal: AbortSignal.timeout(20_000),
     headers: { accept: "application/json" },
   });
@@ -126,26 +144,35 @@ export async function maybeBackfillInputProofs(pool: pg.Pool): Promise<void> {
         return { row, block, proofs: inputProofsFromBlock(block) };
       });
 
-      await client.query("BEGIN");
-      await client.query(`SET LOCAL statement_timeout = '20s'`);
+      const boxIds: string[] = [];
+      const proofs: string[] = [];
+      const heights: number[] = [];
       for (const item of blocks) {
-        const id = (item.block.header?.id ?? "").toLowerCase();
-        if (!item.block.blockTransactions) {
-          throw new Error(`block txs missing at ${item.row.height}`);
-        }
+        const txs = blockTxs(item.block);
+        if (!txs) throw new Error(`block txs missing at ${item.row.height}`);
+        const id = blockHeaderId(item.block);
         if (id && id !== item.row.id.toLowerCase()) {
           throw new Error(`block id mismatch at ${item.row.height}`);
         }
-        if (!item.proofs.length) continue;
+        const height = Number(item.row.height);
+        for (const proof of item.proofs) {
+          boxIds.push(proof.boxId);
+          proofs.push(proof.proof);
+          heights.push(height);
+        }
+      }
+      await client.query("BEGIN");
+      await client.query(`SET LOCAL statement_timeout = '20s'`);
+      if (boxIds.length) {
         await client.query(
           `UPDATE packed.tx_inputs AS t
               SET proof_bytes = decode(v.proof, 'hex')
-             FROM unnest($1::text[], $2::text[]) AS v(box_id, proof)
+             FROM unnest($1::text[], $2::text[], $3::bigint[]) AS v(box_id, proof, spent_height)
             WHERE t.box_id = packed.hex32(v.box_id)
-              AND t.spent_height = $3
+              AND t.spent_height = v.spent_height
               AND v.proof ~ '^[0-9a-fA-F]{2,}$'
               AND length(v.proof) % 2 = 0`,
-          [item.proofs.map((p) => p.boxId), item.proofs.map((p) => p.proof), Number(item.row.height)]
+          [boxIds, proofs, heights]
         );
       }
       const hi = Number(rows.rows[rows.rows.length - 1]!.height);
