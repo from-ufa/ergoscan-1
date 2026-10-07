@@ -55,6 +55,12 @@ import {
 import { warmErgoTreeParser } from "./lib/ergoTree.js";
 import { startTemplateHashFill } from "./lib/templateHashFill.js";
 import { toPublicHealth, type OpsHealth } from "./lib/public-health.js";
+import {
+  allowStreamOrigin,
+  headerOrigin,
+  isApiContour,
+  siteCorsReflect,
+} from "./lib/siteOrigin.js";
 
 const PORT = Number(process.env.PORT ?? 4400);
 const BIND = process.env.BIND || "127.0.0.1";
@@ -88,7 +94,26 @@ const seals = new SealWatcher(node);
 const orbitPeers = startOrbitPeerCache((path, timeoutMs) => node.get(path, timeoutMs));
 
 const app = express();
-app.use(cors());
+if (isApiContour()) {
+  app.use(cors());
+} else {
+  app.use((_req, res, next) => {
+    const prev = res.getHeader("Vary");
+    if (!prev) res.setHeader("Vary", "Origin");
+    else if (!String(prev).toLowerCase().includes("origin")) {
+      res.setHeader("Vary", `${String(prev)}, Origin`);
+    }
+    next();
+  });
+  app.use(
+    cors({
+      origin(origin, callback) {
+        const reflected = siteCorsReflect(origin);
+        callback(null, reflected === false ? false : reflected);
+      },
+    })
+  );
+}
 app.use(express.json());
 
 /**
@@ -835,9 +860,31 @@ app.get("/v1/search", async (req, res) => {
 // ─── WS ─────────────────────────────────────────────────────────────
 
 const server = createServer(app);
-const wss = new WebSocketServer({ server, path: "/v1/stream" });
+/**
+ * Live browser handshakes send Origin (seen: https://ergoscan.me).
+ * An empty Origin is not a page. The API process does not use this gate.
+ */
+const STREAM_ALLOW_EMPTY_ORIGIN = false;
+const wss = new WebSocketServer({
+  server,
+  path: "/v1/stream",
+  verifyClient: (info, cb) => {
+    const origin = headerOrigin(info.req.headers.origin);
+    if (allowStreamOrigin(origin, STREAM_ALLOW_EMPTY_ORIGIN)) {
+      cb(true);
+      return;
+    }
+    cb(false, 403, "origin");
+  },
+});
 
-wss.on("connection", (ws) => {
+let streamOriginLogged = false;
+wss.on("connection", (ws, req) => {
+  if (!streamOriginLogged) {
+    streamOriginLogged = true;
+    const origin = headerOrigin(req.headers.origin);
+    console.log(`[ergoscan-gateway] stream origin ${origin ?? "(none)"}`);
+  }
   clients.add(ws);
   const hello: WsServerEvent = { type: "hello", data: { version: "1.0.0", mock: usingMock } };
   ws.send(JSON.stringify(hello));

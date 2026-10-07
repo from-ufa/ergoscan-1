@@ -17,6 +17,8 @@ test("OpenAPI intro is the public API contract", () => {
   assert.ok(OPENAPI_INFO_DESCRIPTION.includes("10 per minute"));
   assert.ok(OPENAPI_INFO_DESCRIPTION.includes("decimal **strings**"));
   assert.ok(OPENAPI_INFO_DESCRIPTION.includes("hasMore"));
+  assert.ok(OPENAPI_INFO_DESCRIPTION.includes("https://ergoscan.me and https://www.ergoscan.me may read this host"));
+  assert.ok(OPENAPI_INFO_DESCRIPTION.includes("Other websites may not"));
   assert.ok(OPENAPI_INFO_DESCRIPTION.includes("Access-Control-Allow-Origin: *"));
   assert.ok(OPENAPI_INFO_DESCRIPTION.includes("https://api.ergoscan.me/docs"));
   assert.equal(OPENAPI_INFO_DESCRIPTION.includes("https://ergoscan.me/docs"), false);

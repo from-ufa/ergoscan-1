@@ -35,7 +35,7 @@ export const OPENAPI_INFO_DESCRIPTION = [
   "GraphQL reads the same index. Query depth ≤ 7. gix windows ≤ 10000 (4s timeout). `submitTx` shares the submit rate limit.",
   "",
   "# Cross-Origin Resource Sharing",
-  "This API sends `Access-Control-Allow-Origin: *`. Wallets and dApps may call from the browser. Do not send cookies or credentials.",
+  "Browser pages on https://ergoscan.me and https://www.ergoscan.me may read this host. Other websites may not. Wallets and dApps use https://api.ergoscan.me, which sends `Access-Control-Allow-Origin: *`. Do not send cookies or credentials.",
   "",
   "# Authentication",
   "This API does not require authentication. There is no API key and no paid plan.",
