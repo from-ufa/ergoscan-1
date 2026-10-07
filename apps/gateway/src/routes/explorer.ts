@@ -836,13 +836,13 @@ const OPENAPI_SPEC = {
     "/v1/blocks": {
       get: {
         summary:
-          "Latest blocks from indexer snapshot `blocks_latest` (not the node). Raw array when no offset/cursor. Additive ?limit=&offset= or ?cursor= (height) returns { items, hasMore, nextCursor, offset, updatedAt }. Pager is keyset on `blocks.height`, not a 50-row snapshot cap. Additive userValueNano = output sum minus coinbase (emission-box recycle). Additive lithos is true when the block spends one LITHOS-COLLAT.",
+          "Latest blocks from indexer snapshot `blocks_latest` (not the node). Raw array when no offset/cursor. Additive ?limit=&offset= or ?cursor= (height) returns { items, hasMore, nextCursor, offset, updatedAt }. Pager is keyset on `blocks.height`, not a 50-row snapshot cap. Additive userValueNano = output sum minus coinbase (emission-box recycle). Additive lithos is true when the block was mined with Lithos: one LITHOS-COLLAT leaves the collateral contract. The later return is not marked. The first page reads the flag from snapshot blocks_latest.",
       },
     },
     "/v1/blocks/{id}": {
       get: {
         summary:
-          "Block card from indexer tables (not the node). Additive ?limit=&offset= packs txs (default 25). limit=0 is header only. Additive txs[].tokenCount = distinct tokens on boxes created or spent by that tx. Additive userValueNano = output sum minus coinbase. Additive lithos is true when the block spends one LITHOS-COLLAT.",
+          "Block card from indexer tables (not the node). Additive ?limit=&offset= packs txs (default 25). limit=0 is header only. Additive txs[].tokenCount = distinct tokens on boxes created or spent by that tx. Additive userValueNano = output sum minus coinbase. Additive lithos is true when this block was mined with Lithos: one LITHOS-COLLAT leaves the collateral contract.",
       },
     },
     "/v1/transactions/{id}": {

@@ -33,7 +33,7 @@ import {
   type RentTab,
   type RentWindow,
 } from "./rentIndex.js";
-import { classifyTxShape, txTapeFields, rentTapePaint, MINERS_FEE_ADDRESS, MINERS_FEE_TREE, fillRentWeekGaps, parseRentSeries, parseRentTape, parseRentEpochBoxes, parseRentEpochNano, pickTxLock, LITHOS_COLLAT_TOKEN_ID, type RentTapeCategory, type RentTapeRow, type ShapeBox } from "@ergoscan/shared";
+import { classifyTxShape, txTapeFields, rentTapePaint, MINERS_FEE_ADDRESS, MINERS_FEE_TREE, fillRentWeekGaps, parseRentSeries, parseRentTape, parseRentEpochBoxes, parseRentEpochNano, pickTxLock, LITHOS_COLLAT_ADDRESS, LITHOS_COLLAT_TOKEN_ID, LITHOS_MINED_HEIGHTS_SQL, type RentTapeCategory, type RentTapeRow, type ShapeBox } from "@ergoscan/shared";
 import { blockHeaderFromRow, type BlockHeaderView } from "./blockHeader.js";
 
 export const SNAP_BLOCKS = "blocks_latest";
@@ -61,7 +61,7 @@ export type BlockListItem = {
   valueNano: string;
   /** Output sum minus coinbase (emission-box recycle). Additive. */
   userValueNano?: string;
-  /** True when this block spends one LITHOS-COLLAT. Additive. */
+  /** True when this block was mined with Lithos. Additive. */
   lithos?: boolean;
 };
 
@@ -261,27 +261,33 @@ const BLOCK_TAPE_SQL = `SELECT id, height, timestamp_ms AS timestamp, COALESCE(s
             COALESCE(value_nano, 0)::text AS "valueNano"
      FROM blocks`;
 
-/** Heights in this pack that spend one LITHOS-COLLAT. One lookup for the whole page. */
+/** True when the blocks_latest payload already carries the mined-block flag. */
+function blocksSnapshotHasLithos(items: BlockListItem[]): boolean {
+  return items.length > 0 && items.every((item) => typeof item.lithos === "boolean");
+}
+
+/** Heights in this pack mined with Lithos. One lookup for a page that is not the snapshot. */
 async function lithosHeights(heights: number[]): Promise<Set<number>> {
   if (!packedReadEnabled()) return new Set();
   const unique = [...new Set(heights.filter((h) => Number.isInteger(h) && h >= 0))];
   if (!unique.length) return new Set();
-  const rows = await q<{ height: string }>(
-    `SELECT DISTINCT i.spent_height::text AS height
-       FROM packed.tx_inputs i
-       JOIN packed.box_assets ba
-         ON ba.box_id = i.box_id
-        AND ba.token_id = decode($2, 'hex')
-        AND ba.amount = 1
-      WHERE i.spent_height = ANY($1::bigint[])`,
-    [unique, LITHOS_COLLAT_TOKEN_ID]
-  );
+  const rows = await q<{ height: string }>(LITHOS_MINED_HEIGHTS_SQL, [
+    unique,
+    LITHOS_COLLAT_TOKEN_ID,
+    LITHOS_COLLAT_ADDRESS,
+  ]);
   const hit = new Set<number>();
   for (const row of rows ?? []) {
     const h = Number(row.height);
     if (Number.isInteger(h)) hit.add(h);
   }
   return hit;
+}
+
+/** Snapshot pages already have the flag. Cursor pages and the block card look it up. */
+async function paintLithos(items: BlockListItem[]): Promise<BlockListItem[]> {
+  if (blocksSnapshotHasLithos(items)) return items;
+  return markLithos(items, await lithosHeights(items.map((item) => item.height)));
 }
 
 function markLithos(items: BlockListItem[], hit: Set<number>): BlockListItem[] {
@@ -367,10 +373,7 @@ async function selectBlocksPage(
   if (!rows) return null;
   const items = rows.map(mapBlock);
   const valued = paintUserValue ? await attachUserValueNano(items) : items;
-  return markLithos(
-    valued,
-    await lithosHeights(valued.map((item) => item.height))
-  );
+  return paintLithos(valued);
 }
 
 export async function selectBlocks(limit: number, paintUserValue = true): Promise<BlockListItem[] | null> {
@@ -730,7 +733,7 @@ export async function getBlocksList(
     if (!hasMore && last) hasMore = await blocksHaveOlder(last.height);
     const valued = await attachUserValueNano(page);
     return {
-      blocks: markLithos(valued, await lithosHeights(valued.map((item) => item.height))),
+      blocks: await paintLithos(valued),
       hasMore,
       nextCursor: hasMore && last ? String(last.height) : null,
       meta: { height: snap.height, updatedAt: snap.updatedAt },
@@ -768,7 +771,7 @@ export type BlockCard = {
   valueNano: string;
   /** Output sum minus coinbase. Additive. */
   userValueNano?: string;
-  /** True when this block spends one LITHOS-COLLAT. Additive. */
+  /** True when this block was mined with Lithos. Additive. */
   lithos?: boolean;
   difficulty: string | null;
   /** Signing header. Null until the indexer has filled this height. */

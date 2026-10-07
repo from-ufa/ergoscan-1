@@ -8,6 +8,9 @@ import {
   HOME_RENT_PROBE,
   ERG_USD_ORACLE_NFTS,
   KNOWN_TOKENS,
+  LITHOS_COLLAT_ADDRESS,
+  LITHOS_COLLAT_TOKEN_ID,
+  LITHOS_MINED_HEIGHTS_SQL,
   ORACLE_FEEDS,
   pickRentTapeAddresses,
   registerPayloadBytes,
@@ -72,6 +75,8 @@ export type BlockListItem = {
   minerName: string | null;
   feeNano: string;
   valueNano: string;
+  /** True when this block was mined with Lithos. Written with the list snapshot. */
+  lithos?: boolean;
 };
 
 export type AddressListItem = {
@@ -185,6 +190,23 @@ export type TxListItem = {
 function nanoDigits(raw: unknown): string {
   const s = String(raw ?? "0").trim();
   return /^\d+$/.test(s) ? s : "0";
+}
+
+/** One lookup for the 50-row list. A failure leaves the flag off so GET can still look it up. */
+async function paintLithosBlocks(pool: Pool, blocks: BlockListItem[]): Promise<BlockListItem[]> {
+  const heights = blocks.map((b) => b.height).filter((h) => Number.isInteger(h) && h >= 0);
+  if (!heights.length) return blocks;
+  const marked = await pool.query<{ height: string }>(LITHOS_MINED_HEIGHTS_SQL, [
+    heights,
+    LITHOS_COLLAT_TOKEN_ID,
+    LITHOS_COLLAT_ADDRESS,
+  ]);
+  const hit = new Set<number>();
+  for (const row of marked.rows) {
+    const h = Number(row.height);
+    if (Number.isInteger(h)) hit.add(h);
+  }
+  return blocks.map((b) => ({ ...b, lithos: hit.has(b.height) }));
 }
 
 function mapBlock(r: BlockRow): BlockListItem {
@@ -1906,7 +1928,12 @@ export async function writeListSnapshots(
      LIMIT $1`,
     [BLOCKS_N]
   );
-  const blocks = blocksRes.rows.map(mapBlock);
+  let blocks = blocksRes.rows.map(mapBlock);
+  try {
+    blocks = await paintLithosBlocks(pool, blocks);
+  } catch (e) {
+    console.warn("[indexer] lithos block snapshot", String(e));
+  }
 
   const txsRes = await pool.query<{
     id: string;

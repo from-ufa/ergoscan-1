@@ -32,7 +32,7 @@ export type BlockListItem = {
   valueNano?: string | number | null;
   /** Output sum minus coinbase. Additive. */
   userValueNano?: string | number | null;
-  /** True when this block spends one LITHOS-COLLAT. Additive. */
+  /** True when this block was mined with Lithos. Additive. */
   lithos?: boolean;
 };
 
@@ -132,7 +132,7 @@ export type BlockCard = {
   feeNano: string;
   valueNano: string;
   userValueNano?: string;
-  /** True when this block spends one LITHOS-COLLAT. */
+  /** True when this block was mined with Lithos. */
   lithos?: boolean;
   prevTimestamp: number | null;
   tipHeight: number | null;

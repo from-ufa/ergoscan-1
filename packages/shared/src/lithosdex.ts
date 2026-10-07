@@ -23,11 +23,31 @@ export const LIT_TOKEN_ID_MAINNET =
 
 /**
  * LITHOS-COLLAT, the collateral proposition token.
- * A Lithos block spends a box that holds amount 1 of this id.
+ * A Lithos-mined block spends a box that holds amount 1 of this id
+ * at LITHOS_COLLAT_ADDRESS. The later return spends the same amount
+ * from the park address and is not a mined block.
  * The emission bank holds ~2^63 of the same id; that amount is not the mark.
  */
 export const LITHOS_COLLAT_TOKEN_ID =
   "a8a790e784e93ac0e68649181ae3d251e84fb5c741624100e7e945ae1e82dc98";
+
+/** Collateral contract. Spending amount 1 from here is a Lithos-mined block. */
+export const LITHOS_COLLAT_ADDRESS =
+  "foqgf3Ys6E6JCr9CA4KQM3H9uPcpDT7YB9cENzuEE2bsX8Uce9xmpnfLqvLFPmrW4QYwNZg6Dk8cnwvCbFXMsucJYVCrMdS2ZGrFcT8hXdGWUzF2mLQQXcQBpLaLuJCUDT7L9HuxtMEkUC1MDnBzhsEeCQqNyRFPVAzQiDsFr2KUb2XPVN8PyUzyrptSxK8uu9TtZg3fmk5DuvHJEt3gGVrHfCYtRZGW1oiRY1W5FWC5vkRJUq4KSSKjmnorq8LttoKKgmbeo7yCBJg4ckumzmrQV3XZqGr9tJeZaa4QfVGUoAKVVhtfFenRh5Z3aSGh57eRFrWRJJ23T1TzvzCBPAeHEibfBgLRqU4iosXJJhHWPy2kQq6D2bryAqKEDsrdRLdPZ4C8SKD665cMxGrCS3gEhw2jbYL4iBkD422Et1WghudtMK79t99Kq2rrBX1GtuTopfsGUwABrJaFcHdNxY7uSCGEboL46QtbqvJs3qMpARJYDXPQSHYtMchBWHCoWD16p1CpfWfzb7g4Wx8C3XyUs7PkcFEbSPUes5nhaTLMziwoYwy626A811TZWvdjX6jtPch7Gofnr3BYT2zpLv2jK73QC95sCadezHoLi5rNY5CDKuputjdVojjjgrz3iRY7NuFGfPjN8twXSFc8jDejB9tteDavvqTg5g8aAkeEcnvgM8SrwFJULjYcrwP4pg7cgwidzpzQd9YZyjmu3K5sgbiEwxR3ZdP7J6x8GeTyhDSLQEkvru6DCXWF4dLBfDcCvV87BE1aoyCnN2U4nz1DGnQGNKi7xHnDPKgmRSwK3WwArFZvH8gdr3CX5kUEhpovMewhjf5cxbufHJB8VHZqWVcriY8CgwLwhhcB7EcTVnzEKaRGefG76irESvCt2aZrkd5wDBtPeFvZUiMv7kvFKaMANMvo7eXn23V6Z634pam5W1rJ7CG26cxKNL6VkfzWdmZvKc3nsH8qJfqbSow2U1aVi4kMCQMoTke5nEW6WDapVgXbZG1pFfPoi35K4bMYZnxnDH6tB2dJK76UAezmy4P3QtdwQgp4sxeTQNU4pg89REsHNYw7phqC7i1rfHK1ZVsfGHjb2qkxuU9fWudkF1rcRN5CWYKtfLrCMzmVLaENXDbzs1ShGMCyWMxnGAbqRxA8VAWAQk3YxoKAb6FnxTSMijmMApcLky6hoXTiKf8z3XYfcj2qT24yhwepmkDYFFKw79Zry9xPajFUdaWDM64RUaX4EHfusjMusBEo1bvuDoVNEBcR1RCdL2G2";
+
+/**
+ * Heights in $1 that mined with Lithos.
+ * $1 bigint[] heights, $2 LITHOS-COLLAT hex, $3 LITHOS_COLLAT_ADDRESS.
+ */
+export const LITHOS_MINED_HEIGHTS_SQL = `SELECT DISTINCT i.spent_height::text AS height
+  FROM packed.tx_inputs i
+  JOIN packed.box_assets ba
+    ON ba.box_id = i.box_id
+   AND ba.token_id = decode($2, 'hex')
+   AND ba.amount = 1
+  JOIN packed.boxes bx ON bx.box_id = i.box_id
+  JOIN packed.addr a ON a.id = bx.addr_id AND a.address = $3
+ WHERE i.spent_height = ANY($1::bigint[])`;
 
 export const LIT_TOKEN_ID_TESTNET =
   "7b728ca02a23085f1f7093e949535938c55307ab1b61e848008201c5109bd18b";

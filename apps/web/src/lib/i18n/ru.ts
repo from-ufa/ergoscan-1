@@ -835,7 +835,7 @@ export const ru: Record<string, string> = {
   "blocks.packTape": "Окно блоков",
   "blocks.packHint": "По 25, сначала новые. Индексированная цепь — не потолок из 50.",
   "block.chip.lithos": "Lithos",
-  "block.chip.lithosHint": "Этот блок тратит залог Lithos",
+  "block.chip.lithosHint": "Найден протоколом Lithos",
   "block.card.output": "Выходы",
   "block.card.miner": "Майнер",
   "block.card.fees": "Комиссии",
