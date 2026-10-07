@@ -90,6 +90,8 @@ type BlockRow = {
   txCount: number | null;
   size: number;
   color?: string | null;
+  /** True when this block was mined with Lithos. Omitted until the snapshot says so. */
+  lithos?: boolean;
 };
 
 function mergeBlockRow(prev: BlockRow[], row: BlockRow): BlockRow[] {
@@ -114,6 +116,7 @@ function mergeBlockRow(prev: BlockRow[], row: BlockRow): BlockRow[] {
       txCount: row.txCount != null ? row.txCount : old.txCount,
       size: row.size > 0 ? row.size : old.size,
       color: row.color || old.color,
+      lithos: row.lithos === true || (row.lithos == null && old.lithos === true),
     };
     return next.sort((a, b) => b.height - a.height).slice(0, CADENCE + 1);
   }
@@ -1131,7 +1134,12 @@ function EpochBar({
 }
 
 const CADENCE_TRACK = 52;
-const CADENCE_HEAD = 32;
+/**
+ * Room above the tallest crate for a Lithos mark, including the hop and the toss.
+ * The tile title sits outside this canvas, so the mark stays under that line.
+ * Budget: ground pad 10, hop 10, crate peak 4, body 54, gap 3, mark 18, toss 10, top pad 7.
+ */
+const CADENCE_HEAD = 64;
 const MEMPOOL_HTTP_MS = 8_000;
 /** Tip can move before block.sealed brings the tx list. Don't close the slot on that gap. */
 const SEAL_LIST_WAIT_MS = 16_000;
@@ -1636,6 +1644,7 @@ function BlockCadence({
       weight: barWeight(b),
       ink: barInk(b, inkById),
       frac: 1,
+      lithos: b.lithos === true,
     }));
     if (holding && last && grow && (grow.total === 0 || grow.n > 0)) {
       rows.push({
@@ -1644,6 +1653,7 @@ function BlockCadence({
         weight: barWeight(last),
         ink: grow.ink || barInk(last, inkById),
         frac: grow.total <= 0 ? 1 : Math.min(1, grow.n / grow.total),
+        lithos: last.lithos === true,
       });
     }
     return rows;

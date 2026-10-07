@@ -1,7 +1,7 @@
 {
   "version": 1,
   "note": "Generated from github.com/kayolo-ergoscan/ergo-names by npm run names:snapshot. Edit the registry, not this file.",
-  "commit": "b001fa9",
+  "commit": "28ed212",
   "entries": [
     {
       "address": "2BggBDgr9n9geTKjCJBCEWMReb2i7wcocw7fjVd3QyM7qFMtmVHyoFr78kChAxGekJxUTZru2aMjyZKcVoPfHX5d12RqNrnEAgzGqUCoJ2v9xCqmT75V5xdhT1JBqQbeRKJZT4XGMg7hZAqVvbMsQF26nkWRPqiCqPoKfy7GZw9zuvr15qaqbB2ZcZXaGTrvqDN2o15SRTJwvVADDx2inzrk3U25cdjFWYBc6ECKSjmYpPWL8fn4msxsBZKNiGbP8vDrYWqQuPtMwJ5Ag",
@@ -136,6 +136,17 @@
       }
     },
     {
+      "address": "32E8o4yB645oD3uJTVSSSmcX9Gra6B3ETKUU2VipK3Md6ALaYafSVrqro71oH5LuqA3xJP6GTtiRPypZCxV8BjizrSMctkNst36UthuGVtX5j3XPcR5EuzVHE2V7y16ieVv6gpEY68u8nLKEnubC1Au4xSphRubdzphTxpFit8Sz61yr4MkaAMZnwBww5Xoe7mSea2nsjiNfYXduLNhe7rsQgj5mkjZr2VfWySpc8ounzvhKn6ahfP4BBppDv6sHkDonk5BTDHsAC72F9x1Dre5Ww8z1VpFx8tUQR3xakUtoUuyvRcqU7KrKda5VEjeD3nhNZsR2kv8W5SFH8SNStmogiWyQdtqRGARhXyay6AUVB1PWGn3FNHDSoUFrUE8HK18eRmWnB2fwvJ1yPDjxoJL1fNwXP63E3EtyM7Xqiz7AXpsi4yfZpFyQ4NhpNJQtmhK2zumVaCwYbyzM9MfinVxThNKnGtAjG6fYw8kK9ibUWAc5kP7666ia4exvXZgtz3GCGnnMrCRroLFWY3qiLe6LbhQSygXJ9BepQdVL8V6eigReA7hNk7ZoMS1JkQ24SumDVD2MkLEVchJhCCuWH1xC3EvW5F9p4Yt4iZro8Wiso3WxZjwn5DN8f7LJUAxResrLmrKYwNxQsxdePTiqDNZJca3cTd1oma8ZecCx4Udy2z9UkEi7u6vGfsei5S9Gt4W5CjpAuRn84qLJVKDVPBJjJbWWYSuM58MR4KErQM9BdZcQRVy53FETaHgY8tikDHMa7Y4R1hMrm9H8dNHg2EfPSy5cRncSEcwqTeYGM3vbvsFBxrAuvWVJGYvnkSmTHvXrrQxuoX9LCfh8cZvfBq8kXPjUJ5X6LbX8aR32yXe4LHqDo7YPzwhx8yRUsRg9d459JCU21iijT1Q2",
+      "name": "LithosDex fee vault",
+      "kind": "contract",
+      "note": "Lithos",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos.json"
+      }
+    },
+    {
       "address": "3F9bBReNRNpy8HU2PNNRbCdHgzj6F5WgDmKSRAg7bkW3qaJ3VrjQkfqX5W8zDRuUTRJfpt56L1mpx1V7Pt5Bo9QtT7HVQBWqRoUvTVcTkTRsPHRR363M14WsjKXfqPLvauS7BvwtggxXA8S6TTW4gArraoqauhfvyCzjHPNmmfEDypY2wvvMsYNW3VRQYCK8eDNLmdsQwvtGbULeeMdKXCvyH68CpAayLhuVbALRkKCyvdQvAz3gr3yxqNcrScFPxYwE61521iVGwJjfNdXPnHmkespPtM9hhj2qh7HdsAmbQUAJenRpD6RCN2pSh7aQUUZiQENbTxVmiJkqENs99yTv8aHmGFWsw2WQcwVH394M1Sj5ue1CCJYHg6N6FyCXyptsVSqvBG1scmUPqbPneQDCvS2xHgBd1HCrUram8mgD9GewBehXJXa5TL8fe5G2XnGtLukkqfJfmRRmwvjCxEcYv65gAsGW6xxy6YgGm3VxzDUdTnHisGYf3qFnEKkiZf6stFRWPNRcJmRh5jKHqVHjEWMQgdqRjv44qT4zKG6ewUYjubGhHjVy7qedLUnDvM1X7P1CCankPJzDJuZJqnefRrbcuNcP5Fawx2E2NdihRbiAKbA6g3RuNuS2WEPEkQUs7rKGT1fgDw41hq8LaoSf35Xax6eopjzEGLRKYyXqWb7yQfPVNebnYVxbXbRg5aVqHLyiJ4h5sqAdSm2QUjD1oMKuYmbqbqCsYfp2oxJKcL5i7JLnvEKSP23YmsN9Va4SAmmWj4VwiqexH1DGR2pt78LPpWgK2EtHN2gLk9KFnGmK8ZVZG2yx2taH6JXoZXieXarGkBPJrHyB4ZzB1K2pftLwk6vyvSVmfqz2VSi2Lc6NPyLiJ7eKdpbMFaZYm39FkhgCy5Wc7Be7Yqvd7RRVDhx6K9jS4YwPN8aCn24jtKXMs8T6orwxS3tFQR2cCMwqkFuLthR9PUVwX6wiEZ7qNc2p9eCQ7hcqSSAEnqg4teua4GLWtqYFeG1uebJERSBbgjEptrKswnPhzvcdabrwsMopBvknjzjdawW96fqgraPBhbcKDo172x6rFtJnmYrLd9mfNww1twDy43Nz6xGyP31u15Vjqr17g7tdd8sKHPjHFZX37RXquKf5k1i2DdXtcjmAWmuACe1QtfBitqJNwRbMe4RxgLk5doDX1tNfQMQdS1i94RSRrmMaRZUSndJZGPXxVjX6YcjXmVFarb8S9EkkC4jSm6SsHu5aHYG351kTP2mv3fHohRwNrqKkKpvxw1qe9QgYHDufFMYZb88SmmsBLnLGy6rsdurvdqdqWJFbxYvxmRumeSY3H69C3R8pbdrWjSLwxJTy6F2yQ4SQTBuwGpRuD7hcnKt84ajhNsFc4Fmzp8Zn8j9Tg3FSXR4M68bf1ABwnkKPBLdHmEe1qD4qYhGWd73SJVnHarpfyK2Gc1rXTrwCw6kqJRoQesNWQrgxbdGmm1aawJ1Pasks2pBd5118zKPHi2Wi8mCRepWKzv6oJjbWBiZtzrC6kEPXS8S7g9XpiGSFCSfK8aiHHYdHn8iAyuZeA2Yne4DmHZdys85gAh5hjjaPPYuMTHmCr4WbrNfMegX7oDyh7yrhV2sPbgRq7d75eXwpNW9Q5fs4xBqDbeJA1o26yCx7fkQ6yKs8DaWcgv9cFoJB1GA4V3izUpejSw1wqRR3tpMHT1LfB5GpJGoSXGkFQ9Mybt",
       "name": "Duckpools ERG Lending Pool",
       "kind": "contract",
@@ -166,6 +177,17 @@
       "registry": {
         "by": "ergoscan",
         "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/spectrum.json"
+      }
+    },
+    {
+      "address": "3t3qX6D39u4MUTdqCjoF6sQKiBeXrFzYc2GoHNQtZhtadz6Yd6tTso4f82n5E7DLhexebRQwF54Zhj1Sugsuj7fepnvUSjREjXq4YkK8hqqPy2LzGrNjetFCAKeKnZEQWQCRXbdrj88VMR1eJKRGE4YULCRaa9nJkhaSwnMt7NvCwkDMZbcvWstw2iDF27QWnAwzETNPMWCrpsJePCWy8FFcTTwFgzCDYttM9nqPNr6RqaKNzkMGvvYjFMHt4S2zRyHxcyLcfPfeAVJS7r73EgWZQb6PwwUvoeLvZ1oph3cwwQEyChqGtaFvEs4A4XUAQ2srfCAkkzW3WWR3cbSmPftdQ2ZfXpAg4LjzzXWkghmY8gZ4ABj4QpxZuy3PiV8xy4zgJBS1CsS5kCw1wmAxwZ5HXS9DjMYWGjLSmGgywKCvGzctB2Xjej52NoPJcpWwxoPJ7eEY4febSxQqLrm9fUh813CeYiWgYCRxd9ve2pakptpyPoSE3Kr2dcaGcWrm9hy2fVcDNY89hnvWx7mfgveJBirA2phPdHY8pjGsYZrm5ojFk3LkjKk6ajhKExi2kCs6F6cdDNfmiXxXbJRRRFTcLHM33axf6xJCQudYUobLQxXjBgyE6ku8juFG1TPNEZK9guYujqBeDFQE7FqbjoAPW62DGjmrqPJcCfh3NML9AoTVpxYLgk5ZVAZjVN1Anh8Dq5JSfLxMuRrK7B1a6taMvzhVkSER9B4uuqVcNCSmaMVqtJoVL58aBc2647KqpZKvtv81P3g5KfXNru8TigaPcDeny6nUdhEboVcnznmx4JA5fSJCiYHMQuWUPmVEKC3J9W64kFqvv3qCQ8bajBXuDRqu2edVZUXsRvParH5x62MKdfxvQzG8jTYyMTCSw1ED6LLqcSaFvLxT1bGiYjchC6oQosUQbpdaf254d7Gzf8ZxK9X5Lf7Z7Hf5ytNV7upixBKbfN3bXS6QpnZeA7WY533WsQSfshydptynfztdYPiCMwViMR8QgQcfE6kAdDQraTRUhcpi4QsJSJu3aL8nh5MB43W2ty2YocEGGhi8Cs9LkwfPjKLRYB7gm37hnGC6oqkDsTjageye1o9RJoQKXY8kywdmHMtsmwUEMzMieFAeJhGMLWxVCzW8KKyk1En",
+      "name": "Lithos miner dictionary",
+      "kind": "contract",
+      "note": "Lithos protocol",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos-protocol.json"
       }
     },
     {
@@ -202,6 +224,17 @@
       }
     },
     {
+      "address": "4bvZT5H4tkhhnLxPzyp7MooTfqmvigpHTeiV4XHBHzxXRdNHtTcsCu3n1BJpDRKYWQjADPCsWZnRXnqHn5RwjbK",
+      "name": "Lithos emission gate",
+      "kind": "contract",
+      "note": "Lithos protocol",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos-protocol.json"
+      }
+    },
+    {
       "address": "4CUtAFpXrPSin49uT1BzmCRbNyUAC3fwCwZejk5x69Tzmiy4vhjexDkwofEVzJ7EPWDC21XtFv8R899jb6yqFu8QunaiWW7TXaaTEDGndmnyjji4t7uEBEXFysK8E1CgFsNESdw3SjdZwE6r5tvv5rJUiaUMH9PMyzSzVZyQzUuTaLuzKmhrFHDLJQKSVEUauunzgBFy52vpjZwquLNsE4HHPwSe9Q42wEh1PBviAvgmgTbVZjLqxY5DoTok8QrFjwR7RQNPhHx3cdwtHoRMfCvuHBwTa6igTxBYab18KneDmqeK6esPJMeHcBtap6vV2Vz1PRAbGPMfxTVj5A9PzqZd3e3N4QYz1DTXQHLswyA9aRKT7DgYXavKCcTFAhwPTMvWDd2pSiXfYjEEunEzGVDchNzGFXVxtUXSLWQerdnUaBifXhHumN",
       "name": "DexyGold Payout",
       "kind": "contract",
@@ -224,6 +257,17 @@
       }
     },
     {
+      "address": "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",
+      "name": "Lithos ERG/LIT pool",
+      "kind": "contract",
+      "note": "Lithos",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos.json"
+      }
+    },
+    {
       "address": "5ivrmzxYa2fPRuSMsFA3at4RrZhv9SHi17B1UoU74JNL1m8YWnxRs8UfifV8VYjLbifEAczBEo1W2mU7SbeDYRn5HphWf2uvpeHgptESPrYWUmKg9QbaPL8du1i1dJJPWUTVNZsMaWkPSadzazX5uHqAX1bssGJGg75uqVdW1jxdEmixZgU68JnrQdyJybjeFuD2qAxyCYBrW9KHBwMvuzjyUHmF9VhvzFuaWs1Cxr5Jk3tXT6GeTuehauFy5Nf6RuWYabqxHjyKoaNLAQ995CF91wAXTVfH3z9JQuxS3kiyBDCRqfpK5y3wn2bbYJESNkK3DE8idbyNYUD72xipwcD7t29GUMx64wDHYLiTKZNDvTvbZ2i7x8EusAFbJMVppbnfWPzjFyq1THwPsqh9ZscJUeXSC4xKovwYF1oDA3ESkxXYJESwhixwb4MbveLor65rj73rPHRFat4nmFDUmBJzyBqF9CGwCsuKSmPzAvC1SnoEAfgYSS92GzXYNUMqoehdWsp91U6cgVBAygvH9E982VQsLBdewybVcfUQNCKVgRfaCNM1FswCw6MbbLRGELrAk6ahVnVqCctn66apBnNJWQL7cfpsb57JvxAgwF9dzyAyUgMB3PKqKpYNPYGZ4Rz2Vrgu6LznSS1wdZsTgJuXuCKPS36Xw4LfmTYQppeCoAc6zv6QfFybdbyHcDEQbvrVYtR5Va8MCgwKiRQZ1Nyr2qiQRfkUemGhw4UDkzHJqaQ5a7QJY1xbKy5An9HzpsAtZqgD2eW5qoTPDoNmYNcjYFt7ZBBqNKecEi7SKrc7HsbV9As2PdaxqHZb55GuduryAfKUtsBMC6Wb7vt25m2BL6fCeF69YFcH9rGdGhQy6m1fGEFxxYxSV1sf9TkRcY5dSo9wjsjxaE94QJCp4D75uE7fn3uRx3rjaHXcrNLYYN7NoosK1W6T6LePD2o1GNm8LujzGWa2QwXjYUqgXSPTqM4xBoXwMPhPoSBPgvBg5wm1DiaZ1kyTDjVetiXzWe5SPt5FPxfqeGE7T3Pcqv6nnBczR7VfwvvGB2uQM2F9zfxm3nUYegJuuZvQXPEd7PjDPMk9fJBNL5v7D1P4dezzxcA9m3q6DrkmcW1Ar5UMXSU5g8Cqb1CdV5wgabZdDcGuJaE8PZFDtzj5ehWvVjbnTP9z4jKxNjpz2Lom91RXiVKsyZJkk8ypSLm95FEHnmeZAuaVxwNuziQML7Y1Rqx3fLL328G8xG1qtnE2UisBD913UBZxgne1erdSHUc98ciHaYVoxzghVaozi1ckJ",
       "name": "Rosen Commitment",
       "kind": "contract",
@@ -232,6 +276,39 @@
       "registry": {
         "by": "ergoscan",
         "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/rosen-bridge.json"
+      }
+    },
+    {
+      "address": "5r7K4icftQcNMNrkL5g8hCCrBM8tnx5HeCHTgsS77H9uePoTZ39kzLJoF7ydS9BS6efQWgHxVqVUdTMdky7ZbcPBSQ3Ln1BWTdcE9NnPCovcG7qCw2UPzN4ZVxw7Y5AXDtDBywVJVQMsh7pPKvkeLRAXnShkzQ8iij3cNcMM2ietUY4AiAjiLLizjMd5JpWsqwawKtasgKEGzVcskKndioae6vRAXym6mDms2gAc8ExhozeEHGaBjbubqv7PE43NKZB",
+      "name": "Lithos emission",
+      "kind": "contract",
+      "note": "Lithos protocol",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos-protocol.json"
+      }
+    },
+    {
+      "address": "5sywJehZmzKk6wQMwhs2UnvWKnQmGuoH56eszZcJo9xZfwR1Ei3Z58u2PCev6n8uW9ZhjKiVgVjK",
+      "name": "LithosDex provision previous",
+      "kind": "contract",
+      "note": "Lithos",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos.json"
+      }
+    },
+    {
+      "address": "5sywJehZP8gTSX4kxHvpYkPbyjf6M4s5wAPhE68fujrs8BPD8oMADXz1ApQwo4yd2P1gUY2xBUZH",
+      "name": "LithosDex provision",
+      "kind": "contract",
+      "note": "Lithos",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos.json"
       }
     },
     {
@@ -265,6 +342,17 @@
       "registry": {
         "by": "ergoscan",
         "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "6r333qYnughofT9yZTC3XdwbKcKXZu4evEe4P7K7ckXyizWY7X3gwPUi9Gjy3s9WEEX7jPKsLmtQXTos8Px3VqDRSYiiQxbH5uxVcRdH4w",
+      "name": "Lithos miner data",
+      "kind": "contract",
+      "note": "Lithos protocol",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos-protocol.json"
       }
     },
     {
@@ -400,6 +488,17 @@
       }
     },
     {
+      "address": "foqgf3Ys6E6JCr9CA4KQM3H9uPcpDT7YB9cENzuEE2bsX8Uce9xmpnfLqvLFPmrW4QYwNZg6Dk8cnwvCbFXMsucJYVCrMdS2ZGrFcT8hXdGWUzF2mLQQXcQBpLaLuJCUDT7L9HuxtMEkUC1MDnBzhsEeCQqNyRFPVAzQiDsFr2KUb2XPVN8PyUzyrptSxK8uu9TtZg3fmk5DuvHJEt3gGVrHfCYtRZGW1oiRY1W5FWC5vkRJUq4KSSKjmnorq8LttoKKgmbeo7yCBJg4ckumzmrQV3XZqGr9tJeZaa4QfVGUoAKVVhtfFenRh5Z3aSGh57eRFrWRJJ23T1TzvzCBPAeHEibfBgLRqU4iosXJJhHWPy2kQq6D2bryAqKEDsrdRLdPZ4C8SKD665cMxGrCS3gEhw2jbYL4iBkD422Et1WghudtMK79t99Kq2rrBX1GtuTopfsGUwABrJaFcHdNxY7uSCGEboL46QtbqvJs3qMpARJYDXPQSHYtMchBWHCoWD16p1CpfWfzb7g4Wx8C3XyUs7PkcFEbSPUes5nhaTLMziwoYwy626A811TZWvdjX6jtPch7Gofnr3BYT2zpLv2jK73QC95sCadezHoLi5rNY5CDKuputjdVojjjgrz3iRY7NuFGfPjN8twXSFc8jDejB9tteDavvqTg5g8aAkeEcnvgM8SrwFJULjYcrwP4pg7cgwidzpzQd9YZyjmu3K5sgbiEwxR3ZdP7J6x8GeTyhDSLQEkvru6DCXWF4dLBfDcCvV87BE1aoyCnN2U4nz1DGnQGNKi7xHnDPKgmRSwK3WwArFZvH8gdr3CX5kUEhpovMewhjf5cxbufHJB8VHZqWVcriY8CgwLwhhcB7EcTVnzEKaRGefG76irESvCt2aZrkd5wDBtPeFvZUiMv7kvFKaMANMvo7eXn23V6Z634pam5W1rJ7CG26cxKNL6VkfzWdmZvKc3nsH8qJfqbSow2U1aVi4kMCQMoTke5nEW6WDapVgXbZG1pFfPoi35K4bMYZnxnDH6tB2dJK76UAezmy4P3QtdwQgp4sxeTQNU4pg89REsHNYw7phqC7i1rfHK1ZVsfGHjb2qkxuU9fWudkF1rcRN5CWYKtfLrCMzmVLaENXDbzs1ShGMCyWMxnGAbqRxA8VAWAQk3YxoKAb6FnxTSMijmMApcLky6hoXTiKf8z3XYfcj2qT24yhwepmkDYFFKw79Zry9xPajFUdaWDM64RUaX4EHfusjMusBEo1bvuDoVNEBcR1RCdL2G2",
+      "name": "Lithos collateral",
+      "kind": "contract",
+      "note": "Lithos protocol",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos-protocol.json"
+      }
+    },
+    {
       "address": "GAcYf419hptD3JU2y3dB1RYkDpWov3xyy26sQdMy6XTy85zBWZ4XfA3a2QcZM4GZngKnTjTkc8C7atWmFRdQukJaAsQDaVABV4hp8KNu1YugZuYQreB8EYE4QUuGq2ciQeg9ovSPzb4auxAmBHXFR23242nEf2Z7sWrbJr8iwvbcC1uBPd6dsnhSYo6toWX163LWYK1oSgC3sfdi8f5jFTvq4jBVNSQZn4nWtfJbtdPEAtqZ3Qo1GTSknnXhttAUBHvC2qjXDxS68GpWBQtozYPzgdB3beVD1vSJ3QNFzK7uwqoWgNJEtNm3w3cuc56Hi8HoiV2Fdzz327VnXqqscwkMt4yQ2XdxCD6ypGy2K3X46g1n2CWq278THp5TRRxgpnxY3cnA5jeEq9ab6szbS168Y2w7xTUkRuoZUCqaGsP7xwecYXjdiN6nvqyMXSbZstUG2wrnkvZTHizCtLBKrxyHd44g2WUvsRMN7oubsPtFN7LBwVGmbJ3B4XDmwRgY7zLSsdzUP9BeSVFGNVHoEhB9TxDdNz9dhoDLuwZMnubzmCpfMv9nyAf9CieXrNoandWnP6m7z4dg1oWgmNNksHvFc6dsDa2hyUEAeVuPY62qWYcCoC1Mwvx7fAKELocs3a5b3FZ4wQrNVfr2wHeeeH5qWY3Ef3JVpPwyiAqRku9jVn6FNtcy2nqmvyMrykzZdgZkNnbwKe7c5WRJoDkY7aJk7FJ8PgHtYw4nz4zbsFkpFkbq3ZGAeki6BHzaTq7rYEBAus9g8xYBnrYT1XDzDkrKPkqnEgnfNsPnS7XK7D4eGGQgHwKn4SwrdCcyenC7m717Q56WkZFtrPXw13woZ6fNVN8nVsXCU1oEpUXy14pJxoEhyJgEzVzZCYJ6RSQEg7HKdCvLbEBZR4GRtDhhjxZmVD4Mc7gUHo7ZoJ3CXdB6ooEz4NupZyBwS83SkH1Bcb7m3R2qz35E1MRPVA4W2YgpVjj9kvNTr8w6734bVUR2Wp1WYbu3GYDjP2LYteANmaymmGkN1YF799tRBr8mNLVfbdJyBquMmX1eSNg1QFXZNbDihJb5WVYSRNMfC2M9zZfzVN9YN8NbSGdzXg8Nu8UDEYTLJFCdX6hZfjDatNuKwKUi4k5QQY4fhqovHR6DHK9T7vYi9AQFv5AiKVSE7pVeQy7Xuus6zv1ZQTa2RDeFQLpsEXvniPKK5jZZQXNGNTXzawmJnXiRnsj8J3gFm4MydM6XeT3xYR3hTotR4Z6a8K7X1fkXw2ej8UPoR9HXDPJA8Xcapn3TRyd4uc88FHDjbtoc6mZ8d9hERdWvuuXJ1HGTxADfNkjzmnDbFYZ9zqyRWv7hMu7rcJnJNuDKvv5iWzKE8zXxCXBFXxTcoCkWhyz6UHtyEiGiLJ1xmV4dN2rct9NaUAvUZnX61h6xRny9NqKSM9EyvMMdqZWPCGa2JcZojFi5CPWmgwXvMnTDFZ1UfzVXsxjvB5e5tSh84b9k6Ay96SQ2DvDcUD3BGcTCUMQShaxUydSYS3T91J4qhaqZFaXQqe7dXk4XMEwHreTWwRcsnL4pTXtDcCVSfVhZ7GCyC3HEV5Hwb1KGbfhgWED2XD12R6UaDdgnDxjBj9FQ3sBHTFaH1PJwV1MC2ovFDoZJundrVb4hhyVD9GTsw9bmSHUdiB7S8mB",
       "name": "Phoenix hodlComet10 Bank",
       "kind": "contract",
@@ -408,6 +507,17 @@
       "registry": {
         "by": "ergoscan",
         "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/phoenix.json"
+      }
+    },
+    {
+      "address": "GPp4BycDwAwoCGQnA3QC1UQyqNuB2UxG6KMiRFioBqwo1kAUaqKwQZL1RQ8nZz1jN4EmYt6XVuWUXMzxiXja5FwxiUmCcxHGfrNjeSbVroaxrnKqHMqKwsgzMUAz5yMErBNW8x84n3c9BzcF",
+      "name": "Lithos fraud proof control",
+      "kind": "contract",
+      "note": "Lithos protocol",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos-protocol.json"
       }
     },
     {
@@ -463,6 +573,17 @@
       "registry": {
         "by": "ergoscan",
         "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "mNT5iJGbGhpxnkM8qpj2jS8vqK9JVFWyWaoNfUrBEzF7WMDkyQTNLTWFErBYnrdgmXnU2UvTSA6XwxqJhCaAsY9QaUakgnE1W1UD7if1iEjxzzf4oEAfmR1WXUF3uH4ahSmooRHbtueLgmbLJqFvoycjd46tNH9CB5KJqTduYF1wRcDW24oYnxMzsPnSG7cbEyQkz",
+      "name": "Lithos emission config",
+      "kind": "contract",
+      "note": "Lithos protocol",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos-protocol.json"
       }
     },
     {
@@ -694,6 +815,17 @@
       "registry": {
         "by": "ergoscan",
         "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/dexy.json"
+      }
+    },
+    {
+      "address": "WvonkGz7pj74cH7K3ZQvkwp99FSJVoGwqcqUuGCNMEYRsHscxLxALs2h95uwkx7QAyWv1xuWa9eedFUKmVKRVHrJDjis475EsFsf7Xw7mS689A5VeZMeRTBCQZyDMA3E6N7AKzANMwbjDnMPySLLsqC74dZhvY59bBE8ZCoxq4niuNp6cjVYh82xWKBuh3sps",
+      "name": "Lithos holding",
+      "kind": "contract",
+      "note": "Lithos protocol",
+      "source": "registry",
+      "registry": {
+        "by": "ergoscan",
+        "fileUrl": "https://github.com/kayolo-ergoscan/ergo-names/blob/main/projects/lithos-protocol.json"
       }
     },
     {

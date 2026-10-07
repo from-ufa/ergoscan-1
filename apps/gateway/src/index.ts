@@ -31,6 +31,7 @@ import { registerMetricsRoutes } from "./routes/metrics.js";
 import { registerMarketRoutes } from "./routes/market.js";
 import { registerDefiRoutes } from "./routes/defi.js";
 import { registerRosenRoutes } from "./routes/rosen.js";
+import { registerLithosRoutes } from "./routes/lithos.js";
 import { registerOracleRoutes } from "./routes/oracles.js";
 import { registerBuybackRoutes } from "./routes/buyback.js";
 import { registerNamesRoutes } from "./routes/names.js";
@@ -800,6 +801,7 @@ registerDefiRoutes(app, {
   getFullHeight: () => nodeInfo.fullHeight,
 });
 
+registerLithosRoutes(app);
 registerRosenRoutes(app);
 registerOracleRoutes(app);
 registerBuybackRoutes(app);

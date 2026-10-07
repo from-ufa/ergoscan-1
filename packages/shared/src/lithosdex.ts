@@ -1,3 +1,4 @@
+import { p2pkAddressFromCompressedPubkey } from "./oracle-pools.js";
 import { longFromRegister, collLongFromRegister } from "./registers.js";
 
 /**
@@ -48,6 +49,107 @@ export const LITHOS_MINED_HEIGHTS_SQL = `SELECT DISTINCT i.spent_height::text AS
   JOIN packed.boxes bx ON bx.box_id = i.box_id
   JOIN packed.addr a ON a.id = bx.addr_id AND a.address = $3
  WHERE i.spent_height = ANY($1::bigint[])`;
+
+/** Team, private emission. Gone after the early epochs. */
+export const LITHOS_TEAM_ADDRESS =
+  "9hXpB6dye4gTZhV6ZBakoy934dRFW93qHjBTYVnBHCfvQiXuURr";
+/** Investors, private emission. */
+export const LITHOS_INVESTOR_ADDRESS =
+  "9hBEAVZ9MHLf7mwVrvP3nqptdqYVdYGu1byPH8XFzC7KDuzrb8W";
+/** Auditor, private emission. The docs also say advisors. */
+export const LITHOS_AUDITOR_ADDRESS =
+  "9i6Pq3M5VG95BUTAP1AVroizTBqc21K2Mx5Kh2jGeAADpBEskQd";
+
+export type LithosLitOut = { address: string; litRaw: string };
+
+export type LithosFindParts = {
+  finderAddress: string;
+  finderLit: string;
+  lenderAddress: string;
+  permitLit: string;
+  holdingAddress: string;
+  holdingLit: string;
+  teamLit: string;
+  investorLit: string;
+  auditorLit: string;
+};
+
+/** Collateral R5 is the lender SigmaProp. The large LIT output pays this key back. */
+export function lenderAddressFromCollateralR5(r5: string | null | undefined): string | null {
+  if (!r5) return null;
+  const hex = r5.trim().toLowerCase().replace(/^0x/, "");
+  if (!hex.startsWith("08cd")) return null;
+  return p2pkAddressFromCompressedPubkey(hex.slice(4));
+}
+
+function isP2pkAddress(address: string): boolean {
+  return address.startsWith("9") && address.length < 70;
+}
+
+function rawPositive(litRaw: string): bigint | null {
+  if (!/^\d+$/.test(litRaw) || litRaw === "0") return null;
+  return BigInt(litRaw);
+}
+
+/**
+ * Roles on a Lithos find transaction. Amounts are raw LIT integers.
+ * The finder is the remaining P2PK, not the lender in R5 and not the three
+ * private-emission addresses. Holding is the one non-P2PK LIT output.
+ * Returns null when the outputs do not split that way, so the writer does not guess.
+ */
+export function classifyLithosFind(
+  r5: string | null | undefined,
+  outputs: LithosLitOut[]
+): LithosFindParts | null {
+  const lender = lenderAddressFromCollateralR5(r5);
+  if (!lender) return null;
+  let permit: LithosLitOut | null = null;
+  let holding: LithosLitOut | null = null;
+  let finder: LithosLitOut | null = null;
+  let team = 0n;
+  let investor = 0n;
+  let auditor = 0n;
+  for (const out of outputs) {
+    const raw = rawPositive(out.litRaw);
+    if (raw == null) continue;
+    if (out.address === lender) {
+      if (permit) return null;
+      permit = out;
+      continue;
+    }
+    if (out.address === LITHOS_TEAM_ADDRESS) {
+      team += raw;
+      continue;
+    }
+    if (out.address === LITHOS_INVESTOR_ADDRESS) {
+      investor += raw;
+      continue;
+    }
+    if (out.address === LITHOS_AUDITOR_ADDRESS) {
+      auditor += raw;
+      continue;
+    }
+    if (!isP2pkAddress(out.address)) {
+      if (holding) return null;
+      holding = out;
+      continue;
+    }
+    if (finder) return null;
+    finder = out;
+  }
+  if (!permit || !holding || !finder) return null;
+  return {
+    finderAddress: finder.address,
+    finderLit: finder.litRaw,
+    lenderAddress: lender,
+    permitLit: permit.litRaw,
+    holdingAddress: holding.address,
+    holdingLit: holding.litRaw,
+    teamLit: team.toString(),
+    investorLit: investor.toString(),
+    auditorLit: auditor.toString(),
+  };
+}
 
 export const LIT_TOKEN_ID_TESTNET =
   "7b728ca02a23085f1f7093e949535938c55307ab1b61e848008201c5109bd18b";

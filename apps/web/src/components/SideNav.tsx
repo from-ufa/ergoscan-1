@@ -115,6 +115,7 @@ const NAV_MAIN: NavItem[] = [
     ],
   },
   { href: "/rosen", key: "nav.rosen", icon: "rosen", match: ["/rosen"] },
+  { href: "/lithos", key: "nav.lithosProtocol", icon: "lithosProtocol", match: ["/lithos"] },
 ];
 
 const NAV_FOOT: NavItem[] = [

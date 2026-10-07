@@ -17,6 +17,7 @@ test("toolbar chrome is a title only — no page lead", () => {
   assert.equal(chromeFor("/names").titleKey, "nav.names");
   assert.equal(chromeFor("/names").heading, true);
   assert.equal(chromeFor("/rosen").titleKey, "nav.rosen");
+  assert.equal(chromeFor("/lithos").titleKey, "nav.lithosProtocol");
   assert.equal(chromeFor("/defi").titleKey, "nav.defiSpectrum");
   assert.equal(chromeFor("/defi/spectrum").titleKey, "nav.defiSpectrum");
   assert.equal(chromeFor("/defi/pool").titleKey, "nav.defiPool");

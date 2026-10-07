@@ -2,8 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   LIT_TOKEN_ID_MAINNET,
+  LITHOS_AUDITOR_ADDRESS,
   LITHOS_COLLAT_ADDRESS,
   LITHOS_COLLAT_TOKEN_ID,
+  LITHOS_INVESTOR_ADDRESS,
+  LITHOS_TEAM_ADDRESS,
+  classifyLithosFind,
+  lenderAddressFromCollateralR5,
   LITHOS_LOCKED_LP,
   LITHOS_POOL_NFT_PLACEHOLDER,
   classifyLithosBoxDelta,
@@ -36,6 +41,32 @@ test("placeholders are not live ids", () => {
   assert.equal(LITHOS_COLLAT_TOKEN_ID, "a8a790e784e93ac0e68649181ae3d251e84fb5c741624100e7e945ae1e82dc98");
   assert.equal(LITHOS_COLLAT_ADDRESS.startsWith("foqgf3Ys6E6JCr9"), true);
   assert.equal(LITHOS_COLLAT_ADDRESS.length > 200, true);
+});
+
+test("a Lithos find splits lender, finder, holding, and the three private pays", () => {
+  const r5 = "08cd026ffaac3de9f082b6cbf06831c585423befffad5e2b8aec4943cf74f7791095c8";
+  const lender = lenderAddressFromCollateralR5(r5);
+  assert.equal(lender, "9fNNsbZafWkEGCmWNwcsRkY1s6cUJyQhuR23t7CLnsVgCJuZxs8");
+  const holding = "W" + "v".repeat(80);
+  const parts = classifyLithosFind(r5, [
+    { address: lender!, litRaw: "2140000000000" },
+    { address: holding, litRaw: "480000000000" },
+    { address: LITHOS_TEAM_ADDRESS, litRaw: "100000000000" },
+    { address: LITHOS_INVESTOR_ADDRESS, litRaw: "25000000000" },
+    { address: LITHOS_AUDITOR_ADDRESS, litRaw: "15000000000" },
+    { address: "9gmzNhfCHe" + "a".repeat(40), litRaw: "20000000000" },
+  ]);
+  assert.equal(parts?.finderLit, "20000000000");
+  assert.equal(parts?.permitLit, "2140000000000");
+  assert.equal(parts?.holdingLit, "480000000000");
+  assert.equal(parts?.teamLit, "100000000000");
+  assert.equal(parts?.lenderAddress, lender);
+  assert.equal(classifyLithosFind(r5, [
+    { address: lender!, litRaw: "1" },
+    { address: holding, litRaw: "1" },
+    { address: "9a" + "b".repeat(49), litRaw: "1" },
+    { address: "9c" + "d".repeat(49), litRaw: "1" },
+  ]), null);
 });
 
 test("env pool NFT rejects placeholders and junk", () => {

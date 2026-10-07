@@ -1843,6 +1843,13 @@ html[data-ink="day"] {
     grid-template-columns: 7.75rem 9.75rem 7.25rem 3.4rem 11.5rem 8.5rem 8.5rem 4.75rem 8.25rem;
   }
 
+  .addr-pan .addr-lane.block-lane.lithos-finds,
+  .addr-pan .addr-head.block-lane.lithos-finds {
+    width: 72rem;
+    min-width: 72rem;
+    grid-template-columns: 7.75rem 11.5rem 9.5rem 7rem 9.5rem 7.5rem 10rem 9.25rem;
+  }
+
   .addr-pan .addr-lane.block-lane.rosen-tape,
   .addr-pan .addr-head.block-lane.rosen-tape {
     width: 78rem;
@@ -2436,6 +2443,24 @@ html[data-ink="day"] {
   .addr-lane.blocks-tape,
   .addr-head.blocks-tape {
     grid-template-columns: minmax(0, 1fr) minmax(16.75rem, 1.28fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.addr-lane.block-lane.lithos-finds,
+.addr-head.block-lane.lithos-finds {
+  grid-template-columns: minmax(18.75rem, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(18.5rem, 1.15fr);
+}
+.addr-lane.lithos-finds > .block-lane-pair:first-child,
+.addr-head.lithos-finds > .block-lane-pair:first-child {
+  grid-template-columns: minmax(7.25rem, 0.8fr) minmax(11.5rem, 1.2fr);
+}
+.addr-lane.lithos-finds > .block-lane-pair:last-child,
+.addr-head.lithos-finds > .block-lane-pair:last-child {
+  grid-template-columns: minmax(0, 1.15fr) minmax(9.25rem, 0.85fr);
+}
+@media (min-width: 1024px) {
+  .lithos-hero-copy {
+    height: 100%;
+    min-height: 0;
   }
 }
 .block-lane-pair > .lane-id {

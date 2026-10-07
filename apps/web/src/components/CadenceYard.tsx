@@ -17,6 +17,8 @@ export type CadenceYardBlock = {
   ink: string;
   /** 1 when the block is settled. Lower while transactions are still arriving. */
   frac: number;
+  /** Mined with Lithos. The mark falls after the crate has landed. */
+  lithos?: boolean;
 };
 
 type Ghost = {
@@ -27,7 +29,18 @@ type Ghost = {
   x: number;
   hopUntil: number;
   leaving: boolean;
+  lithos: boolean;
+  /** When the Lithos mark starts its fall. 0 until the crate has landed. */
+  logoAt: number;
 };
+
+/** Square mark. Stays under the tile title even on the tallest crate at the top of a hop. */
+const LOGO = 18;
+const LOGO_GAP = 3;
+const LOGO_FALL = 320;
+const LOGO_DROP = 36;
+/** Extra lift above the crate at the peak of a hop, so the crate tosses the mark. */
+const LOGO_TOSS = 10;
 
 type Hit = { id: string; x: number; top: number; bot: number };
 
@@ -82,6 +95,12 @@ export function CadenceYard({
     let raf = 0;
     let last = performance.now();
     const ghosts = new Map<string, Ghost>();
+    const mark = new Image();
+    let markOk = false;
+    mark.onload = () => {
+      markOk = true;
+    };
+    mark.src = "/lithos-mark.png";
     let primed = false;
     let head = 0;
     let look = 0;
@@ -92,6 +111,7 @@ export function CadenceYard({
     let waveId: string | null = null;
     let phase: "wait" | "intro" | "live" = "wait";
     let introStart = 0;
+    let liveAt = 0;
 
     const paint = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -124,7 +144,10 @@ export function CadenceYard({
       }
       const introT = phase === "intro" ? now - introStart : 0;
       const driveU = 1 - Math.exp(-introT / 120);
-      if (phase === "intro" && driveU > 0.98 && introT > 900) phase = "live";
+      if (phase === "intro" && driveU > 0.98 && introT > 900) {
+        phase = "live";
+        liveAt = now;
+      }
       const live = new Set(list.map((b) => b.id));
       const k = reduce ? 1 : 1 - Math.exp(-dt / 0.16);
 
@@ -138,14 +161,21 @@ export function CadenceYard({
         const grew = prev ? b.frac > prev.frac + 1e-4 : false;
         const placing = phase !== "live";
         const x = placing || !primed || reduce ? target : (prev?.x ?? w + 28);
+        const nextX = !placing && prev && !reduce ? prev.x + (target - prev.x) * k : x;
+        let logoAt = prev?.logoAt ?? 0;
+        if (b.lithos && phase === "live" && logoAt === 0 && (reduce || Math.abs(nextX - target) < 8)) {
+          logoAt = reduce ? now - LOGO_FALL : liveAt && now - liveAt < 40 ? liveAt + 180 + i * 60 : now + 160;
+        }
         ghosts.set(b.id, {
           id: b.id,
           ink: b.ink,
           weight: b.weight,
           frac: b.frac,
-          x: !placing && prev && !reduce ? prev.x + (target - prev.x) * k : x,
+          x: nextX,
           hopUntil: grew ? now + 420 : (prev?.hopUntil ?? 0),
           leaving: false,
+          lithos: b.lithos === true,
+          logoAt,
         });
         if (grew) swingUntil = now + 420;
       });
@@ -182,6 +212,7 @@ export function CadenceYard({
       const waveT = waveTick < 0 ? 1500 : now - waveTick * 1500;
 
       const drawn: Hit[] = [];
+      const marks: { x: number; peak: number; extra: number }[] = [];
       const order = [...ghosts.values()].sort((a, b) => a.x - b.x);
       const peak = Math.max(1, ...order.map((g) => g.weight));
       for (const g of order) {
@@ -203,10 +234,18 @@ export function CadenceYard({
           fallPx = (1 - ease) * (body + 30);
         }
         drawBlock(ctx, g.x, ground, body, g.ink, hop, fallPx, g.frac < 1);
+        const logoExtra = fallPx > 1 ? null : lithosMarkExtra(g, now, hop);
+        if (logoExtra != null) {
+          marks.push({
+            x: g.x,
+            peak: ground - (hop * 10 + fallPx) - 4 - body,
+            extra: logoExtra,
+          });
+        }
         drawn.push({
           id: g.id,
           x: g.x,
-          top: ground - body - 16 - hop * 10 - fallPx,
+          top: ground - body - 16 - hop * 10 - fallPx - (logoExtra == null ? 0 : LOGO + LOGO_GAP + logoExtra),
           bot: ground + 6,
         });
       }
@@ -236,6 +275,9 @@ export function CadenceYard({
       if (phase === "intro") roll += dt * 42;
       if (newest) {
         drawWallE(ctx, { x: rx, y: ground, head, look, pick: pickSwing, roll });
+      }
+      if (markOk) {
+        for (const m of marks) drawLithosMark(ctx, mark, m.x, m.peak, m.extra);
       }
 
       raf = requestAnimationFrame(paint);
@@ -285,6 +327,25 @@ export function CadenceYard({
       }}
     />
   );
+}
+
+/** Pixels the mark still has to fall. Null until its crate has landed and the fall has started. */
+function lithosMarkExtra(g: Ghost, now: number, hop: number): number | null {
+  if (!g.lithos || g.logoAt <= 0 || now < g.logoAt) return null;
+  const u = Math.min(1, (now - g.logoAt) / LOGO_FALL);
+  const ease = 1 - (1 - u) ** 3;
+  return (1 - ease) * LOGO_DROP + hop * LOGO_TOSS;
+}
+
+function drawLithosMark(
+  ctx: CanvasRenderingContext2D,
+  img: CanvasImageSource,
+  x: number,
+  peak: number,
+  extra: number
+) {
+  const y = peak - LOGO_GAP - LOGO - extra;
+  ctx.drawImage(img, x - LOGO / 2, y, LOGO, LOGO);
 }
 
 function drawBlock(

@@ -124,6 +124,10 @@ export const LIST_PAGES: Record<
     title: "Lithos",
     description: "LithosDex ERG↔LIT fills and pools from the ErgoScan DeFi index.",
   },
+  "/lithos": {
+    title: "Lithos protocol",
+    description: "Blocks found through Lithos: who found them, the 4% finder share, and the LIT paid into the rollup.",
+  },
   "/defi/stable": {
     title: "AgeUSD protocol",
     description: "AgeUSD bank on Ergo: SigUSD, SigRSV, reserve, and bank-box history.",
@@ -352,6 +356,7 @@ export const SITEMAP_STATIC = [
   "/oracles/xau-erg/gort",
   "/oracles/erg-usd/dort",
   "/rosen",
+  "/lithos",
   "/nfts",
   "/learn",
   "/learn/network",

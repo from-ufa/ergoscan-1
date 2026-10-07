@@ -469,7 +469,7 @@ export function BlockTapeRow({
         <div className="lithos-col">
           {row.lithos ? (
             <Link
-              href="/defi/lithos"
+              href="/lithos"
               title={t("block.chip.lithosHint")}
               className="lithos-chip chip-press"
             >

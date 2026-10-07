@@ -163,6 +163,22 @@ export function IconSpectrum(props: IconProps) {
   );
 }
 
+/**
+ * Lithos protocol. The lithos.work mark is a pick through a broken ring.
+ * Same 24 box and stroke as the other rail glyphs. LithosDex keeps the candles.
+ */
+export function IconLithosProtocol(props: IconProps) {
+  return glyph(
+    props,
+    <>
+      <path d="M7.4 8.6a5.4 5.4 0 0 0 0 6.8" {...cap} />
+      <path d="M16.6 8.6a5.4 5.4 0 0 1 0 6.8" {...cap} />
+      <path d="M12 4.4v15.2" {...cap} />
+      <path d="M6.2 8.1 12 4.4 17.8 8.1" {...cap} />
+    </>
+  );
+}
+
 /** LithosDex — Lucide `chart-candlestick`. */
 export function IconLithos(props: IconProps) {
   return glyph(
@@ -499,6 +515,7 @@ export const NAV_ICONS = {
   spectrum: IconSpectrum,
   pool: IconPool,
   lithos: IconLithos,
+  lithosProtocol: IconLithosProtocol,
   stable: IconStable,
   ageusd: IconAgeusd,
   basis: IconBasis,

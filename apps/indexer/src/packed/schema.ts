@@ -227,10 +227,32 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS packed_token_tx_move_tx_idx ON packed.to
 `;
 }
 
+/** One row per Lithos-mined block. Ids are bytea. Addresses and LIT amounts are not. */
+export function lithosFindSchemaSql(): string {
+  const ts = tablespaceClause();
+  return `
+CREATE TABLE IF NOT EXISTS packed.lithos_find (
+  height           bigint PRIMARY KEY,
+  block_id         bytea NOT NULL,
+  tx_id            bytea NOT NULL,
+  finder_address   text NOT NULL,
+  finder_lit       numeric NOT NULL,
+  finder_nano      numeric NOT NULL,
+  lender_address   text NOT NULL,
+  permit_lit       numeric NOT NULL,
+  holding_address  text NOT NULL,
+  holding_lit      numeric NOT NULL,
+  team_lit         numeric NOT NULL DEFAULT 0,
+  investor_lit     numeric NOT NULL DEFAULT 0,
+  auditor_lit      numeric NOT NULL DEFAULT 0
+)${ts};
+`;
+}
+
 export async function ensurePackedSchema(db: Queryable): Promise<void> {
   if (!ready) {
     ready = db
-      .query(packedSchemaSql())
+      .query(packedSchemaSql() + lithosFindSchemaSql())
       .then(() => undefined)
       .catch((err: unknown) => {
         ready = null;

@@ -544,6 +544,7 @@ export function CommandPalette() {
     { key: "nav.gort", href: "/oracles/xau-erg/gort" },
     { key: "nav.dort", href: "/oracles/erg-usd/dort" },
     { key: "nav.rosen", href: "/rosen" },
+    { key: "nav.lithosProtocol", href: "/lithos" },
     { key: "nav.learn", href: "/learn" },
     { key: "nav.network", href: "/learn/network" },
     { key: "nav.about", href: "/about" },

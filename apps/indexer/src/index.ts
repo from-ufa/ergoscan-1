@@ -94,6 +94,7 @@ import { maybeBackfillAddressTxSpends } from "./addressTxSpendBackfill.js";
 import { headerBytesFromNode, maybeBackfillBlockHeaders } from "./headerBackfill.js";
 import { maybeBackfillBlockSections, sectionBytesFromBlock } from "./sectionBackfill.js";
 import { maybeBackfillInputProofs, spendingProofHex } from "./inputProofBackfill.js";
+import { maybeWriteLithosFinds } from "./lithosFind.js";
 import {
   longAddressTxSlotEnabled,
   maybeBackfillLongAddressTx,
@@ -3021,6 +3022,12 @@ async function loop(pool: Pool): Promise<boolean> {
     await maybeBackfillInputProofs(pool);
   } catch (e) {
     console.warn("[indexer] input proof", String(e));
+  }
+
+  try {
+    await maybeWriteLithosFinds(pool);
+  } catch (e) {
+    console.warn("[indexer] lithos find", String(e));
   }
 
   // Long P2S history: dedicated writer. Tip keeps ADDRESS_TX_LONG=0.
