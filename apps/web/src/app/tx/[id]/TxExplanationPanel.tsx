@@ -83,12 +83,14 @@ export function TxExplanationPanel({
             outputTotal: explanation.declaredOutputs ?? "?",
           })
         : t("tx.explain.coverage.unknown");
-  const categoryKey = `tx.cat.${explanation.shape}`;
+  const labelShape =
+    explanation.coverage === "complete"
+      ? explanation.shape
+      : tx.shape || tx.category || explanation.shape;
+  const categoryKey = `tx.cat.${labelShape}`;
   const translatedCategory = t(categoryKey);
   const categoryLabel =
-    explanation.coverage === "complete" && translatedCategory !== categoryKey
-      ? translatedCategory
-      : t("tx.cat.unknown");
+    translatedCategory !== categoryKey ? translatedCategory : t("tx.cat.unknown");
   const isFeeCollect = explanation.shape === "fee-collect";
   const compactFee =
     isFeeCollect && explanation.nonFeeOutputNano > 0n

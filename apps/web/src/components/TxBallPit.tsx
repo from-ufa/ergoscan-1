@@ -960,15 +960,19 @@ export function TxBallPit({
       canvas.style.cursor = "default";
       if (wellOn.current) setWellTipRef.current(null);
     };
+    let poked: { href: string; at: number } | null = null;
     const onPointerDown = (e: PointerEvent) => {
       if (!wellOn.current || reduce || e.button !== 0) return;
       const b = hitWell(e.clientX, e.clientY);
       if (!b || b.more) return;
+      if (b.href) poked = { href: b.href, at: performance.now() };
       const at = canvasPoint(canvas, e.clientX, e.clientY);
       pokeWell(b, at.x, at.y, performance.now(), wellRef.current);
     };
     const onClick = (e: MouseEvent) => {
       if (wellOn.current) {
+        // The second click of a double-click belongs to dblclick, even if the poke already moved the ball.
+        if (e.detail > 1) return;
         const b = hitWell(e.clientX, e.clientY);
         if (b?.more && b.href) {
           e.preventDefault();
@@ -982,6 +986,7 @@ export function TxBallPit({
           }
           return;
         }
+        if (poked && performance.now() - poked.at < 500) return;
         const href = emptyHrefRef.current;
         if (!href) return;
         e.preventDefault();
@@ -996,9 +1001,11 @@ export function TxBallPit({
     const onDblClick = (e: MouseEvent) => {
       if (!wellOn.current) return;
       const b = hitWell(e.clientX, e.clientY);
-      if (!b?.href || b.more) return;
+      const fresh = poked && performance.now() - poked.at < 600 ? poked.href : null;
+      const href = b && !b.more && b.href ? b.href : fresh;
+      if (!href || href === "/mempool") return;
       e.preventDefault();
-      routerRef.current.push(b.href);
+      routerRef.current.push(href);
     };
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerleave", onLeave);

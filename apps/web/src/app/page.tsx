@@ -11,7 +11,7 @@ import type { RentTapeRow } from "@ergoscan/shared";
 
 export const dynamic = "force-dynamic";
 
-const CADENCE = 7;
+const CADENCE = 8;
 
 /** Local `/?preview=share` only — stage has no miner snapshot yet. */
 const SHARE_PREVIEW: PoolShare[] = [

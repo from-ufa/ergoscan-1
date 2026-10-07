@@ -727,7 +727,12 @@ function PartyRow({
 }) {
   const [open, setOpen] = useState(false);
   const d = describeParty(party.address, party.isFee);
-  const shown = party.address ? visibleAddress(party.address) : t("tx.unknown");
+  const boxId = party.boxes.find((box) => box.boxId)?.boxId ?? null;
+  const shown = party.address
+    ? visibleAddress(party.address)
+    : boxId
+      ? shortId(boxId, 6)
+      : t("tx.unknown");
   const name =
     side === "fee" || party.isFee ? t("tx.minerFee") : shown;
   const boxCap = t("tx.boxes").replace("{n}", String(party.boxes.length));
@@ -752,6 +757,14 @@ function PartyRow({
                   "min-w-0 break-all font-mono hover:underline",
                   fee ? "text-inherit" : "text-accent"
                 )}
+              >
+                {name}
+              </Link>
+            ) : boxId ? (
+              <Link
+                href={`/box/${boxId}`}
+                title={boxId}
+                className="min-w-0 truncate font-mono text-accent hover:underline"
               >
                 {name}
               </Link>
@@ -882,7 +895,11 @@ function BoxRow({
 }) {
   const [open, setOpen] = useState(false);
   const d = describeParty(io.address, fee);
-  const shown = io.address ? visibleAddress(io.address) : t("tx.unknown");
+  const shown = io.address
+    ? visibleAddress(io.address)
+    : io.boxId
+      ? shortId(io.boxId, 6)
+      : t("tx.unknown");
   const name = fee ? t("tx.minerFee") : shown;
   const tokenRows: [string, bigint][] = (io.assets ?? [])
     .filter((a) => a.tokenId && !/^0+$/.test(a.tokenId))
@@ -906,6 +923,14 @@ function BoxRow({
                   !fee && "font-mono",
                   fee ? "text-inherit" : "text-accent"
                 )}
+              >
+                {name}
+              </Link>
+            ) : io.boxId ? (
+              <Link
+                href={`/box/${io.boxId}`}
+                title={io.boxId}
+                className="min-w-0 truncate font-mono text-accent hover:underline"
               >
                 {name}
               </Link>

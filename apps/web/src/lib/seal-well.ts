@@ -177,7 +177,11 @@ export function wellRadiusForPack(opts: {
   const spread = 1 - FEE_SPREAD + fee * (2 * FEE_SPREAD);
   const floor = opts.scale === "home" ? HOME_R.min : SCENE_R.min;
   const minSide = Math.max(8, Math.min(opts.w, opts.h));
-  const maxR = minSide * (opts.n <= 3 ? 0.44 : opts.n <= 8 ? 0.38 : 0.32);
+  const sideCap = minSide * (opts.n <= 3 ? 0.44 : opts.n <= 8 ? 0.38 : 0.32);
+  // Eight balls on the home tile used to hit this side cap and fill the tile.
+  // The home ceiling is a third of that eight-ball cap. More balls still shrink
+  // through the 2/3 area budget below.
+  const maxR = opts.scale === "home" ? (minSide * 0.38) / 3 : sideCap;
   return Math.min(maxR, Math.max(floor, mean * spread));
 }
 

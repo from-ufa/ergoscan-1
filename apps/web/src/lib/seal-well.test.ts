@@ -293,6 +293,48 @@ test("assembleHomes stacks inside the bar and stays on canvas", () => {
   assert.deepEqual(assembleHomes(0, 40, 28), []);
 });
 
+test("home eight-ball ceiling is a third of the old side cap, and a bigger pack shrinks", () => {
+  const w = 417;
+  const h = 116;
+  const oldCap = Math.min(w, h) * 0.38;
+  const now = 9_000;
+  const eight = Array.from({ length: 8 }, (_, i) =>
+    makeWellBody(
+      { id: `e${i}`, size: 240, feeRate: 500 * (i + 1) * (i + 1), color: "#5B8CFF" },
+      w,
+      h,
+      "home",
+      now
+    )
+  );
+  assignPackRadii(eight, w, h, "home");
+  const eightMax = Math.max(...eight.map((b) => b.r));
+  assert.ok(eightMax <= oldCap / 3 + 0.05, `eight-ball max ${eightMax} vs ${oldCap / 3}`);
+  assert.ok(packFillRatio(eight.map((b) => b.r), w, h) <= 2 / 3 + 0.012);
+  const many = Array.from({ length: 64 }, (_, i) =>
+    makeWellBody(
+      { id: `m${i}`, size: 200, feeRate: 400 + i * 80, color: "#5B8CFF" },
+      w,
+      h,
+      "home",
+      now
+    )
+  );
+  assignPackRadii(many, w, h, "home");
+  const manyMax = Math.max(...many.map((b) => b.r));
+  assert.ok(manyMax < eightMax, `pack of 64 (${manyMax}) must be smaller than 8 (${eightMax})`);
+  assert.ok(packFillRatio(many.map((b) => b.r), w, h) <= 2 / 3 + 0.012);
+  const hit = eight[0]!;
+  const x0 = hit.x;
+  pokeWell(hit, hit.x - 4, hit.y, now, eight);
+  for (let i = 0; i < 10; i++) stepWell(eight, w, h, 0.016, now + i * 16, "home");
+  assert.ok(hit.x !== x0, "a poke still moves a home ball");
+  for (const b of eight) {
+    assert.ok(b.x >= b.r - 1 && b.x <= w - b.r + 1, `x ${b.x}`);
+    assert.ok(b.y >= b.r - 1 && b.y <= h - b.r + 1, `y ${b.y}`);
+  }
+});
+
 test("assignPackRadii never fills more than 2/3 of the tile, even with fee spread", () => {
   const now = 9_000;
   const w = 400;

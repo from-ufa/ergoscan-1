@@ -16,6 +16,7 @@ import {
 } from "@/lib/trust-board";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { formatStamp } from "@/lib/format";
+import type { ApiUse } from "@/lib/api-use";
 import { useKeepFresh, usePageSync } from "@/lib/page-sync";
 
 function localeId(locale: string): string {
@@ -39,19 +40,32 @@ function utcText(ms: number, _locale: string): string {
   return stamp === "—" ? stamp : `${stamp} UTC`;
 }
 
-export function StatusView({ initial }: { initial: TrustBoard }) {
+export function StatusView({
+  initial,
+  initialApi,
+}: {
+  initial: TrustBoard;
+  initialApi: ApiUse | null;
+}) {
   const t = useT();
   const { locale } = useI18n();
   const { markSynced } = usePageSync();
   const [board, setBoard] = useState(initial);
+  const [api, setApi] = useState(initialApi);
   const [pending, setPending] = useState(false);
 
   const load = useCallback(
     (silent = false) => {
       if (!silent) setPending(true);
-      void fetchTrustBoard()
-        .then((next) => {
+      void Promise.all([
+        fetchTrustBoard(),
+        fetch("/status/usage", { cache: "no-store", headers: { Accept: "application/json" } })
+          .then((r) => (r.ok ? (r.json() as Promise<ApiUse>) : null))
+          .catch(() => null),
+      ])
+        .then(([next, usage]) => {
           setBoard(next);
+          if (usage) setApi(usage);
           markSynced(next.checkedAtMs);
         })
         .finally(() => {
@@ -107,9 +121,11 @@ export function StatusView({ initial }: { initial: TrustBoard }) {
           ))}
         </div>
 
+        <ApiUseCard api={api} locale={locale} enter={board.slices.length + 1} />
+
         <section
           className="home-tile-enter mod rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3.5"
-          style={{ "--enter": board.slices.length + 1 } as CSSProperties}
+          style={{ "--enter": board.slices.length + 2 } as CSSProperties}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -144,6 +160,94 @@ export function StatusView({ initial }: { initial: TrustBoard }) {
         </section>
       </div>
     </Shell>
+  );
+}
+
+function ApiUseCard({
+  api,
+  locale,
+  enter,
+}: {
+  api: ApiUse | null;
+  locale: string;
+  enter: number;
+}) {
+  const t = useT();
+  const loc = localeId(locale);
+  const n = (v: number | null | undefined) =>
+    v == null ? "—" : v.toLocaleString(loc);
+  const hour = api?.hour;
+  const day = api?.day;
+  const rows: { label: string; value: string }[] = [
+    { label: t("status.metric.height"), value: n(api?.height) },
+    { label: t("status.api.requests1h"), value: n(hour?.requests) },
+    { label: t("status.api.clients1h"), value: n(hour?.clients) },
+    { label: t("status.api.graphql1h"), value: n(hour?.graphql) },
+    { label: t("status.api.rest1h"), value: n(hour?.rest) },
+    { label: t("status.api.errors1h"), value: n(hour?.errors) },
+    { label: t("status.api.limited1h"), value: n(hour?.limited) },
+    { label: t("status.api.requests24h"), value: n(day?.requests) },
+    { label: t("status.api.clients24h"), value: n(day?.clients) },
+  ];
+  return (
+    <article
+      className="home-tile-enter mod rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3.5"
+      style={{ "--enter": enter } as CSSProperties}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--muted-2)]">
+            {t("status.api.eyebrow")}
+          </p>
+          <h2 className="mt-1 text-[15px] font-semibold text-[var(--text)]">{t("status.api.title")}</h2>
+        </div>
+        <StatePill state={api?.ok ? "operational" : "unavailable"} />
+      </div>
+      <p className="mt-1.5 max-w-3xl text-[12px] leading-snug text-[var(--muted)]">{t("status.api.lead")}</p>
+      {hour || day ? (
+        <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+          {rows.map((row) => (
+            <div key={row.label}>
+              <dt className="text-[11px] text-[var(--muted-2)]">{row.label}</dt>
+              <dd className="mt-0.5 font-mono text-[13px] font-medium text-[var(--text)]">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p className="mt-3 text-[13px] text-[var(--muted)]">{t("status.api.empty")}</p>
+      )}
+      {hour?.paths.length ? (
+        <div className="mt-3 border-t border-[var(--border-soft)] pt-2.5">
+          <p className="text-[11px] text-[var(--muted-2)]">{t("status.api.paths")}</p>
+          <ul className="mt-1.5 flex flex-col gap-1">
+            {hour.paths.map((row) => (
+              <li key={row.path} className="flex min-w-0 items-baseline justify-between gap-3 text-[12px]">
+                <span className="truncate font-mono text-[var(--text)]">{row.path}</span>
+                <span className="shrink-0 font-mono tabular-nums text-[var(--muted)]">
+                  {row.hits.toLocaleString(loc)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-soft)] pt-2.5 text-[11px] text-[var(--muted-2)]">
+        <span>
+          {t("status.source")}: <span className="font-mono">caddy</span>
+          {api?.generatedAt ? (
+            <span className="ml-3 font-mono">{api.generatedAt.replace("T", " ").slice(0, 16)} UTC</span>
+          ) : null}
+        </span>
+        <a
+          href="https://api.ergoscan.me/api/v1/info"
+          target="_blank"
+          rel="noreferrer"
+          className="font-mono text-[var(--accent)] hover:underline"
+        >
+          /api/v1/info
+        </a>
+      </div>
+    </article>
   );
 }
 

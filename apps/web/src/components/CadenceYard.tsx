@@ -44,7 +44,7 @@ const LOGO_TOSS = 10;
 
 type Hit = { id: string; x: number; top: number; bot: number };
 
-const SLOTS = 7;
+const SLOTS = 8;
 /** A 39-tx block fills the track. That is the busy size the row is drawn against. */
 const BUSY_TX = 39;
 /** At or under this, nobody on screen is a full block. Don't stretch them to the ceiling. */

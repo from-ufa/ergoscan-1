@@ -141,7 +141,7 @@ function formatFeeAxis(v: number): string {
   if (Math.abs(v) >= 1) return v.toFixed(1);
   return v.toFixed(2);
 }
-const CADENCE = 7;
+const CADENCE = 8;
 const PRICE_UP = "#3dd68c";
 const PRICE_DOWN = "#ff5a6a";
 
