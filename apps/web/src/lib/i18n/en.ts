@@ -113,7 +113,7 @@ export const en: Record<string, string> = {
   "apiSite.us.holes": "HTTP 501. A wallet does not need them.",
   "apiSite.holesTitle": "Not served",
   "apiSite.holesBody":
-    "These official paths return HTTP 501 { error: not_implemented, status: 501 }. Register predicates and an unbounded unspent dump can scan the whole chain.",
+    "These official paths return HTTP 501 { error: not_implemented, status: 501 }. Template-hash search is open. Register predicates and an unbounded unspent dump stay closed.",
   "apiSite.amountsTitle": "Amounts",
   "apiSite.amountsBody":
     "nanoERG and token raw amounts are decimal strings, including inside boxes, balances, and assets. Official JSON numbers already lose precision past 2^53. Heights, indexes, sizes, and timestamps stay JSON numbers.",

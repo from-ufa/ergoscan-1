@@ -28,6 +28,7 @@ import {
   type GixStreamBox,
   type IdxBoxRow,
 } from "../lib/indexDb.js";
+import { parseTemplateOnlySearch } from "../lib/boxSearch.js";
 import { parseGixWindow } from "../lib/gix.js";
 import { ergoTreeFromAddress, normErgoTree } from "../lib/ergoAddress.js";
 import { logSubmitFail, publicSubmitFail, requestIp, takeSubmitSlot, validateSignedTx } from "../lib/submit-tx.js";
@@ -116,6 +117,33 @@ async function sendBoxesByTemplate(
   const limit = qInt(req.query.limit, 20, 1, 100);
   const offset = qInt(req.query.offset, 0, 0, 500);
   const page = await boxesByErgoTreeTemplate(hash, offset, limit, unspentOnly);
+  if (!page) {
+    res.status(504).json({ error: "timeout", reason: "template hash query exceeded 4s" });
+    return;
+  }
+  res.json({
+    items: page.items.map(boxJson),
+    offset,
+    limit,
+    hasMore: page.hasMore,
+    source: "index",
+  });
+}
+
+async function sendTemplateSearch(req: Request, res: Response, unspentOnly: boolean): Promise<void> {
+  const parsed = parseTemplateOnlySearch(req.body);
+  if (!parsed.ok) {
+    if (parsed.status === 501) {
+      res.status(501).json(notImplemented(req.path));
+      return;
+    }
+    res.status(400).json({ error: parsed.error, reason: parsed.reason });
+    return;
+  }
+  cacheList(res);
+  const limit = qInt(req.query.limit, 20, 1, 100);
+  const offset = qInt(req.query.offset, 0, 0, 500);
+  const page = await boxesByErgoTreeTemplate(parsed.hash, offset, limit, unspentOnly);
   if (!page) {
     res.status(504).json({ error: "timeout", reason: "template hash query exceeded 4s" });
     return;
@@ -574,16 +602,12 @@ export function registerCompatRoutes(app: Express, deps: CompatDeps): void {
     );
   });
 
-  // Heavy official paths — explicit 501 so clients do not hang.
-  for (const path of [
-    "/v1/boxes/search",
-    "/v1/boxes/unspent/search",
-    "/v1/boxes/unspent/search/union",
-  ]) {
-    app.post(path, (_req, res) => {
-      res.status(501).json(notImplemented(path));
-    });
-  }
+  // Template hash only. Register, constant, and token predicates stay 501.
+  app.post("/v1/boxes/search", (req, res) => void sendTemplateSearch(req, res, false));
+  app.post("/v1/boxes/unspent/search", (req, res) => void sendTemplateSearch(req, res, true));
+  app.post("/v1/boxes/unspent/search/union", (req, res) => void sendTemplateSearch(req, res, true));
+
+  // Unbounded dumps stay 501 so one client cannot scan the chain.
   for (const path of [
     "/v1/boxes/unspent/stream",
     "/v1/blocks/byGlobalIndex/stream",

@@ -14,7 +14,7 @@ A public Ergo API that a wallet or dApp can use **instead of** `api.ergoplatform
 | --- | --- |
 | Wallet paths (`boxes/unspent/byAddress`, `balance/total`, `tokens/bySymbol`, `epochs/params`, `blocks/headers`, `mempool/transactions/submit`) | Same paths on `/v1` and `/api/v1`. Thin aliases over our index + mempool RAM. |
 | Amounts as JSON numbers (int64) | We keep **decimal strings**. Safer than official (LP / emission overflow). Clients that `BigInt()` or coerce still work. |
-| Box / ErgoTree search and streams | Exact `byErgoTree`, template hash (`packed.box_template`), and `unspent/byLastEpochs/stream` are live (`limit≤100`, 4s). `POST /boxes/search`, unbounded `unspent/stream`, and `blocks/byGlobalIndex/stream` stay `501`. |
+| Box / ErgoTree search and streams | Exact `byErgoTree`, template hash (`packed.box_template`), template-only `POST /boxes/search` (and unspent / union), and `unspent/byLastEpochs/stream` are live (`limit≤100`, 4s). Register, constant, and token predicates stay `501`. Unbounded `unspent/stream` and `blocks/byGlobalIndex/stream` stay `501`. |
 | Token name search via official HTTP | **Ours reads `tokens`.** No live GET to `api.ergoplatform.com`. |
 | Chain + mempool only | We also ship DeFi (unified N2T + T2T fills), Rosen, rent, NFT catalog, resolve, graphs, orbit, page composites, WS. |
 
@@ -69,7 +69,7 @@ Wallet/dApp drop-in. Same path after `/api/v1` as explorer. Response **shape** f
 
 | Official path | Why later |
 | --- | --- |
-| `POST /boxes/search`, `POST /boxes/unspent/search`, `POST /boxes/unspent/search/union` | Registers and token predicates can seq-scan `boxes` |
+| `POST /boxes/search` with registers, constants, or assets | Those predicates can seq-scan every box of the template. Template hash alone is live |
 | `GET /boxes/unspent/stream`, `GET /blocks/byGlobalIndex/stream` | Unbounded UTXO dump, and blocks have no `gix`. Hang-safe 501 |
 | Facade that proxies official explorer | we are the index |
 
@@ -115,6 +115,9 @@ Two schemas. GET on either path is 405.
 | `GET /boxes/unspent/byErgoTree/{tree}` | same | unspent partial script index, same caps |
 | `GET /boxes/byErgoTreeTemplateHash/{hash}` | same | `packed.box_template (template_hash, creation_height DESC)`. Same caps |
 | `GET /boxes/unspent/byErgoTreeTemplateHash/{hash}` | same | same index, then `spent_tx_id IS NULL` |
+| `POST /boxes/search` | template hash only | same index. Body is `{ ergoTreeTemplateHash }`. Registers, constants, or assets → `501`. `limit≤100`, `offset≤500`, `hasMore`, no `COUNT` |
+| `POST /boxes/unspent/search` | same, unspent | same |
+| `POST /boxes/unspent/search/union` | same, unspent | Official union also takes a token list (`at least one`). That list stays `501`. Hash alone is the unspent template page |
 | `GET /boxes/unspent/byLastEpochs/stream` | same | epochs 1–4, `limit≤100`, `creation_height` index |
 | `GET /boxes/unspent/byGlobalIndex/stream` | same | unique `boxes.gix`; `minGix`+`maxGix` required; window ≤ 10000; unspent after seek |
 | `GET /transactions/byGlobalIndex/stream` | same | unique `transactions.gix`; same window; batched I/O |

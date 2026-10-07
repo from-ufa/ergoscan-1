@@ -301,7 +301,7 @@ export function notImplemented(feature: string) {
     error: "not_implemented",
     feature,
     status: 501,
-    note: "No full-table scan on boxes. Exact byErgoTree uses the script index. Template hash uses packed.box_template (limit ≤ 100, offset ≤ 500, 4s). Search, unspent/stream without a bound, and blocks/byGlobalIndex stay 501. Box and tx byGlobalIndex streams are live.",
+    note: "No full-table scan on boxes. Exact byErgoTree uses the script index. Template-only POST search uses packed.box_template (limit ≤ 100, offset ≤ 500, 4s). Register, constant, and token predicates stay 501. Unspent/stream without a bound and blocks/byGlobalIndex stay 501. Box and tx byGlobalIndex streams are live.",
   };
 }
 

@@ -35,9 +35,6 @@ export const API_COMPARE = [
 
 /** Official paths we answer with 501. Feature string is the gateway path. */
 export const API_NOT_SERVED = [
-  { method: "POST", path: "/boxes/search" },
-  { method: "POST", path: "/boxes/unspent/search" },
-  { method: "POST", path: "/boxes/unspent/search/union" },
   { method: "GET", path: "/boxes/unspent/stream" },
   { method: "GET", path: "/blocks/byGlobalIndex/stream" },
 ] as const;
@@ -97,7 +94,7 @@ export function apiContractMarkdown(): string {
     "",
     "## Bounded lookups",
     "",
-    "Exact `byErgoTree` and template-hash lookups are live: `limit` at most 100, `offset` at most 500. `unspent/byLastEpochs/stream` accepts 1–4 epochs and `limit` at most 100.",
+    "Exact `byErgoTree` and template-hash lookups are live: `limit` at most 100, `offset` at most 500. `POST /boxes/search`, `POST /boxes/unspent/search`, and `POST /boxes/unspent/search/union` accept a body with only `ergoTreeTemplateHash` and use that same index. `union` is unspent. A register, constant, or token list in the body stays HTTP 501. `unspent/byLastEpochs/stream` accepts 1–4 epochs and `limit` at most 100. These pages return `items` and `hasMore`. They do not count the whole match.",
     "",
     "## Wallet paths",
     "",
@@ -177,7 +174,7 @@ export function apiContractHtml(): string {
   <p><code>globalIndex</code> on a box or a transaction is ErgoScan's own sequence. The same box carries the same <code>globalIndex</code> in a list and in <code>GET /boxes/{id}</code>. It is not the official explorer's global index. Box and transaction <code>byGlobalIndex</code> streams use this sequence: both bounds are required, and the window is at most 10000.</p>
   <p><code>dataInputs</code> on a transaction is an empty list. <code>inputs</code> and <code>outputs</code> are filled.</p>
   <h2>Bounded lookups</h2>
-  <p>Exact <code>byErgoTree</code> and template-hash lookups are live: <code>limit</code> at most 100, <code>offset</code> at most 500. <code>unspent/byLastEpochs/stream</code> accepts 1–4 epochs and <code>limit</code> at most 100.</p>
+  <p>Exact <code>byErgoTree</code> and template-hash lookups are live: <code>limit</code> at most 100, <code>offset</code> at most 500. <code>POST /boxes/search</code>, <code>POST /boxes/unspent/search</code>, and <code>POST /boxes/unspent/search/union</code> accept a body with only <code>ergoTreeTemplateHash</code> and use that same index. <code>union</code> is unspent. A register, constant, or token list in the body stays HTTP 501. <code>unspent/byLastEpochs/stream</code> accepts 1–4 epochs and <code>limit</code> at most 100. These pages return <code>items</code> and <code>hasMore</code>. They do not count the whole match.</p>
   <h2>Wallet paths</h2>
   <p>Paths are relative to <code>/api/v1</code>. List responses use <code>items</code> and <code>total</code>. <code>total</code> comes from the address summary, not a live count of boxes. Prefer <code>cursor</code> when <code>hasMore</code> is true. <code>offset</code> is a small skip (at most 500) on an address-filtered index.</p>
   <ul>${wallet}</ul>

@@ -12,6 +12,7 @@ const ADDR = "9euJma7w75m5VThHmTeJAPY9YWxhKHGSe8aHgF1rBJH9156pjoZ";
 const BOX = "6a50fa0add58fb4366484278657901b1be0f77d546b428bedcda2cd51791470c";
 const TX = "81c900e58c5dab21603b225796d26c8dcbe61863e27e0076bb0582cb08d145b3";
 const TOKEN = "e1d7fcb9c033970d8485c200efc9febbb17244639c17c57a4c14b76bbd559183";
+const TEMPLATE = "3328cef917f9983ffcae8a3117fba409a7780c672bdfc09343245d3376f207fd";
 
 type Loc = "en" | "ru";
 type Method = "GET" | "POST";
@@ -117,6 +118,27 @@ const OPS: Op[] = [
     blurb: { en: "Boxes still holding this token.", ru: "Коробки, где токен ещё лежит." },
     fields: [
       { name: "tokenId", in: "path", value: TOKEN, hint: { en: "64 hex", ru: "64 hex" } },
+      { name: "limit", in: "query", value: "2", hint: { en: "1–100", ru: "1–100" } },
+    ],
+  },
+  {
+    id: "search",
+    group: "boxes",
+    method: "POST",
+    path: "/boxes/unspent/search",
+    title: { en: "Search by template", ru: "Поиск по шаблону" },
+    blurb: {
+      en: "Body is ergoTreeTemplateHash only. limit 1–100, offset at most 500. Registers, constants, or a token list stay 501. hasMore, no total.",
+      ru: "В теле только ergoTreeTemplateHash. limit 1–100, offset не больше 500. Регистры, константы или список токенов — 501. hasMore, без total.",
+    },
+    fields: [
+      {
+        name: "body",
+        in: "body",
+        area: true,
+        value: `{\n  "ergoTreeTemplateHash": "${TEMPLATE}"\n}`,
+        hint: { en: "64 hex SHA-256", ru: "64 hex SHA-256" },
+      },
       { name: "limit", in: "query", value: "2", hint: { en: "1–100", ru: "1–100" } },
     ],
   },
@@ -229,13 +251,7 @@ const OPS: Op[] = [
   },
 ];
 
-const HOLES = [
-  "POST /boxes/search",
-  "POST /boxes/unspent/search",
-  "POST /boxes/unspent/search/union",
-  "GET /boxes/unspent/stream",
-  "GET /blocks/byGlobalIndex/stream",
-];
+const HOLES = ["GET /boxes/unspent/stream", "GET /blocks/byGlobalIndex/stream"];
 
 function say(locale: string, text: Record<Loc, string>): string {
   return locale === "ru" ? text.ru : text.en;
@@ -479,8 +495,8 @@ export function ApiSite() {
       <section className="rounded-[20px] bg-[var(--wash-faint)] px-4 py-3">
         <p className="text-[12px] leading-relaxed text-[var(--muted)]">
           {loc === "ru"
-            ? "Эти пути отвечают 501. Поиск по регистрам и поток всей цепи кошельку не нужны."
-            : "These paths return 501. Register search and a full-chain stream are not for a wallet."}
+            ? "Эти пути отвечают 501. Поиск по шаблону уже открыт. Предикат по регистрам и поток всей цепи остаются закрыты."
+            : "These paths return 501. Template search is open. Register predicates and a full-chain stream stay closed."}
         </p>
         <ul className="mt-2 flex flex-col gap-1">
           {HOLES.map((path) => (
