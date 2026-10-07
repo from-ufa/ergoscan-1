@@ -99,6 +99,7 @@ ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS pow_n bytea;
 ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS pow_d numeric;
 ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS extension bytea;
 ALTER TABLE packed.blocks ADD COLUMN IF NOT EXISTS ad_proofs bytea;
+ALTER TABLE packed.tx_inputs ADD COLUMN IF NOT EXISTS proof_bytes bytea;
 
 CREATE TABLE IF NOT EXISTS packed.transactions (
   id             bytea PRIMARY KEY,

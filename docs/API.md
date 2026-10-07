@@ -79,7 +79,7 @@ Those routes return `501` with a stable error so a client can detect the hole in
 
 Two schemas. GET on either path is 405.
 
-**API host** (`API_CONTOUR=1`, public `POST https://api.ergoscan.me/api/graphql`, and `/graphql` plus `/v1/graphql` on that process): Nautilus 0.5.5. Amounts are decimal strings, including `powSolutions.d`. `relevantOnly` keeps the queried addresses and the miner-fee output. Reads use `GRAPHQL_READ_PER_MIN` (default 2000), separate from the REST cap of 120. Exhaustion is HTTP 200 `{ errors: [{ message: "rate_limited", extensions: { retryAfterSec } }], data: null }`. Submit (`submitTransaction`, `checkTransaction`, `submitTx`) stays on the submit limiter, 10/minute. `inputs.proofBytes` is `""`; spending proofs are not in the index.
+**API host** (`API_CONTOUR=1`, public `POST https://api.ergoscan.me/api/graphql`, and `/graphql` plus `/v1/graphql` on that process): Nautilus 0.5.5. Amounts are decimal strings, including `powSolutions.d`. `relevantOnly` keeps the queried addresses and the miner-fee output. Box pages take at most 50 and skip up to 100000, in `creation_height, box_id` order. A larger skip is an empty page. Reads use `GRAPHQL_READ_PER_MIN` (default 2000), separate from the REST cap of 120. Exhaustion is HTTP 200 `{ errors: [{ message: "rate_limited", extensions: { retryAfterSec } }], data: null }`. Submit (`submitTransaction`, `checkTransaction`, `submitTx`) stays on the submit limiter, 10/minute. `inputs.proofBytes` is the stored spending proof, or `""` when that input has none or the `input_proof_height` walk has not reached it yet.
 
 **Site** (`POST /v1/graphql` on `:4400`): the explorer schema, not Nautilus.
 

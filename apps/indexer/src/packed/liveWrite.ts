@@ -7,7 +7,12 @@ import type pg from "pg";
 
 type Queryable = { query: pg.Pool["query"] };
 
-type SpendRow = { boxId: string; spentTxId: string; spentHeight: number };
+type SpendRow = {
+  boxId: string;
+  spentTxId: string;
+  spentHeight: number;
+  proofHex?: string | null;
+};
 
 type BoxRow = {
   boxId: string;
@@ -101,20 +106,30 @@ export async function writePackedSpends(
 ): Promise<void> {
   if (!spends.length) return;
   await client.query(
-    `INSERT INTO packed.tx_inputs (box_id, spent_tx_id, spent_height)
-     SELECT packed.hex32(u.box_id), packed.hex32(u.spent_tx_id), u.spent_height
-       FROM unnest($1::text[], $2::text[], $3::bigint[])
-         AS u(box_id, spent_tx_id, spent_height)
+    `INSERT INTO packed.tx_inputs (box_id, spent_tx_id, spent_height, proof_bytes)
+     SELECT packed.hex32(u.box_id), packed.hex32(u.spent_tx_id), u.spent_height,
+            CASE
+              WHEN u.proof ~ '^[0-9a-fA-F]{2,}$' AND length(u.proof) % 2 = 0
+              THEN decode(u.proof, 'hex')
+              ELSE NULL
+            END
+       FROM unnest($1::text[], $2::text[], $3::bigint[], $4::text[])
+         AS u(box_id, spent_tx_id, spent_height, proof)
       WHERE u.box_id ~ '^[0-9a-fA-F]{64}$'
         AND u.spent_tx_id ~ '^[0-9a-fA-F]{64}$'
      ON CONFLICT (box_id) DO UPDATE SET
        spent_tx_id = EXCLUDED.spent_tx_id,
-       spent_height = EXCLUDED.spent_height
+       spent_height = EXCLUDED.spent_height,
+       proof_bytes = CASE
+         WHEN EXCLUDED.spent_height > packed.tx_inputs.spent_height THEN EXCLUDED.proof_bytes
+         ELSE COALESCE(EXCLUDED.proof_bytes, packed.tx_inputs.proof_bytes)
+       END
       WHERE EXCLUDED.spent_height >= packed.tx_inputs.spent_height`,
     [
       spends.map((s) => s.boxId),
       spends.map((s) => s.spentTxId),
       spends.map((s) => s.spentHeight),
+      spends.map((s) => s.proofHex ?? ""),
     ]
   );
   const groups = new Map<string, SpendRow[]>();

@@ -26,6 +26,8 @@ export type SpendMark = {
   spentTxId: string;
   spentHeight: number;
   valueHint?: number;
+  /** Even hex, or null when the spending proof is empty. */
+  proofHex?: string | null;
 };
 
 export type BoxInsertRow = {

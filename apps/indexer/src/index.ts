@@ -93,6 +93,7 @@ import {
 import { maybeBackfillAddressTxSpends } from "./addressTxSpendBackfill.js";
 import { headerBytesFromNode, maybeBackfillBlockHeaders } from "./headerBackfill.js";
 import { maybeBackfillBlockSections, sectionBytesFromBlock } from "./sectionBackfill.js";
+import { maybeBackfillInputProofs, spendingProofHex } from "./inputProofBackfill.js";
 import {
   longAddressTxSlotEnabled,
   maybeBackfillLongAddressTx,
@@ -848,6 +849,7 @@ async function indexTxBatched(
       spentTxId: txId,
       spentHeight: height,
       valueHint: hint,
+      proofHex: spendingProofHex(inp.spendingProof?.proofBytes),
     });
   }
   await markSpentMany(client, spends);
@@ -1021,6 +1023,7 @@ async function writeHeightRows(
         spentTxId: txId,
         spentHeight: height,
         valueHint: hint,
+        proofHex: spendingProofHex(inp.spendingProof?.proofBytes),
       });
     }
     const inputBoxes = inputIds.map(
@@ -3012,6 +3015,12 @@ async function loop(pool: Pool): Promise<boolean> {
     await maybeBackfillBlockSections(pool);
   } catch (e) {
     console.warn("[indexer] block section", String(e));
+  }
+
+  try {
+    await maybeBackfillInputProofs(pool);
+  } catch (e) {
+    console.warn("[indexer] input proof", String(e));
   }
 
   // Long P2S history: dedicated writer. Tip keeps ADDRESS_TX_LONG=0.

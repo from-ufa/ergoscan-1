@@ -25,7 +25,13 @@ const ADDR_MAX = 20;
 const ID_MAX = 20;
 const TREE_MAX = 20;
 const TAKE_CAP = 50;
-const SKIP_CAP = 2000;
+/**
+ * Nautilus walks `skip += take` until a short page.
+ * Clamping skip repeated the page at 2000, so a fat address never summed to its balance.
+ * 100000 covers the fattest unspent stack in the index (~78000) with room to grow.
+ * Past the cap the page is empty and the walk stops.
+ */
+const SKIP_CAP = 100_000;
 const ASSET_CAP = 400;
 
 let schema: GraphQLSchema | null = null;
@@ -54,11 +60,16 @@ function digits(v: unknown): string {
   return "0";
 }
 
-function page(args: { skip?: unknown; take?: unknown }, fallback: number): { skip: number; take: number } {
+export function nautilusPage(
+  args: { skip?: unknown; take?: unknown },
+  fallback: number
+): { skip: number; take: number } {
   const takeRaw = args.take == null ? fallback : Number(args.take);
   const skipRaw = args.skip == null ? 0 : Number(args.skip);
   const take = Number.isFinite(takeRaw) ? Math.max(0, Math.min(TAKE_CAP, Math.floor(takeRaw))) : fallback;
-  const skip = Number.isFinite(skipRaw) ? Math.max(0, Math.min(SKIP_CAP, Math.floor(skipRaw))) : 0;
+  if (!Number.isFinite(skipRaw) || skipRaw <= 0) return { skip: 0, take };
+  const skip = Math.floor(skipRaw);
+  if (skip > SKIP_CAP) return { skip: 0, take: 0 };
   return { skip, take };
 }
 
@@ -259,7 +270,7 @@ async function attachAssets(sql: Sql, rows: Row[], spent: Set<string>): Promise<
 }
 
 async function loadBoxes(sql: Sql, args: Row, spent: Set<string>): Promise<Row[]> {
-  const { skip, take } = page(args, 50);
+  const { skip, take } = nautilusPage(args, 50);
   if (take === 0) return [];
   const boxIds = hexIds([...(hexIds(args.boxIds)), ...(oneHex(args.boxId) ? [oneHex(args.boxId)!] : [])]);
   const trees = texts([...(texts(args.ergoTrees, TREE_MAX, 20_000)), ...(texts(args.ergoTree, 1, 20_000))], TREE_MAX, 20_000);
@@ -332,7 +343,7 @@ async function loadBoxes(sql: Sql, args: Row, spent: Set<string>): Promise<Row[]
 }
 
 function filterMempoolBoxes(txs: RawTx[], args: Row, spent: Set<string>): Row[] {
-  const { skip, take } = page(args, 50);
+  const { skip, take } = nautilusPage(args, 50);
   const ids = new Set(hexIds([...(hexIds(args.boxIds)), ...(oneHex(args.boxId) ? [oneHex(args.boxId)!] : [])]));
   const trees = new Set(texts([...(texts(args.ergoTrees, TREE_MAX, 20_000)), ...texts(args.ergoTree, 1, 20_000)], TREE_MAX, 20_000));
   const addresses = new Set(
@@ -377,7 +388,7 @@ async function loadState(sql: Sql, ctx: NautilusCtx): Promise<Row> {
 }
 
 async function loadHeaders(sql: Sql, args: Row): Promise<Row[]> {
-  const { skip, take } = page(args, 10);
+  const { skip, take } = nautilusPage(args, 10);
   if (take === 0) return [];
   const headerIds = hexIds([...(hexIds(args.headerIds)), ...(oneHex(args.headerId) ? [oneHex(args.headerId)!] : [])]);
   const parentId = oneHex(args.parentId);
@@ -525,12 +536,34 @@ export function relevantOutputs(outputs: Row[], addresses: Set<string>): Row[] {
   });
 }
 
+/** Even hex from the index or a node proof. Empty and junk stay "". */
+export function proofText(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  const hex = raw.trim().toLowerCase();
+  if (hex.length < 2 || hex.length % 2 !== 0 || !/^[0-9a-f]+$/.test(hex)) return "";
+  return hex;
+}
+
+async function inputProofs(sql: Sql, boxIds: string[]): Promise<Map<string, string>> {
+  const ids = [...new Set(boxIds.filter((id) => /^[0-9a-f]{64}$/.test(id)))];
+  if (!ids.length) return new Map();
+  const rows = await sql(
+    `SELECT encode(box_id, 'hex') AS box_id, encode(proof_bytes, 'hex') AS proof
+       FROM packed.tx_inputs
+      WHERE box_id IN (SELECT decode(x, 'hex') FROM unnest($1::text[]) AS x)
+        AND proof_bytes IS NOT NULL`,
+    [ids]
+  );
+  return new Map(rows.map((row) => [String(row.box_id), proofText(row.proof)]));
+}
+
 function txObject(
   row: Row,
   inputs: Row[],
   outputs: Row[],
   addresses: Set<string>,
-  dataInputs: { boxId: string }[] = []
+  dataInputs: { boxId: string }[] = [],
+  proofs: Map<string, string> = new Map()
 ): Row {
   return {
     transactionId: String(row.id ?? ""),
@@ -539,7 +572,7 @@ function txObject(
     headerId: String(row.header ?? ""),
     index: Number(row.index) || 0,
     inputs: inputs.map((box, index) => ({
-      proofBytes: "",
+      proofBytes: proofs.get(String(box.boxId ?? "").toLowerCase()) ?? "",
       extension: {},
       index,
       box,
@@ -553,7 +586,7 @@ function txObject(
 }
 
 async function loadTransactions(sql: Sql, args: Row, spent: Set<string>): Promise<Row[]> {
-  const { skip, take } = page(args, 50);
+  const { skip, take } = nautilusPage(args, 50);
   if (take === 0) return [];
   const ids = hexIds([...(hexIds(args.transactionIds)), ...(oneHex(args.transactionId) ? [oneHex(args.transactionId)!] : [])]);
   const addresses = texts(
@@ -626,6 +659,14 @@ async function loadTransactions(sql: Sql, args: Row, spent: Set<string>): Promis
     boxesByTx(sql, "creation_tx_id", sliced, spent),
     boxesByTx(sql, "spent_tx_id", sliced, spent),
   ]);
+  const boxIds: string[] = [];
+  for (const list of inputs.values()) {
+    for (const box of list) {
+      const id = String(box.boxId ?? "").toLowerCase();
+      if (id) boxIds.push(id);
+    }
+  }
+  const proofs = await inputProofs(sql, boxIds);
   const byId = new Map(txs.map((row) => [String(row.id), row]));
   const wanted = new Set(addresses);
   return sliced.map((id) =>
@@ -633,13 +674,15 @@ async function loadTransactions(sql: Sql, args: Row, spent: Set<string>): Promis
       byId.get(id) ?? { id, height: 0, ts: "0", index: 0, header: "" },
       inputs.get(id) ?? [],
       outputs.get(id) ?? [],
-      wanted
+      wanted,
+      [],
+      proofs
     )
   );
 }
 
 async function loadTokens(sql: Sql, args: Row, spent: Set<string>): Promise<Row[]> {
-  const { skip, take } = page(args, 50);
+  const { skip, take } = nautilusPage(args, 50);
   if (take === 0) return [];
   const ids = hexIds([...(hexIds(args.tokenIds)), ...(oneHex(args.tokenId) ? [oneHex(args.tokenId)!] : [])]);
   const boxId = oneHex(args.boxId);
@@ -715,7 +758,7 @@ async function loadTokens(sql: Sql, args: Row, spent: Set<string>): Promise<Row[
 }
 
 function mempoolTransactions(txs: RawTx[], args: Row, spent: Set<string>): Row[] {
-  const { skip, take } = page(args, 50);
+  const { skip, take } = nautilusPage(args, 50);
   const ids = new Set(hexIds([...(hexIds(args.transactionIds)), ...(oneHex(args.transactionId) ? [oneHex(args.transactionId)!] : [])]));
   const addresses = new Set(
     texts([...texts(args.addresses, ADDR_MAX, 8000), ...texts(args.address, 1, 8000)], ADDR_MAX, 8000)
@@ -725,7 +768,7 @@ function mempoolTransactions(txs: RawTx[], args: Row, spent: Set<string>): Row[]
     const id = tx.id.toLowerCase();
     if (ids.size && !ids.has(id)) continue;
     const inputs = (tx.inputs ?? []).map((input, index) => ({
-      proofBytes: "",
+      proofBytes: proofText((input as { spendingProof?: { proofBytes?: unknown } }).spendingProof?.proofBytes),
       extension: {},
       index: input.index ?? index,
       box: input.boxId ? boxFromMempool(input, input.transactionId ?? "", spent) : null,

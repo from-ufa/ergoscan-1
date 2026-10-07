@@ -3603,6 +3603,35 @@ function tokenTxSeenPageSql(withCursor: boolean): string {
          ORDER BY p.height DESC NULLS LAST, p.id DESC`;
 }
 
+/**
+ * Newest handoff on the transfers tape: not a mint, a burn, or a swap.
+ * One index row. A same-address rewrite does not count.
+ * Null when the lookup fails. `{ height: null }` when the token has no such row.
+ */
+export async function tokenTransferLast(
+  tokenId: string
+): Promise<{ height: number | null; ts: number | null } | null> {
+  if (!packedReadEnabled() || !isHex64(tokenId)) return null;
+  const rows = await q<{ height: string; ts: string | null }>(
+    `SELECT m.height::text AS height, t.timestamp_ms::text AS ts
+       FROM packed.token_tx_move m
+       LEFT JOIN packed.transactions t ON t.id = m.tx_id
+      WHERE m.token_id = decode(lower($1), 'hex')
+        AND m.height IS NOT NULL
+        AND NOT ${TOKEN_MINTBURN_SQL}
+        AND NOT ${PACKED_TOKEN_IS_SWAP_SQL}
+      ORDER BY m.height DESC NULLS LAST, m.tx_id DESC
+      LIMIT 1`,
+    [tokenId]
+  );
+  if (!rows) return null;
+  const row = rows[0];
+  if (!row) return { height: null, ts: null };
+  const height = Number(row.height);
+  if (!Number.isFinite(height)) return { height: null, ts: null };
+  return { height, ts: tsMs(row.ts) };
+}
+
 /** Token tape from token_tx_seen. Keyset on stored height — not JOIN+OFFSET 270k txs. */
 export async function tokenTransactions(
   tokenId: string,
@@ -4897,6 +4926,13 @@ export async function listTokensCatalog(opts: {
       firstTs: nInt(r.first_ts),
       lastTs: nInt(r.last_ts),
     }));
+
+    if (/^[0-9a-fA-F]{64}$/.test(qraw) && items.length === 1) {
+      const move = await tokenTransferLast(qraw.toLowerCase());
+      if (move && items[0]) {
+        items[0] = { ...items[0], lastHeight: move.height, lastTs: move.ts };
+      }
+    }
 
     return {
       items,

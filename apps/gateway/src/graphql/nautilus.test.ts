@@ -3,7 +3,7 @@ import test from "node:test";
 import { parse, validate } from "graphql";
 import { isSubmitTxQuery } from "../lib/submit-tx.js";
 import { MINERS_FEE_ADDRESS, MINERS_FEE_TREE } from "@ergoscan/shared";
-import { headerFromRow, nautilusRoot, nautilusSchema, relevantOutputs, runNautilus, votesFromHex, type NautilusCtx } from "./nautilus.js";
+import { headerFromRow, nautilusPage, nautilusRoot, nautilusSchema, proofText, relevantOutputs, runNautilus, votesFromHex, type NautilusCtx } from "./nautilus.js";
 
 const ctx: NautilusCtx = {
   getRawMempool: () => new Map(),
@@ -16,6 +16,19 @@ const ctx: NautilusCtx = {
 test("votes are three protocol bytes", () => {
   assert.deepEqual(votesFromHex("000000"), [0, 0, 0]);
   assert.deepEqual(votesFromHex("780000"), [120, 0, 0]);
+});
+
+test("spending proof hex stays empty unless it is even", () => {
+  assert.equal(proofText(""), "");
+  assert.equal(proofText("abc"), "");
+  assert.equal(proofText("0A0B"), "0a0b");
+});
+
+test("a skip past the cap is an empty page", () => {
+  assert.deepEqual(nautilusPage({ skip: 2050, take: 50 }, 50), { skip: 2050, take: 50 });
+  assert.deepEqual(nautilusPage({ skip: 100000, take: 50 }, 50), { skip: 100000, take: 50 });
+  assert.deepEqual(nautilusPage({ skip: 100001, take: 80 }, 50), { skip: 0, take: 0 });
+  assert.deepEqual(nautilusPage({ take: 500 }, 50), { skip: 0, take: 50 });
 });
 
 test("a stored header keeps signing fields as strings", () => {

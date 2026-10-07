@@ -213,16 +213,17 @@ const OPS: Op[] = [
     path: "/graphql",
     title: { en: "Nautilus query", ru: "Запрос Nautilus" },
     blurb: {
-      en: "POST /api/graphql. Version 0.5.5. Amounts are strings. Reads: 2000 per minute, separate from REST.",
-      ru: "POST /api/graphql. Версия 0.5.5. Суммы — строки. Чтение: 2000 в минуту, отдельно от REST.",
+      en: "POST /api/graphql. Version 0.5.5. Amounts are strings. Reads: 2000 per minute, separate from REST. An input's proofBytes is the spending proof as hex. An empty string means that input has no proof, or this height is not written yet. The website does not show it.",
+      ru: "POST /api/graphql. Версия 0.5.5. Суммы — строки. Чтение: 2000 в минуту, отдельно от REST. proofBytes у входа — доказательство траты, hex. Пустая строка: пруфа нет или эта высота ещё не записана. На сайте это не показываем.",
     },
     fields: [
       {
         name: "query",
         in: "body",
         area: true,
-        value: "query { info { version } state { network height } }",
-        hint: { en: "GraphQL", ru: "GraphQL" },
+        value:
+          'query {\n  transactions(transactionIds: ["43828de77213479b27fe55f6a5d4551f411f23c8f17c289d48c7baa33c593b78"]) {\n    inputs { proofBytes }\n  }\n}',
+        hint: { en: "GraphQL. proofBytes is hex.", ru: "GraphQL. proofBytes — hex." },
       },
     ],
   },
