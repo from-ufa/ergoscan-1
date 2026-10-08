@@ -316,7 +316,8 @@ export function TransactionsView({
             offset={page * TX_PACK}
             pageSize={TX_PACK}
             shown={items.length}
-            total={null}
+            total={txTotal != null && txTotal > 0 ? txTotal : null}
+            scrub={false}
             hasMore={hasMore}
             loc={loc(locale)}
             ofLabel={t("addresses.packOf")}

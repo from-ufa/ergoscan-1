@@ -391,7 +391,7 @@ function NameTapeRow({
       )}
       onPointerEnter={() => prefetchAddressPage(row.address)}
     >
-      <div className="book-name min-w-0 flex-col justify-center px-3">
+      <div className="book-name min-w-0 items-center px-3">
         <div className="flex min-h-[1.35em] min-w-0 items-center gap-2">
           <AddressPip
             address={row.address}
@@ -416,15 +416,15 @@ function NameTapeRow({
             onToggle={() => onToggleFav(row.address)}
           />
         </div>
-        <p className="mt-1 truncate pl-[26px] text-[11px] leading-none text-[var(--muted)]">
-          {sub}
-        </p>
       </div>
-      <div className="book-addr min-w-0 items-center gap-1 px-3">
-        <span className="min-w-0 truncate font-mono text-[12px] leading-none text-[var(--muted)]" title={row.address}>
-          {shortId(row.address, 6)}
-        </span>
-        <CopyAddress text={row.address} t={t} />
+      <div className="book-addr min-w-0 flex-col justify-center px-3">
+        <div className="flex min-w-0 items-center gap-1">
+          <span className="min-w-0 truncate font-mono text-[12px] leading-none text-[var(--muted)]" title={row.address}>
+            {shortId(row.address, 6)}
+          </span>
+          <CopyAddress text={row.address} t={t} />
+        </div>
+        <p className="mt-1 truncate text-[11px] leading-none text-[var(--muted)]">{sub}</p>
       </div>
       <div className="book-src min-w-0 flex-col justify-center px-3">
         {by ? (
