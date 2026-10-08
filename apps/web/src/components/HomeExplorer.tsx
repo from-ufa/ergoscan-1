@@ -937,7 +937,9 @@ function HomeActivityTile({
           </span>
           {kpi != null ? (
             <p className="m-0 flex h-[22px] shrink-0 flex-nowrap items-center justify-end gap-1.5 whitespace-nowrap">
-              <span className="text-[12px] leading-none text-[var(--muted)]">{kpiLabel}</span>
+              {when ? null : (
+                <span className="text-[12px] leading-none text-[var(--muted)]">{kpiLabel}</span>
+              )}
               <KpiNum className="max-w-none shrink-0 tabular-nums text-[22px] font-semibold leading-none tracking-tight text-[var(--text)]">
                 <ReelText text={kpi} />
               </KpiNum>
@@ -1194,7 +1196,7 @@ function EpochBar({
         </div>
       </div>
       <div
-        className="epoch-tape mt-2 h-2 overflow-hidden rounded-full bg-[var(--wash)]"
+        className="epoch-tape mt-2 h-2 rounded-full bg-[var(--wash)]"
         role="progressbar"
         aria-valuenow={Math.round(pct)}
         aria-valuemin={0}
@@ -1203,7 +1205,7 @@ function EpochBar({
       >
         <div
           className="epoch-tape-fill h-full rounded-full"
-          style={{ width: `${pct}%`, backgroundColor: HOME.epoch }}
+          style={{ width: `${pct}%` }}
         />
       </div>
     </section>

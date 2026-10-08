@@ -3814,39 +3814,67 @@ html[data-ink="day"] .mcap-vol {
   animation: cadence-grow-cap 400ms var(--ease) both;
 }
 
-/* Epoch tape: one quiet veil over HOME.epoch. Width stays; the veil drifts. */
-@keyframes epoch-tape-roll {
-  to {
-    background-position: 23px 0;
+/* Epoch fill: the transactions-chart ink, breathing like that line's halo. */
+@keyframes epoch-tape-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 3px rgba(142, 200, 255, 0.16),
+      0 0 7px rgba(142, 200, 255, 0.06);
+    filter: brightness(0.92);
+  }
+  50% {
+    box-shadow:
+      0 0 5px rgba(142, 200, 255, 0.5),
+      0 0 12px rgba(142, 200, 255, 0.22);
+    filter: brightness(1.04);
   }
 }
 
 .epoch-tape-fill {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent 0 8px,
-    rgba(255, 255, 255, 0.14) 8px 16px
-  );
-  background-size: 23px 23px;
-  animation: epoch-tape-roll 2.8s linear infinite;
+  background-color: #8ec8ff;
+  animation: epoch-tape-breathe 3.6s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .epoch-tape-fill {
     animation: none;
+    filter: none;
+    box-shadow: 0 0 6px rgba(142, 200, 255, 0.28);
   }
 }
 
 .epoch-slot {
-  color: #3ca2ff;
+  color: #8ec8ff;
 }
 
 .epoch-left {
   color: #2dd4bf;
 }
 
+html[data-ink="day"] .epoch-tape-fill {
+  background-color: #4c93e0;
+  animation-name: epoch-tape-breathe-day;
+}
+
+@keyframes epoch-tape-breathe-day {
+  0%,
+  100% {
+    box-shadow:
+      0 0 2px rgba(76, 147, 224, 0.14),
+      0 0 6px rgba(76, 147, 224, 0.05);
+    filter: brightness(0.96);
+  }
+  50% {
+    box-shadow:
+      0 0 4px rgba(76, 147, 224, 0.4),
+      0 0 10px rgba(76, 147, 224, 0.16);
+    filter: brightness(1.02);
+  }
+}
+
 html[data-ink="day"] .epoch-slot {
-  color: #1570c2;
+  color: #2f78c8;
 }
 
 html[data-ink="day"] .epoch-left {
