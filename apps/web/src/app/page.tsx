@@ -4,7 +4,7 @@ import { ApiSite } from "@/components/ApiSite";
 import { HomeExplorer } from "@/components/HomeExplorer";
 import { JsonLd } from "@/components/JsonLd";
 import type { ChainStats, PoolShare } from "@/lib/chain-stats";
-import { homeToChainStats, type ErgMarket } from "@/lib/list-snapshots";
+import { fetchErgoScriptCount, homeToChainStats, type ErgMarket } from "@/lib/list-snapshots";
 import { cachedHome, websiteJsonLd } from "@/lib/page-meta";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site-meta";
 import type { RentTapeRow } from "@ergoscan/shared";
@@ -166,7 +166,11 @@ export default async function HomePage({
 }) {
   const host = ((await headers()).get("host") ?? "").split(":")[0];
   if (host === "api.ergoscan.me") return <ApiSite />;
-  const [{ preview }, home] = await Promise.all([searchParams, cachedHome()]);
+  const [{ preview }, home, scriptCount] = await Promise.all([
+    searchParams,
+    cachedHome(),
+    fetchErgoScriptCount(),
+  ]);
   const market = marketFromHome(home);
   const price = home.priceSeries ?? [];
   const rentTape =
@@ -189,6 +193,7 @@ export default async function HomePage({
       initialVolume={[]}
       initialChartError={price.length < 2}
       initialRentTape={rentTape}
+      initialScriptCount={scriptCount}
       initialRentEpochNano={
         process.env.NODE_ENV === "development" && preview === "share"
           ? RENT_PREVIEW_EPOCH_NANO

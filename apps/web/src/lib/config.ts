@@ -5,18 +5,27 @@ export const WS_URL =
   process.env.NEXT_PUBLIC_WS_URL ||
   GATEWAY.replace(/^http/, "ws") + "/v1/stream";
 
+function browserHost(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.location.hostname;
+}
+
+/** Local preview. The site gateway does not send CORS to this origin. */
+function isLoopbackHost(host: string | null): boolean {
+  return host === "localhost" || host === "127.0.0.1";
+}
+
 /**
- * Browser: same-origin on the public host (Caddy → gateway).
- * Localhost / SSR: explicit env or loopback :4400.
- * Does not change API contracts — URL prefix only.
+ * Browser on the public host: same origin (Caddy → gateway).
+ * Browser on the local preview: same origin too. Next rewrites /v1 to the gateway,
+ * because that gateway only reflects https://ergoscan.me.
+ * SSR: explicit env or loopback :4400.
  */
 export function getGateway(): string {
+  if (isLoopbackHost(browserHost())) return "";
   const explicit = process.env.NEXT_PUBLIC_GATEWAY_URL?.replace(/\/$/, "");
   if (explicit) return explicit;
-  if (typeof window !== "undefined") {
-    const host = window.location.hostname;
-    if (host !== "localhost" && host !== "127.0.0.1") return "";
-  }
+  if (browserHost() != null) return "";
   return GATEWAY;
 }
 
@@ -31,8 +40,12 @@ export function publicGatewayHref(path: string): string {
   return path;
 }
 
-/** Browser WS: same-origin on the public host; env or loopback locally. */
+/** Browser WS: same-origin on the public host and on the local preview. */
 export function getWsUrl(): string {
+  if (typeof window !== "undefined" && isLoopbackHost(window.location.hostname)) {
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${window.location.host}/v1/stream`;
+  }
   if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
   const gw = getGateway();
   if (gw) return gw.replace(/^http/, "ws") + "/v1/stream";

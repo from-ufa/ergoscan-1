@@ -44,6 +44,7 @@ import { HomeMempoolStage } from "@/components/HomeMempoolStage";
 import { CadenceYard, type CadenceYardBlock } from "@/components/CadenceYard";
 import { ERGO_MAX_BLOCK_SIZE } from "@/lib/ergo-emission";
 import { isSupplyDigit, zipSupplyGlyphs } from "@/lib/supply-flip";
+import { scriptCountFromKinds } from "@/lib/address-pips";
 
 function ChartSparkSlot() {
   return <div className="h-9 w-full" />;
@@ -163,6 +164,7 @@ export function HomeExplorer({
   initialChartError = false,
   initialRentTape = [],
   initialRentEpochNano = null,
+  initialScriptCount = null,
   previewShare = false,
 }: {
   initialMempool?: number | null;
@@ -178,6 +180,8 @@ export function HomeExplorer({
   initialChartError?: boolean;
   initialRentTape?: RentTapeRow[];
   initialRentEpochNano?: string | null;
+  /** Non-wallet scripts with ERG, from the address-band snapshot. */
+  initialScriptCount?: number | null;
   /** Local `/?preview=share` — keep fixture rows, don't overwrite from stage. */
   previewShare?: boolean;
 }) {
@@ -211,6 +215,7 @@ export function HomeExplorer({
   const [poolHover, setPoolHover] = useState<{ label: string; pct: number } | null>(null);
   const [rentTape, setRentTape] = useState<RentTapeRow[]>(initialRentTape);
   const [rentEpochNano, setRentEpochNano] = useState<string | null>(initialRentEpochNano);
+  const [scriptCount, setScriptCount] = useState<number | null>(initialScriptCount);
   const snapRetry = useRef(0);
   const snapTries = useRef(0);
   const loadSnapRef = useRef<() => void>(() => {});
@@ -246,6 +251,14 @@ export function HomeExplorer({
 
   const loadSnapshot = useCallback(() => {
     const gw = getGateway();
+    void fetch(`${gw}/v1/page/addresses?limit=1`, SNAPSHOT_FETCH)
+      .then(async (r) => (r.ok ? r.json() : null))
+      .then((j: { bands?: { kinds?: unknown }; stale?: boolean } | null) => {
+        if (!j) return;
+        const n = scriptCountFromKinds(j.bands?.kinds);
+        if (n != null) setScriptCount(n);
+      })
+      .catch(() => {});
     void fetch(`${gw}${snapshotPath("/v1/page/home", tipRef.current?.height)}`, SNAPSHOT_FETCH)
       .then(async (r) => {
         if (!r.ok) return null;
@@ -543,7 +556,7 @@ export function HomeExplorer({
               {changePct != null ? <PriceChangeChip pct={changePct} /> : null}
             </div>
             <div className="flex shrink-0 items-baseline justify-between gap-2">
-              <KpiValue>
+              <KpiValue flush>
                 <ReelText text={formatUsd(spotPrice, 4)} />
               </KpiValue>
               {priceAt != null ? (
@@ -552,7 +565,7 @@ export function HomeExplorer({
                 </span>
               ) : null}
             </div>
-            <div className="mt-1 min-h-0 flex-1">
+            <div className="min-h-0 flex-1">
               {chartBusy ? (
                 <div className="h-full rounded-[8px] bg-[var(--wash-faint)] motion-safe:animate-pulse" />
               ) : price.length >= 2 ? (
@@ -589,28 +602,41 @@ export function HomeExplorer({
                 </span>
               ) : null}
             </div>
-            <KpiValue muted={mcap == null}>
-              {mcap != null ? <ReelText text={`$${formatCompact(mcap)}`} /> : mcapMiss}
+            <KpiValue flush full muted={mcap == null}>
+              {mcap != null ? (
+                <ReelText text={`${formatGroupedNumber(Math.round(mcap), 0, 0)} $`} />
+              ) : (
+                mcapMiss
+              )}
             </KpiValue>
-            <p className="mt-auto flex h-9 items-end gap-1.5 pb-1 text-[12px]">
-              <span className="text-[var(--muted-2)]">{t("home.volume24h")}</span>
-              <span className="mcap-vol font-medium tabular-nums">
+            <div className="mt-auto">
+              <TileName>{t("home.volume24h")}</TileName>
+              <KpiValue flush full muted={vol24 == null}>
                 {vol24 != null ? (
                   <ReelText text={`${formatGroupedNumber(Math.round(vol24), 0, 0)} $`} />
                 ) : (
                   "—"
                 )}
-              </span>
-            </p>
+              </KpiValue>
+            </div>
           </article>
 
           <Link href="/addresses" className={clsx(TILE, "kpi-tile--press relative")} style={enterAt(4)}>
             <HoldersMark />
-            <TileName className="pr-14">{t("home.holdersCount")}</TileName>
-            <KpiValue muted={holderCount == null}>
-              <ReelText text={holderCount != null ? holderCount.toLocaleString(loc) : miss} />
-            </KpiValue>
-            <p className="mt-auto h-9" />
+            <TileFact hint={t("home.holdersHint")}>
+              <TileName className="pr-14">{t("home.holdersCount")}</TileName>
+              <KpiValue flush muted={holderCount == null}>
+                <ReelText text={holderCount != null ? holderCount.toLocaleString(loc) : miss} />
+              </KpiValue>
+            </TileFact>
+            <TileFact className="mt-auto" place="above" hint={t("home.scriptHint")}>
+              <TileName className="pr-14">{t("home.script")}</TileName>
+              <KpiValue flush full muted={scriptCount == null}>
+                <ReelText
+                  text={scriptCount != null ? scriptCount.toLocaleString(loc) : miss}
+                />
+              </KpiValue>
+            </TileFact>
           </Link>
 
           <article className={clsx(TILE, "group relative max-lg:hidden")} style={enterAt(6)}>
@@ -619,7 +645,7 @@ export function HomeExplorer({
             </TileName>
             <p
               className={clsx(
-                "mt-1 whitespace-nowrap text-[22px] font-semibold tabular-nums tracking-tight",
+                "whitespace-nowrap text-[22px] font-semibold leading-none tabular-nums tracking-tight",
                 stats?.circulating == null && "text-[var(--muted)]"
               )}
             >
@@ -649,7 +675,7 @@ export function HomeExplorer({
           <article className={clsx(TILE, "relative max-lg:hidden")} style={enterAt(7)}>
             <div className={clsx("min-w-0", shareSlices.length >= 1 && "pr-[6.75rem]")}>
               <TileName>{t("home.poolsActive")}</TileName>
-              <KpiValue muted={minerCount == null}>
+              <KpiValue flush muted={minerCount == null}>
                 <ReelText text={minerCount != null ? minerCount.toLocaleString(loc) : miss} />
               </KpiValue>
             </div>
@@ -680,8 +706,8 @@ export function HomeExplorer({
 
           <article className={TILE} style={enterAt(8)}>
             <TileName className="shrink-0">{t("home.hashrate")}</TileName>
-            <div className="mt-1 flex shrink-0 items-baseline justify-between gap-2">
-              <KpiValue muted={spotHash == null}>
+            <div className="flex shrink-0 items-baseline justify-between gap-2">
+              <KpiValue flush muted={spotHash == null}>
                 <ReelText text={spotHash != null ? formatHashrate(spotHash) : miss} />
               </KpiValue>
               {hrAt != null ? (
@@ -691,10 +717,10 @@ export function HomeExplorer({
               ) : null}
             </div>
             {hashrateSpark ? (
-              <div className="mt-auto h-9">
+              <div className="min-h-0 flex-1">
                 <AreaChart
                   points={hashRateSeries}
-                  height={36}
+                  fill
                   compact
                   glow
                   showTip={false}
@@ -833,6 +859,32 @@ function TileName({ className, children }: { className?: string; children: React
   );
 }
 
+function TileFact({
+  hint,
+  className,
+  place = "below",
+  children,
+}: {
+  hint: string;
+  className?: string;
+  place?: "above" | "below";
+  children: ReactNode;
+}) {
+  return (
+    <div className={clsx("group/hint relative", className)}>
+      {children}
+      <p
+        className={clsx(
+          "pointer-events-none absolute left-0 z-20 max-w-[15rem] rounded-[10px] border border-[var(--border)] bg-[var(--module)] px-2.5 py-1.5 text-[12px] leading-snug text-[var(--text)] opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-opacity duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/hint:opacity-100",
+          place === "above" ? "bottom-full mb-1.5" : "top-full mt-1.5"
+        )}
+      >
+        {hint}
+      </p>
+    </div>
+  );
+}
+
 function enterAt(i: number): CSSProperties {
   return { "--enter": i } as CSSProperties;
 }
@@ -925,9 +977,26 @@ function PriceChangeChip({ pct }: { pct: number }) {
   );
 }
 
-function KpiValue({ children, muted }: { children: ReactNode; muted?: boolean }) {
+function KpiValue({
+  children,
+  muted,
+  flush,
+  full,
+}: {
+  children: ReactNode;
+  muted?: boolean;
+  flush?: boolean;
+  full?: boolean;
+}) {
   return (
-    <p className={clsx("mt-1 truncate text-[22px] font-semibold tabular-nums tracking-tight", muted && "text-[var(--muted)]")}>
+    <p
+      className={clsx(
+        "text-[22px] font-semibold tabular-nums tracking-tight",
+        full ? "whitespace-nowrap" : "truncate",
+        flush ? "leading-none" : "mt-1",
+        muted && "text-[var(--muted)]"
+      )}
+    >
       <KpiNum>{children}</KpiNum>
     </p>
   );

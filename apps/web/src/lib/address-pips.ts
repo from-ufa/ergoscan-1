@@ -27,6 +27,24 @@ export type KindCountRow = {
   nanoerg: string;
 };
 
+/** Smart contracts with ERG. Exchange rows are wallets, so they stay out. */
+export function scriptCountFromKinds(raw: unknown): number | null {
+  if (!Array.isArray(raw)) return null;
+  let sum = 0;
+  let seen = false;
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const rec = row as { id?: unknown; n?: unknown };
+    const id = String(rec.id ?? "");
+    if (id !== "protocol" && id !== "pool" && id !== "contract") continue;
+    const n = Number(rec.n);
+    if (!Number.isFinite(n) || n < 0) continue;
+    seen = true;
+    sum += Math.round(n);
+  }
+  return seen ? sum : null;
+}
+
 export function mergeKinds(raw: unknown): KindCountRow[] {
   const byId = new Map<string, { n: number; nanoerg: string }>();
   if (Array.isArray(raw)) {

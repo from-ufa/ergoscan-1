@@ -16,7 +16,7 @@ import { paintTxSnapshot } from "./tx-shape-paint";
 import { CHAIN_MAX_SUPPLY, type ChainStats, type ChainStats24h, type PoolShare } from "./chain-stats";
 import { toBigIntAmt } from "./format";
 import type { RentMinersPack } from "./rent-miner-pools";
-import { LIST_ENTITY_IDS, type ListEntityId } from "./address-pips";
+import { LIST_ENTITY_IDS, scriptCountFromKinds, type ListEntityId } from "./address-pips";
 import { HOLDER_BAND_IDS, type HolderBandId } from "./holder-bands";
 
 export type BlockListItem = {
@@ -1655,6 +1655,15 @@ export async function fetchAddressesList(opts?: {
     total: typeof j.total === "number" ? j.total : null,
     bands: j.bands,
   };
+}
+
+/** Non-wallet scripts with ERG, from the address-band snapshot. Not a live count. */
+export async function fetchErgoScriptCount(): Promise<number | null> {
+  const j = await gwJson<{ bands?: { kinds?: unknown }; stale?: boolean }>(
+    "/v1/page/addresses?limit=1"
+  );
+  if (!j) return null;
+  return scriptCountFromKinds(j.bands?.kinds);
 }
 
 /** Name from the ergo-names registry: exact address, NFT anchor, or ErgoTree template. */
