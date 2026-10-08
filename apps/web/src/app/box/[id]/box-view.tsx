@@ -12,8 +12,8 @@ import {
 import { Shell } from "@/components/Shell";
 import { AddrFactCard } from "@/components/AddrFactCard";
 import { SegBar, segItem } from "@/components/SegBar";
-import { AddrFactMark } from "@/components/AddrFactMark";
-import { KpiMarkAmount, KpiMarkChainTip, KpiMarkRentDue } from "@/components/kpi-marks";
+import { IconBlocks, IconRent, IconRentSoon } from "@/components/nav-icons";
+import { KpiMarkBox, KpiMarkWalletMinimal } from "@/components/kpi-marks";
 import { KpiNum } from "@/components/KpiGrid";
 import { TokenBadge } from "@/components/TokenBadge";
 import { PrettyUsd } from "@/components/PrettyNum";
@@ -39,7 +39,7 @@ import { useKeepFresh, usePageSync } from "@/lib/page-sync";
 import { SNAPSHOT_FETCH, useEnterIds } from "@/lib/keyed-enter";
 import type { BoxAsset, BoxRegisterTyped, BoxSnapshot } from "@/lib/list-snapshots";
 
-const BOX_TABS = ["summary", "tokens", "registers", "rent"] as const;
+const BOX_TABS = ["summary", "tokens", "registers"] as const;
 type BoxTab = (typeof BOX_TABS)[number];
 const TOKEN_FETCH_CAP = 24;
 const BLOCKS_PER_YEAR = 262_980;
@@ -138,6 +138,7 @@ export function BoxView({
   const [tab, setTab] = useState<BoxTab>("summary");
   const [sheetReady, setSheetReady] = useState(false);
   const [openFlap, setOpenFlap] = useState<string | null>(null);
+  const [treeOpen, setTreeOpen] = useState(false);
   const sheetReadyRef = useRef(false);
 
   const load = useCallback(
@@ -230,7 +231,6 @@ export function BoxView({
     (idTab: BoxTab) => {
       if (idTab === "tokens") return assets.map((a, i) => assetKey(a, i));
       if (idTab === "registers") return [...REG_BANK, ...extraRegs.map(([k]) => k)];
-      if (idTab === "rent") return ["periods", "age", "est", "min"];
       return ["owner", "inclusion", "tree"];
     },
     [assets, extraRegs]
@@ -271,14 +271,14 @@ export function BoxView({
 
       {data && (
         <>
-          <div className="addr-lane">
-            <div className="col-span-2 flex min-h-0 flex-col gap-2 lg:col-span-2 lg:row-span-2">
+          <div className="box-sheet">
+            <div className="box-id">
               <AddrFactCard
                 className="min-h-0 h-auto flex-1"
                 enter={0}
                 label={t("detail.box")}
                 ink={INK.violet}
-                mark={<AddrFactMark id="boxes" className="h-10 w-10" />}
+                mark={<KpiMarkBox className="h-8 w-8" />}
               >
                 <h1 className="mt-0.5 flex min-w-0 items-center gap-1">
                   <code className="min-w-0 truncate font-mono text-[17px] font-semibold leading-none tracking-tight">
@@ -303,7 +303,7 @@ export function BoxView({
                   <span className="min-w-0 truncate">{statusBits.join(" · ")}</span>
                 </p>
               </AddrFactCard>
-              <SegBar cols={4} className="shrink-0">
+              <SegBar cols={3} className="shrink-0">
                 {BOX_TABS.map((idTab) => (
                   <a
                     key={idTab}
@@ -326,30 +326,11 @@ export function BoxView({
             </div>
 
             <AddrFactCard
-              className="col-span-2 overflow-hidden lg:col-span-1 lg:row-span-2"
-              enter={1}
-              label={t("box.card.value")}
-              ink={INK.cyan}
-              mark={<KpiMarkAmount className="h-10 w-10" />}
-            >
-              <div className="mt-2">
-                <KpiNum>
-                  <ErgFigure nano={toBigIntAmt(data.value)} locale={locale} size="lg" />
-                </KpiNum>
-                {usd != null && (
-                  <p className="mt-2 text-[13px] text-[var(--muted)]">
-                    <PrettyUsd n={usd} />
-                  </p>
-                )}
-              </div>
-            </AddrFactCard>
-
-            <AddrFactCard
-              className="col-span-2 lg:col-span-1"
+              className="box-created"
               enter={2}
               label={t("box.creationHeight")}
               ink={heightSplit ? INK.gold : aligned ? INK.teal : INK.sky}
-              mark={<KpiMarkChainTip className="h-9 w-9" />}
+              mark={<IconBlocks className="h-8 w-8" />}
             >
               <p className="mt-0.5 truncate text-[17px] font-semibold leading-none tabular-nums tracking-tight">
                 {creation != null ? (
@@ -366,37 +347,42 @@ export function BoxView({
                   <KpiNum>{mempool ? t("box.mempool") : dash}</KpiNum>
                 )}
               </p>
-              <p className="mt-1.5 text-[12px] leading-snug text-[var(--muted-2)]">
-                {mempool ? (
-                  t("box.offset.unsettled")
-                ) : heightSplit && settled != null ? (
-                  <>
-                    <Link
-                      href={`/block/${settled}`}
-                      className="tabular-nums hover:underline"
-                      style={{ color: INK.sky }}
-                    >
-                      {t("box.offset.seated").replace("{n}", settled.toLocaleString(loc(locale)))}
-                    </Link>
-                    {offsetDelta != null ? (
-                      <span>
-                        {" "}
-                        · {t("box.offset.delta").replace("{n}", offsetDelta.toLocaleString(loc(locale)))}
-                      </span>
-                    ) : null}
-                  </>
-                ) : (
-                  "\u00a0"
-                )}
+              <p className="mt-1 truncate text-[12px] leading-snug text-[var(--muted-2)]">
+                {mempool
+                  ? t("box.offset.unsettled")
+                  : heightSplit && settled != null
+                    ? t("box.offset.seated").replace("{n}", settled.toLocaleString(loc(locale)))
+                    : "\u00a0"}
               </p>
             </AddrFactCard>
 
             <AddrFactCard
-              className="col-span-2 lg:col-span-1"
+              className="box-value"
+              enter={1}
+              label={t("box.card.value")}
+              ink={INK.cyan}
+              mark={<KpiMarkWalletMinimal className="h-8 w-8" />}
+            >
+              <div className="mt-0.5">
+                <KpiNum>
+                  <ErgFigure nano={toBigIntAmt(data.value)} locale={locale} />
+                </KpiNum>
+                {usd != null ? (
+                  <p className="mt-1 text-[12px] leading-none text-[var(--muted)]">
+                    <PrettyUsd n={usd} />
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[12px] leading-none text-[var(--muted-2)]">{"\u00a0"}</p>
+                )}
+              </div>
+            </AddrFactCard>
+
+            <AddrFactCard
+              className="box-until"
               enter={3}
               label={spent ? t("box.spent") : t("box.untilRent")}
               ink={lifeInk}
-              mark={<KpiMarkRentDue className="h-9 w-9" />}
+              mark={<IconRentSoon className="h-8 w-8" />}
             >
               <p className="mt-0.5 truncate text-[17px] font-semibold leading-none tabular-nums tracking-tight">
                 {spent && spentHeight != null ? (
@@ -429,94 +415,98 @@ export function BoxView({
                 </div>
               ) : null}
             </AddrFactCard>
+
+            <AddrFactCard
+              className="box-rent"
+              enter={4}
+              label={t("box.tab.rent")}
+              ink={lifeInk}
+              mark={<IconRent className="h-8 w-8" />}
+            >
+              {rent ? (
+                <>
+                  <p className="text-[12px] leading-none text-[var(--muted-2)]">
+                    {data.rentAsOf === "spend" ? t("box.asOfSpend") : t("box.asOfTip")}
+                  </p>
+                  <div className="box-fact-grid mt-2">
+                    <Fact k={t("box.periods")} v={String(rent.periodsElapsed)} />
+                    <Fact
+                      k={t("box.ageBlocks")}
+                      v={rent.ageBlocks != null ? rent.ageBlocks.toLocaleString(loc(locale)) : dash}
+                    />
+                    <Fact
+                      k={t("blocks.size")}
+                      v={rent.sizeBytes != null ? formatBytes(rent.sizeBytes) : dash}
+                    />
+                    <Fact
+                      k={t("box.minValue")}
+                      v={rent.minValueNano != null ? formatErgPrecise(rent.minValueNano, locale) : dash}
+                      note={rent.belowMinValue ? t("box.belowMin") : undefined}
+                    />
+                  </div>
+                  {rent.estimatedRentNano != null ? (
+                    <p className="mt-2 text-[12px] tabular-nums text-[var(--muted)]">
+                      {t("box.estRent")} {formatErgPrecise(rent.estimatedRentNano, locale)}
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="mt-2 text-[13px] text-[var(--muted)]">{t("box.noRent")}</p>
+              )}
+            </AddrFactCard>
+            {sheetReady && tab === "summary" ? (
+              <div className="contents">
+                <BoxLife
+                  t={t}
+                  locale={locale}
+                  enterClass={enter.enterClass("inclusion")}
+                  createdHref={data.transactionId ? `/tx/${data.transactionId}` : null}
+                  createdId={data.transactionId}
+                  createdExtra={
+                    data.index != null ? t("box.output").replace("{n}", String(data.index)) : null
+                  }
+                  createdTs={asNum(data.createdTs)}
+                  createdHeight={creation}
+                  address={data.address}
+                  ownerLabel={party.known ?? (data.address ? shortId(data.address, 10) : null)}
+                  ownerMeta={[
+                    party.known ? shortId(data.address ?? "", 8) : typeLabel,
+                    lockLabel,
+                    issuance ? t("box.issuance") : null,
+                    oracleUsd != null ? `$${oracleUsd.toFixed(4)}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  spent={spent}
+                  spentHref={data.spentTransactionId ? `/tx/${data.spentTransactionId}` : null}
+                  spentId={data.spentTransactionId}
+                  spentHeight={spentHeight}
+                  spentTs={asNum(data.spentTs)}
+                  confs={confs}
+                />
+              </div>
+            ) : null}
           </div>
 
           {sheetReady && tab === "summary" && (
             <div className="box-tab">
-              <div className="box-tab-split">
-                <Plate className={enter.enterClass("owner")} k={t("box.owner")}>
-                  {data.address ? (
-                    <p className="mt-2 flex min-w-0 items-center gap-1">
-                      <Link
-                        href={`/address/${encodeURIComponent(data.address)}`}
-                        className="min-w-0 truncate font-mono text-[13px] text-accent hover:underline"
-                      >
-                        {party.known ?? shortId(data.address, 10)}
-                      </Link>
-                      <CopyChip
-                        text={data.address}
-                        copyLabel={t("tx.copy")}
-                        copiedLabel={t("tx.copied")}
-                      />
-                    </p>
-                  ) : (
-                    <p className="mt-2 text-[13px] text-[var(--muted)]">{dash}</p>
-                  )}
-                  <p className="mt-1 text-[12px] leading-snug text-[var(--muted-2)]">
-                    {party.known ? shortId(data.address ?? "", 8) : typeLabel}
-                    {lockLabel ? ` · ${lockLabel}` : ""}
-                    {issuance ? ` · ${t("box.issuance")}` : ""}
-                    {oracleUsd != null ? ` · $${oracleUsd.toFixed(4)}` : ""}
-                  </p>
-                </Plate>
-                <Plate className={enter.enterClass("inclusion")} k={t("box.inclusion")}>
-                  <div className="mt-2 flex flex-col gap-2">
-                    <IoLine
-                      kind="in"
-                      label={t("box.in")}
-                      href={data.transactionId ? `/tx/${data.transactionId}` : null}
-                      id={data.transactionId}
-                      extra={
-                        data.index != null
-                          ? t("box.output").replace("{n}", String(data.index))
-                          : null
-                      }
-                      ts={asNum(data.createdTs)}
-                      locale={locale}
-                    />
-                    <IoLine
-                      kind={spent ? "out" : "idle"}
-                      label={spent ? t("box.out") : t("box.unspent")}
-                      href={data.spentTransactionId ? `/tx/${data.spentTransactionId}` : null}
-                      id={data.spentTransactionId}
-                      extra={
-                        spentHeight != null ? spentHeight.toLocaleString(loc(locale)) : null
-                      }
-                      extraHref={spentHeight != null ? `/block/${spentHeight}` : null}
-                      ts={asNum(data.spentTs)}
-                      locale={locale}
-                    />
-                  </div>
-                  {confs != null && (
-                    <p className="mt-2 text-[12px] text-[var(--muted-2)]">
-                      {t("tx.confs").replace("{n}", String(confs))}
-                    </p>
-                  )}
-                  {data.blockId ? (
-                    <p className="mt-2 flex min-w-0 items-center gap-1 text-[13px]">
-                      <span className="shrink-0 text-[12px] text-[var(--muted)]">
-                        {t("box.blockId")}
-                      </span>
-                      <Link
-                        href={`/block/${data.blockId}`}
-                        className="min-w-0 truncate font-mono text-accent hover:underline"
-                      >
-                        {shortId(data.blockId, 10)}
-                      </Link>
-                      <CopyChip
-                        text={data.blockId}
-                        copyLabel={t("tx.copy")}
-                        copiedLabel={t("tx.copied")}
-                      />
-                    </p>
-                  ) : null}
-                </Plate>
-              </div>
-              <Plate className={enter.enterClass("tree")} k={t("box.ergoTree")}>
-                {!data.ergoTree && !data.ergoTreeTemplateHash && !treeConsts.length ? (
-                  <p className="mt-2 text-[13px] text-[var(--muted)]">{t("box.noTree")}</p>
+              <article className={clsx("mod box-plate", enter.enterClass("tree"))}>
+                <button
+                  type="button"
+                  className="box-plate-in flex w-full items-center justify-between gap-3 text-left"
+                  aria-expanded={treeOpen}
+                  onClick={() => setTreeOpen((v) => !v)}
+                >
+                  <span className="box-k">{t("box.ergoTree")}</span>
+                  <span className={clsx("text-[12px] text-[var(--muted)]", treeOpen && "rotate-90")} aria-hidden>
+                    ›
+                  </span>
+                </button>
+                {treeOpen ? (
+                  !data.ergoTree && !data.ergoTreeTemplateHash && !treeConsts.length ? (
+                  <p className="px-3.5 pb-3 text-[13px] text-[var(--muted)]">{t("box.noTree")}</p>
                 ) : (
-                  <div className="mt-2">
+                  <div className="px-3.5 pb-3">
                     {data.ergoTreeTemplateHash ? (
                       <div className="mb-3">
                         <div className="flex items-center justify-between gap-2">
@@ -585,44 +575,53 @@ export function BoxView({
                       </>
                     ) : null}
                   </div>
-                )}
-              </Plate>
+                )
+                ) : null}
+              </article>
             </div>
           )}
 
           {sheetReady && tab === "tokens" && (
             <div className="box-tab">
-              {assets.map((a, i) => {
-                const info = tokenInfo.get(a.tokenId.toLowerCase());
-                const dec = info?.decimals ?? a.decimals ?? 0;
-                const raw = toBigIntAmt(a.amount);
-                const name = a.name ?? info?.name ?? null;
-                const symbol = info?.symbol ?? null;
-                const valueUsd = tokenAmountToUsd(raw, dec, info?.priceUsd);
-                const mint = a.tokenId.toLowerCase() === id.toLowerCase();
-                return (
-                  <PayloadSlab
-                    key={assetKey(a, i)}
-                    enterClass={enter.enterClass(assetKey(a, i))}
-                    label={mint ? t("box.payload.minted") : ""}
-                    badge={
-                      <TokenBadge
-                        tokenId={a.tokenId}
-                        name={name}
-                        symbol={symbol}
-                        showName
-                        size="sm"
-                      />
-                    }
-                    amount={formatTokenAmount(raw, dec, locale)}
-                    usd={valueUsd}
-                    minted={mint}
-                  />
-                );
-              })}
-              {!assets.length ? (
+              {assets.length ? (
+                <ul className="mod box-plate divide-y divide-[var(--border-soft)]">
+                  {assets.map((a, i) => {
+                    const info = tokenInfo.get(a.tokenId.toLowerCase());
+                    const dec = info?.decimals ?? a.decimals ?? 0;
+                    const raw = toBigIntAmt(a.amount);
+                    const name = a.name ?? info?.name ?? null;
+                    const symbol = info?.symbol ?? null;
+                    const valueUsd = tokenAmountToUsd(raw, dec, info?.priceUsd);
+                    const mint = a.tokenId.toLowerCase() === id.toLowerCase();
+                    return (
+                      <li
+                        key={assetKey(a, i)}
+                        className={clsx(
+                          "flex min-w-0 items-center justify-between gap-3 px-3.5 py-2",
+                          enter.enterClass(assetKey(a, i))
+                        )}
+                      >
+                        <div className="min-w-0">
+                          <TokenBadge tokenId={a.tokenId} name={name} symbol={symbol} showName size="sm" />
+                          {mint ? (
+                            <p className="mt-0.5 text-[11px] text-[var(--muted-2)]">{t("box.payload.minted")}</p>
+                          ) : null}
+                        </div>
+                        <div className="shrink-0 text-right tabular-nums">
+                          <div className="text-[13px] font-medium">{formatTokenAmount(raw, dec, locale)}</div>
+                          {valueUsd != null && Number.isFinite(valueUsd) ? (
+                            <p className="mt-0.5 text-[12px] text-[var(--muted)]">
+                              <PrettyUsd n={valueUsd} />
+                            </p>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
                 <p className="px-1 text-[13px] text-[var(--muted)]">{t("box.noTokens")}</p>
-              ) : null}
+              )}
             </div>
           )}
 
@@ -669,58 +668,6 @@ export function BoxView({
             </div>
           )}
 
-          {sheetReady && tab === "rent" && (
-            <div className="box-tab">
-              {!rent ? (
-                <Plate k={t("box.tab.rent")}>
-                  <p className="mt-2 text-[13px] text-[var(--muted)]">{t("box.noRent")}</p>
-                </Plate>
-              ) : (
-                <>
-                  <Plate k={t("box.tab.rent")}>
-                    <p className="mt-2 text-[12px] leading-none text-[var(--muted-2)]">
-                      {data.rentAsOf === "spend" ? t("box.asOfSpend") : t("box.asOfTip")}
-                    </p>
-                    <div className="box-fact-grid mt-3">
-                      <Fact
-                        enterClass={enter.enterClass("periods")}
-                        k={t("box.periods")}
-                        v={String(rent.periodsElapsed)}
-                      />
-                      <Fact
-                        enterClass={enter.enterClass("age")}
-                        k={t("box.ageBlocks")}
-                        v={
-                          rent.ageBlocks != null
-                            ? rent.ageBlocks.toLocaleString(loc(locale))
-                            : dash
-                        }
-                      />
-                      {rent.estimatedRentNano != null ? (
-                        <Fact
-                          enterClass={enter.enterClass("est")}
-                          k={t("box.estRent")}
-                          v={formatErgPrecise(rent.estimatedRentNano, locale)}
-                        />
-                      ) : null}
-                      <Fact
-                        k={t("blocks.size")}
-                        v={rent.sizeBytes != null ? formatBytes(rent.sizeBytes) : dash}
-                      />
-                      {rent.minValueNano != null ? (
-                        <Fact
-                          enterClass={enter.enterClass("min")}
-                          k={t("box.minValue")}
-                          v={formatErgPrecise(rent.minValueNano, locale)}
-                          note={rent.belowMinValue ? t("box.belowMin") : undefined}
-                        />
-                      ) : null}
-                    </div>
-                  </Plate>
-                </>
-              )}
-            </div>
-          )}
         </>
       )}
     </Shell>
@@ -791,51 +738,120 @@ function Fact({
   );
 }
 
-function IoLine({
-  kind,
-  label,
-  href,
-  id,
-  extra,
-  extraHref,
-  ts,
+function LifeWire({ className }: { className?: string }) {
+  return (
+    <svg className={clsx("box-life-wire", className)} viewBox="0 0 80 44" fill="none" preserveAspectRatio="none" aria-hidden>
+      <path d="M0 22 C 26 22, 54 10, 80 22" stroke="currentColor" strokeWidth="1.35" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function BoxLife({
+  t,
   locale,
+  enterClass,
+  createdHref,
+  createdId,
+  createdExtra,
+  createdTs,
+  createdHeight,
+  address,
+  ownerLabel,
+  ownerMeta,
+  spent,
+  spentHref,
+  spentId,
+  spentHeight,
+  spentTs,
+  confs,
 }: {
-  kind: "in" | "out" | "idle";
-  label: string;
-  href: string | null;
-  id?: string | null;
-  extra?: string | null;
-  extraHref?: string | null;
-  ts: number | null;
+  t: (k: string) => string;
   locale: string;
+  enterClass?: string;
+  createdHref: string | null;
+  createdId?: string | null;
+  createdExtra: string | null;
+  createdTs: number | null;
+  createdHeight: number | null;
+  address?: string | null;
+  ownerLabel: string | null;
+  ownerMeta: string;
+  spent: boolean;
+  spentHref: string | null;
+  spentId?: string | null;
+  spentHeight: number | null;
+  spentTs: number | null;
+  confs: number | null;
 }) {
   return (
-    <div className="flex min-w-0 items-start gap-2">
-      <span className={clsx("box-io mt-0.5", `is-${kind}`)}>{label}</span>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[13px]">
-          {href && id ? (
-            <Link href={href} className="font-mono text-accent hover:underline">
-              {shortId(id, 10)}
+    <div className="contents" aria-label={t("box.life")}>
+      <article className={clsx("box-life-node box-life-in", enterClass)}>
+        <p className="box-k">{t("box.in")}</p>
+        <p className="mt-2 flex min-w-0 items-center gap-1">
+          {createdHref && createdId ? (
+            <Link href={createdHref} className="min-w-0 truncate font-mono text-[13px] text-accent hover:underline">
+              {shortId(createdId, 8)}
             </Link>
-          ) : kind !== "idle" ? (
-            <span className="text-[var(--muted)]">—</span>
-          ) : null}
-          {extra && extraHref ? (
-            <Link href={extraHref} className="tabular-nums text-accent hover:underline">
-              {extra}
-            </Link>
-          ) : extra ? (
-            <span className="text-[12px] text-[var(--muted-2)]">{extra}</span>
-          ) : null}
-        </div>
-        {ts != null && (
-          <div className="kpi-scale-up mt-1 [&_p:first-child]:text-[13px]">
-            <ListWhen ts={ts} locale={locale} />
+          ) : (
+            <span className="text-[13px] text-[var(--muted)]">—</span>
+          )}
+          {createdExtra ? <span className="shrink-0 text-[12px] text-[var(--muted-2)]">{createdExtra}</span> : null}
+        </p>
+        {createdTs != null ? (
+          <div className="mt-1 text-[12px] text-[var(--muted)]">
+            <ListWhen ts={createdTs} locale={locale} />
           </div>
+        ) : null}
+        {createdHeight != null ? (
+          <p className="mt-1 text-[12px]">
+            <Link href={`/block/${createdHeight}`} className="tabular-nums text-accent hover:underline">
+              {createdHeight.toLocaleString(loc(locale))}
+            </Link>
+          </p>
+        ) : null}
+        <LifeWire />
+      </article>
+      <article className={clsx("box-life-node is-box box-life-owner", enterClass)}>
+        <p className="box-k">{t("box.owner")}</p>
+        {address && ownerLabel ? (
+          <p className="mt-2 min-w-0 truncate font-mono text-[13px]">
+            <Link href={`/address/${encodeURIComponent(address)}`} className="text-accent hover:underline">
+              {ownerLabel}
+            </Link>
+          </p>
+        ) : (
+          <p className="mt-2 text-[13px] text-[var(--muted)]">—</p>
         )}
-      </div>
+        {ownerMeta ? <p className="mt-1 truncate text-[12px] text-[var(--muted-2)]">{ownerMeta}</p> : null}
+        <LifeWire />
+      </article>
+      <article className={clsx("box-life-node box-life-out", enterClass)}>
+        <p className="box-k">{spent ? t("box.out") : t("box.unspent")}</p>
+        <p className="mt-2 flex min-w-0 items-center gap-1">
+          {spent && spentHref && spentId ? (
+            <Link href={spentHref} className="min-w-0 truncate font-mono text-[13px] text-accent hover:underline">
+              {shortId(spentId, 8)}
+            </Link>
+          ) : (
+            <span className="text-[13px] text-[var(--muted)]">{spent ? "—" : "\u00a0"}</span>
+          )}
+        </p>
+        {spent && spentTs != null ? (
+          <div className="mt-1 text-[12px] text-[var(--muted)]">
+            <ListWhen ts={spentTs} locale={locale} />
+          </div>
+        ) : null}
+        {spentHeight != null ? (
+          <p className="mt-1 text-[12px]">
+            <Link href={`/block/${spentHeight}`} className="tabular-nums text-accent hover:underline">
+              {spentHeight.toLocaleString(loc(locale))}
+            </Link>
+          </p>
+        ) : null}
+        {confs != null ? (
+          <p className="mt-1 text-[12px] text-[var(--muted-2)]">{t("tx.confs").replace("{n}", String(confs))}</p>
+        ) : null}
+      </article>
     </div>
   );
 }
@@ -1009,7 +1025,7 @@ function ErgFigure({
   const frac = dot === -1 ? null : core.slice(dot);
   return (
     <span className="inline-block whitespace-nowrap tabular-nums tracking-tight text-[var(--text)]">
-      <span className={size === "lg" ? "text-[28px] font-semibold leading-none" : "text-[15px] font-medium"}>
+      <span className={size === "lg" ? "text-[28px] font-semibold leading-none" : "text-[22px] font-semibold leading-none"}>
         {intPart}
         {frac}
       </span>
