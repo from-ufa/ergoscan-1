@@ -18,6 +18,9 @@ import { toBigIntAmt } from "./format";
 import type { RentMinersPack } from "./rent-miner-pools";
 import { LIST_ENTITY_IDS, type ListEntityId } from "./address-pips";
 import { HOLDER_BAND_IDS, type HolderBandId } from "./holder-bands";
+import { parseRentDanger, type RentDangerRow } from "./rent-danger";
+
+export type { RentDangerRow };
 
 export type BlockListItem = {
   id: string;
@@ -194,6 +197,8 @@ export type HomePageSnapshot = {
   rentEpochBoxes?: number | null;
   /** Additive: estimated rent nano due before this header epoch ends. */
   rentEpochNano?: string | null;
+  /** Additive: tokens short on ERG in the next 7 days, from snapshot_kv.rent. */
+  rentDanger?: RentDangerRow[] | null;
 };
 
 export type TokenHeat = {
@@ -767,6 +772,7 @@ export async function fetchHomeSnapshot(): Promise<HomePageSnapshot> {
     rentTape?: unknown;
     rentEpochBoxes?: unknown;
     rentEpochNano?: unknown;
+    rentDanger?: unknown;
   }>("/v1/page/home");
   if (!j || j.stale) {
     return { height: null, blocks: [], txs: [], mempoolCount: null, updatedAt: null };
@@ -812,6 +818,7 @@ export async function fetchHomeSnapshot(): Promise<HomePageSnapshot> {
     rentTape: parseRentTape(j.rentTape),
     rentEpochBoxes: parseRentEpochBoxes(j.rentEpochBoxes),
     rentEpochNano: parseRentEpochNano(j.rentEpochNano),
+    rentDanger: parseRentDanger(j.rentDanger),
   };
 }
 
@@ -1367,20 +1374,6 @@ export type RentWindow = {
   rentNano: string;
   valueNano: string;
   inIndex?: boolean;
-};
-
-export type RentDangerRow = {
-  boxId: string;
-  address: string | null;
-  tokenId: string;
-  name: string | null;
-  amount: string;
-  decimals: number | null;
-  priceUsd: number;
-  valueNano: string;
-  rentNano: string;
-  shortfallNano: string;
-  blocksUntilRent: number;
 };
 
 export type RentBoxRow = {

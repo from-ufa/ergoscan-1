@@ -189,6 +189,7 @@ export default async function HomePage({
       initialVolume={[]}
       initialChartError={price.length < 2}
       initialRentTape={rentTape}
+      initialRentDanger={home.rentDanger ?? null}
       initialRentEpochNano={
         process.env.NODE_ENV === "development" && preview === "share"
           ? RENT_PREVIEW_EPOCH_NANO

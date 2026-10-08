@@ -259,6 +259,7 @@ export const ru: Record<string, string> = {
   "home.rentBox": "1 бокс",
   "home.rentBoxes": "{n} боксов",
   "home.rentEmpty": "В этом окне никого нет.",
+  "home.rentDangerEmpty": "В ближайшие 7 дней никому не хватает ERG.",
   "home.node": "Нода",
   "home.height": "Высота",
   "home.txDay": "tx в сутки",
