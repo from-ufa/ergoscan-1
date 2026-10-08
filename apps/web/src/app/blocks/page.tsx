@@ -12,6 +12,7 @@ export default async function BlocksPage() {
       initialItems={pack.items}
       initialHasMore={pack.hasMore}
       initialNextCursor={pack.nextCursor}
+      initialOlderTs={pack.olderTs}
       initialStats={homeToChainStats(home)}
       initialUpdatedAt={pack.updatedAt ?? home.updatedAt}
     />
