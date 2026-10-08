@@ -1093,7 +1093,7 @@ const OPENAPI_SPEC = {
     "/v1/page/home": {
       get: {
         summary:
-          "SSR home composite from list snapshots. Hashrate/tx/circulating/CG price/24h/miner share/holderCount/txTotal from indexer; GET does not scan tables, explorer, or CoinGecko. Does not attach userValueNano (coinbase subtract stays on /v1/blocks and the block card). Additive rank/volume24h/change24h/ergUsd copied from snapshot_kv.market (oracle writer CoinGecko). Additive txTotal is the indexer running SUM(blocks.tx_count), not a GET COUNT. Additive rentTape + rentEpochBoxes + rentEpochNano from snapshot_kv.rent (oldest addresses this week; box count and estimated rent due this header epoch; not a live boxes scan).",
+          "SSR home composite from list snapshots. Hashrate/tx/circulating/CG price/24h/miner share/holderCount/scriptCount/txTotal from indexer; GET does not scan tables, explorer, or CoinGecko. Additive scriptCount is protocol+pool+contract with nanoERG>0 from the holder-bands pass, stored on the home snapshot. Does not attach userValueNano (coinbase subtract stays on /v1/blocks and the block card). Additive rank/volume24h/change24h/ergUsd copied from snapshot_kv.market (oracle writer CoinGecko). Additive txTotal is the indexer running SUM(blocks.tx_count), not a GET COUNT. Additive rentTape + rentEpochBoxes + rentEpochNano from snapshot_kv.rent (oldest addresses this week; box count and estimated rent due this header epoch; not a live boxes scan).",
       },
     },
     "/v1/page/addresses": {

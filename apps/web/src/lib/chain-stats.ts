@@ -34,6 +34,8 @@ export type ChainStats = {
   pools: PoolShare[];
   poolBlocks: number;
   holderCount: number | null;
+  /** protocol + pool + contract with nanoERG > 0. Home snapshot only. */
+  scriptCount: number | null;
   holdersMonth: number | null;
   minerCount: number | null;
   lastBlockSize: number | null;
@@ -67,6 +69,7 @@ export function emptyChainStats(): ChainStats {
     pools: [],
     poolBlocks: 0,
     holderCount: null,
+    scriptCount: null,
     holdersMonth: null,
     minerCount: null,
     lastBlockSize: null,
@@ -83,6 +86,7 @@ export function patchHomeStats(
     txTotal?: number | null;
     pools?: PoolShare[] | null;
     holderCount?: number | null;
+    scriptCount?: number | null;
     holdersMonth?: number | null;
     minerCount?: number | null;
     lastBlockSize?: number | null;
@@ -111,6 +115,7 @@ export function patchHomeStats(
     height,
     mempool: patch.mempool ?? base.mempool,
     holderCount: patch.holderCount ?? base.holderCount,
+    scriptCount: patch.scriptCount ?? base.scriptCount,
     holdersMonth: patch.holdersMonth ?? base.holdersMonth,
     minerCount: patch.minerCount ?? base.minerCount,
     lastBlockSize: patch.lastBlockSize ?? base.lastBlockSize,

@@ -132,6 +132,24 @@ async function queryHolderBands(pool: Pool, p2pkOnly: boolean): Promise<HolderBa
 
 const HOLDER_KIND_IDS = ["protocol", "exchange", "pool", "contract"] as const;
 
+/** Non-wallet scripts with ERG. Exchange rows are wallets, so they stay out. */
+const SCRIPT_KIND_IDS = new Set(["protocol", "pool", "contract"]);
+
+export function scriptCountFromKinds(
+  kinds: { id: string; n: number }[] | null | undefined
+): number | null {
+  if (!Array.isArray(kinds)) return null;
+  let sum = 0;
+  let seen = false;
+  for (const row of kinds) {
+    if (!row || !SCRIPT_KIND_IDS.has(row.id)) continue;
+    if (!Number.isFinite(row.n) || row.n < 0) continue;
+    seen = true;
+    sum += Math.round(row.n);
+  }
+  return seen ? sum : null;
+}
+
 async function queryHolderKinds(pool: Pool): Promise<HolderBandRow[]> {
   const lists = knownKindLists();
   const r = await pool.query<{ id: string; n: string; nanoerg: string }>(
@@ -2011,8 +2029,10 @@ export async function writeListSnapshots(
   } catch (e) {
     console.warn("[indexer] addresses snapshot", String(e));
   }
+  let scriptCount: number | null = null;
   try {
     const bands = await buildHolderBands(pool);
+    scriptCount = scriptCountFromKinds(bands.kinds);
     await upsert(pool, "holder_bands", bands, listHeight);
   } catch (e) {
     console.warn("[indexer] holder bands snapshot", String(e));
@@ -2139,6 +2159,7 @@ export async function writeListSnapshots(
       pools,
       minerCount,
       holderCount,
+      scriptCount,
       holdersMonth,
     },
     listHeight

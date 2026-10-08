@@ -1198,6 +1198,8 @@ export type HomePage = {
   minerCount?: number | null;
   /** Additive: P2PK with nanoERG > 0 in address_summary. */
   holderCount?: number | null;
+  /** Additive: protocol + pool + contract with nanoERG > 0. Same holder-bands pass. */
+  scriptCount?: number | null;
   /** Additive: those holders whose first height is inside the last ~30 days. */
   holdersMonth?: number | null;
   /** Additive: oldest addresses due this week from snapshot_kv.rent. Snapshot GET only. */
@@ -1302,6 +1304,7 @@ function homeKpisFromPayload(p: {
   pools?: HomePoolShare[];
   minerCount?: number | null;
   holderCount?: number | null;
+  scriptCount?: number | null;
   holdersMonth?: number | null;
   ergUsd?: number | null;
   ergUsdSource?: string | null;
@@ -1328,6 +1331,7 @@ function homeKpisFromPayload(p: {
   | "pools"
   | "minerCount"
   | "holderCount"
+  | "scriptCount"
   | "holdersMonth"
   | "ergUsd"
   | "ergUsdSource"
@@ -1360,6 +1364,10 @@ function homeKpisFromPayload(p: {
     pools: parsePools(p.pools),
     minerCount: nNull(p.minerCount),
     holderCount: nNull(p.holderCount),
+    scriptCount: (() => {
+      const n = nNull(p.scriptCount);
+      return n != null && n >= 0 ? Math.round(n) : null;
+    })(),
     holdersMonth: nNull(p.holdersMonth),
     ergUsd: nNull(p.ergUsd),
     ergUsdSource: typeof p.ergUsdSource === "string" && p.ergUsdSource.trim() ? p.ergUsdSource.trim() : null,
@@ -1404,6 +1412,7 @@ export async function getHomePage(): Promise<HomePage | null> {
       pools?: HomePoolShare[];
       minerCount?: number | null;
       holderCount?: number | null;
+      scriptCount?: number | null;
       holdersMonth?: number | null;
       ergUsd?: number | null;
       ergUsdSource?: string | null;

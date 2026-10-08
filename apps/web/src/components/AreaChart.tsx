@@ -141,8 +141,8 @@ export function AreaChart({
         animationEasing: "cubicOut",
         grid: compact
           ? activity
-            ? { top: 18, right: 10, bottom: 8, left: 8 }
-            : { top: glow ? 8 : 6, right: 4, bottom: glow ? 8 : 4, left: 4 }
+            ? { top: 6, right: 6, bottom: 2, left: 6 }
+            : { top: glow ? 4 : 6, right: 4, bottom: glow ? 2 : 4, left: 4 }
           : { top: 16, right: 4, bottom: 22, left: 4 },
         tooltip: {
           trigger: "axis",

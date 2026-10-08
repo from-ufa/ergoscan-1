@@ -174,6 +174,8 @@ export type HomePageSnapshot = {
   /** Additive hourly tx count + fees (ERG) from indexer tables. */
   txActivity?: { t: number; txs: number; feesErg: number; feesKnown?: boolean }[];
   holderCount?: number | null;
+  /** Additive: protocol + pool + contract with nanoERG > 0, from the home snapshot. */
+  scriptCount?: number | null;
   /** Additive: new P2PK holders in the last ~30 days. */
   holdersMonth?: number | null;
   minerCount?: number | null;
@@ -753,6 +755,7 @@ export async function fetchHomeSnapshot(): Promise<HomePageSnapshot> {
     txPerDaySeries?: unknown;
     txActivity?: unknown;
     holderCount?: unknown;
+    scriptCount?: unknown;
     holdersMonth?: unknown;
     minerCount?: unknown;
     ergUsd?: unknown;
@@ -788,6 +791,10 @@ export async function fetchHomeSnapshot(): Promise<HomePageSnapshot> {
     txPerDaySeries: parseSparkSeries(j.txPerDaySeries),
     txActivity: parseTxActivity(j.txActivity),
     holderCount: finiteNum(j.holderCount),
+    scriptCount: (() => {
+      const n = finiteNum(j.scriptCount);
+      return n != null && n >= 0 ? Math.round(n) : null;
+    })(),
     holdersMonth: finiteNum(j.holdersMonth),
     minerCount: finiteNum(j.minerCount),
     ergUsd: finiteNum(j.ergUsd),
@@ -836,6 +843,7 @@ export function homeToChainStats(home: HomePageSnapshot): ChainStats {
     pools,
     poolBlocks: pools.reduce((s, p) => s + p.blocks, 0),
     holderCount: home.holderCount ?? null,
+    scriptCount: home.scriptCount ?? null,
     holdersMonth: home.holdersMonth ?? null,
     minerCount: home.minerCount ?? null,
     lastBlockSize: home.blocks[0]?.size ?? null,
