@@ -23,6 +23,7 @@ import {
   formatH24,
   formatRelTime,
   shortId,
+  toEpochMs,
   splitBlockOutput,
   toBigIntAmt,
 } from "@/lib/format";
@@ -43,6 +44,15 @@ const EXPECTED_BLOCKS_24H = 720;
 
 function loc(locale: string): string {
   return locale === "ru" ? "ru-RU" : "en-US";
+}
+
+/** How long this block took after the previous one. Both stamps may be s or ms. */
+function blockGapMs(newer: number, older: number): number | null {
+  const a = toEpochMs(newer);
+  const b = toEpochMs(older);
+  if (a == null || b == null) return null;
+  const d = a - b;
+  return d > 0 ? d : null;
 }
 
 export function BlocksView({
@@ -75,6 +85,7 @@ export function BlocksView({
   const [stats, setStats] = useState<ChainStats | null>(initialStats);
   const [stuck, setStuck] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [prevBlockTs, setPrevBlockTs] = useState<number | null>(null);
   const enter = useEnterIds();
   const packEnter = useEnterIds();
   const [listReady, setListReady] = useState(false);
@@ -91,6 +102,30 @@ export function BlocksView({
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    const last = items[items.length - 1];
+    if (!last || !hasMore) {
+      setPrevBlockTs(null);
+      return;
+    }
+    const cursor = nextCursor ?? String(last.height);
+    let dead = false;
+    const gw = getGateway();
+    void fetch(`${gw}/v1/blocks?cursor=${encodeURIComponent(cursor)}&limit=1`, SNAPSHOT_FETCH)
+      .then(async (r) => (r.ok ? r.json() : null))
+      .then((j: { items?: BlockListItem[] } | null) => {
+        if (dead) return;
+        const ts = j?.items?.[0]?.timestamp;
+        setPrevBlockTs(typeof ts === "number" && Number.isFinite(ts) ? ts : null);
+      })
+      .catch(() => {
+        if (!dead) setPrevBlockTs(null);
+      });
+    return () => {
+      dead = true;
+    };
+  }, [items, hasMore, nextCursor]);
 
   const load = useCallback(
     (silent = false) => {
@@ -299,11 +334,11 @@ export function BlocksView({
             >
               <div className="block-lane-pair">
                 <div className="min-w-0">{t("blocks.height")}</div>
+                <div className="lithos-col" />
                 <div className="min-w-0 justify-end">{t("blocks.id")}</div>
               </div>
               <div className="block-lane-pair">
                 <div className="min-w-0">{t("blocks.time")}</div>
-                <div className="lithos-col" aria-hidden />
                 <div className="min-w-0 justify-end">{t("blocks.blockTime")}</div>
               </div>
               <div className="block-lane-pair">
@@ -316,11 +351,9 @@ export function BlocksView({
               </div>
             </div>
             {items.map((row, i) => {
-              const older = items[i + 1];
-              const delta =
-                older && Number.isFinite(row.timestamp) && Number.isFinite(older.timestamp)
-                  ? row.timestamp - older.timestamp
-                  : null;
+              const olderTs =
+                items[i + 1]?.timestamp ?? (i === items.length - 1 ? prevBlockTs : null);
+              const delta = olderTs != null ? blockGapMs(row.timestamp, olderTs) : null;
               return (
                 <BlockTapeRow
                   key={row.id}
@@ -344,7 +377,8 @@ export function BlocksView({
             offset={page * BLOCK_PACK}
             pageSize={BLOCK_PACK}
             shown={items.length}
-            total={null}
+            total={tipHeight != null && tipHeight > 0 ? tipHeight : null}
+            scrub={false}
             hasMore={hasMore}
             loc={loc(locale)}
             ofLabel={t("addresses.packOf")}
@@ -413,11 +447,6 @@ export function BlockTapeRow({
   favTitle?: string;
   onToggleFav?: () => void;
 }) {
-  const epoch = Math.floor(row.height / ERGO_EPOCH_LEN);
-  const slot = row.height % ERGO_EPOCH_LEN;
-  const epochSlot = t("blocks.epochSlot")
-    .replace("{epoch}", String(epoch))
-    .replace("{slot}", String(slot));
   const minerAddr = row.minerAddress && row.minerAddress.length ? row.minerAddress : null;
   const miner = minerAddr ? minerLabel(minerAddr, row.minerName) : "—";
   const rewardNano = minerEmissionAtHeight(row.height) + toBigIntAmt(row.feeNano);
@@ -451,7 +480,19 @@ export function BlockTapeRow({
               />
             ) : null}
           </div>
-          <p className="mt-0.5 truncate tabular-nums text-[11px] text-[var(--muted)]">{epochSlot}</p>
+        </div>
+        <div className="lithos-col">
+          {row.lithos ? (
+            <Link href="/lithos" title={t("block.chip.lithosHint")} className="chip-press inline-flex">
+              <img
+                src="/lithos-mark.png"
+                alt=""
+                width={18}
+                height={18}
+                className="h-[18px] w-[18px] object-contain"
+              />
+            </Link>
+          ) : null}
         </div>
         <div className="px-3 text-right">
           <Link
@@ -465,17 +506,6 @@ export function BlockTapeRow({
       <div className="block-lane-pair">
         <div className="min-w-0 px-3">
           <p className="tabular-nums">{intervalMs != null ? formatBlockTime(intervalMs) : "—"}</p>
-        </div>
-        <div className="lithos-col">
-          {row.lithos ? (
-            <Link
-              href="/lithos"
-              title={t("block.chip.lithosHint")}
-              className="lithos-chip chip-press"
-            >
-              {t("block.chip.lithos")}
-            </Link>
-          ) : null}
         </div>
         <div className="min-w-0 px-3 text-right">
           <BlockWhen ts={row.timestamp} now={now} />

@@ -1482,7 +1482,8 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   }
 }
 @media (min-width: 1024px) {
-  .addr-lane.book-lane {
+  .addr-lane.book-lane,
+  .addr-head.book-lane {
     grid-template-columns: repeat(6, minmax(0, 1fr));
     column-gap: 0.5rem;
   }
@@ -1840,7 +1841,7 @@ html[data-ink="day"] {
   .addr-pan .addr-head.block-lane.blocks-tape {
     width: 69.65rem;
     min-width: 69.65rem;
-    grid-template-columns: 7.75rem 9.75rem 7.25rem 3.4rem 11.5rem 8.5rem 8.5rem 4.75rem 8.25rem;
+    grid-template-columns: 7.75rem 1.5rem 9.75rem 7.25rem 11.5rem 8.5rem 8.5rem 4.75rem 8.25rem;
   }
 
   .addr-pan .addr-lane.block-lane.lithos-finds,
@@ -2396,8 +2397,10 @@ html[data-ink="day"] {
 .addr-lane.block-lane > .block-lane-pair {
   align-items: center;
 }
-.addr-lane.blocks-tape > .block-lane-pair:first-child {
-  grid-template-columns: minmax(0, 1fr) max-content;
+.addr-lane.blocks-tape > .block-lane-pair:first-child,
+.addr-head.blocks-tape > .block-lane-pair:first-child {
+  grid-template-columns: minmax(0, 1fr) 1.5rem minmax(0, 1fr);
+  align-items: center;
 }
 /* Route holds `100 000.0000 firo` on one line. Time holds `07:36:42 · 21.01.2026`. */
 .addr-lane.block-lane.rosen-tape,
@@ -2416,7 +2419,8 @@ html[data-ink="day"] {
 .addr-head.blocks-tape > .block-lane-pair:nth-child(2) {
   width: 100%;
   justify-self: stretch;
-  grid-template-columns: minmax(0, 0.55fr) 3.4rem minmax(0, 1.45fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
 }
 .lithos-col {
   display: flex;
@@ -2438,12 +2442,6 @@ html[data-ink="day"] {
 .lithos-chip:hover {
   background: color-mix(in srgb, #a855f7 36%, transparent);
   color: #d8b4fe;
-}
-@media (min-width: 1024px) {
-  .addr-lane.blocks-tape,
-  .addr-head.blocks-tape {
-    grid-template-columns: minmax(0, 1fr) minmax(16.75rem, 1.28fr) minmax(0, 1fr) minmax(0, 1fr);
-  }
 }
 .addr-lane.block-lane.lithos-finds,
 .addr-head.block-lane.lithos-finds {
