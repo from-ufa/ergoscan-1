@@ -717,6 +717,7 @@ export function registerChainRoutes(app: Express, deps: ChainDeps) {
         offset,
         hasMore: got.hasMore,
         nextCursor: got.hasMore ? got.nextCursor : null,
+        olderTs: got.olderTs,
         updatedAt: got.meta.updatedAt,
       });
       return;

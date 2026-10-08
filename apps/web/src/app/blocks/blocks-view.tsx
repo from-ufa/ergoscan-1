@@ -60,12 +60,14 @@ export function BlocksView({
   initialUpdatedAt = null,
   initialHasMore = false,
   initialNextCursor = null,
+  initialOlderTs = null,
   initialStats = null,
 }: {
   initialItems: BlockListItem[];
   initialUpdatedAt?: string | null;
   initialHasMore?: boolean;
   initialNextCursor?: string | null;
+  initialOlderTs?: number | null;
   initialStats?: ChainStats | null;
 }) {
   const t = useT();
@@ -85,7 +87,7 @@ export function BlocksView({
   const [stats, setStats] = useState<ChainStats | null>(initialStats);
   const [stuck, setStuck] = useState(false);
   const [now, setNow] = useState(() => Date.now());
-  const [prevBlockTs, setPrevBlockTs] = useState<number | null>(null);
+  const [prevBlockTs, setPrevBlockTs] = useState<number | null>(initialOlderTs);
   const enter = useEnterIds();
   const packEnter = useEnterIds();
   const [listReady, setListReady] = useState(false);
@@ -103,30 +105,6 @@ export function BlocksView({
     return () => window.clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    const last = items[items.length - 1];
-    if (!last || !hasMore) {
-      setPrevBlockTs(null);
-      return;
-    }
-    const cursor = nextCursor ?? String(last.height);
-    let dead = false;
-    const gw = getGateway();
-    void fetch(`${gw}/v1/blocks?cursor=${encodeURIComponent(cursor)}&limit=1`, SNAPSHOT_FETCH)
-      .then(async (r) => (r.ok ? r.json() : null))
-      .then((j: { items?: BlockListItem[] } | null) => {
-        if (dead) return;
-        const ts = j?.items?.[0]?.timestamp;
-        setPrevBlockTs(typeof ts === "number" && Number.isFinite(ts) ? ts : null);
-      })
-      .catch(() => {
-        if (!dead) setPrevBlockTs(null);
-      });
-    return () => {
-      dead = true;
-    };
-  }, [items, hasMore, nextCursor]);
-
   const load = useCallback(
     (silent = false) => {
       if (!silent && itemsRef.current.length) setPending(true);
@@ -143,6 +121,7 @@ export function BlocksView({
             items?: BlockListItem[];
             hasMore?: boolean;
             nextCursor?: string | null;
+            olderTs?: unknown;
             updatedAt?: string | null;
             stale?: boolean;
           }>;
@@ -176,6 +155,8 @@ export function BlocksView({
           });
           setHasMore(more);
           setNextCursor(more ? nxt || null : null);
+          const older = typeof j.olderTs === "number" && Number.isFinite(j.olderTs) ? j.olderTs : null;
+          setPrevBlockTs(older);
           setErr(null);
           setReady(true);
           markSynced(j.updatedAt);

@@ -699,7 +699,14 @@ export type BlocksTape = {
   source: string;
   hasMore: boolean;
   nextCursor: string | null;
+  /** Timestamp of the block just older than this page. Already loaded with the page. */
+  olderTs: number | null;
 };
+
+function blockStamp(row: BlockListItem | undefined): number | null {
+  const ts = row?.timestamp;
+  return typeof ts === "number" && Number.isFinite(ts) ? ts : null;
+}
 
 /** Snapshot is the first HTML pack — not the scroll ceiling. */
 export async function getBlocksList(
@@ -720,6 +727,7 @@ export async function getBlocksList(
       nextCursor: hasMore && last ? String(last.height) : null,
       meta: { height: page[0]?.height ?? null, updatedAt: null },
       source: "tables",
+      olderTs: blockStamp(hasMore ? built[take] : undefined),
     };
   }
 
@@ -738,6 +746,7 @@ export async function getBlocksList(
       nextCursor: hasMore && last ? String(last.height) : null,
       meta: { height: snap.height, updatedAt: snap.updatedAt },
       source: "snapshot",
+      olderTs: blockStamp(hasMoreSnap ? sliced[take] : undefined),
     };
   }
 
@@ -752,6 +761,7 @@ export async function getBlocksList(
     nextCursor: hasMore && last ? String(last.height) : null,
     meta: { height: page[0]?.height ?? null, updatedAt: null },
     source: "tables",
+    olderTs: blockStamp(hasMore ? built[take] : undefined),
   };
 }
 

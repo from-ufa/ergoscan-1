@@ -867,6 +867,8 @@ export type BlocksPack = {
   updatedAt: string | null;
   hasMore: boolean;
   nextCursor: string | null;
+  /** Block just older than this page, already on the pack. */
+  olderTs: number | null;
 };
 
 export function isBlocksPackBody(
@@ -875,6 +877,7 @@ export function isBlocksPackBody(
   items: BlockListItem[];
   hasMore?: boolean;
   nextCursor?: string | null;
+  olderTs?: unknown;
   updatedAt?: string | null;
   stale?: boolean;
 } {
@@ -902,9 +905,10 @@ export async function fetchBlocksPack(cursor?: string | null): Promise<BlocksPac
       updatedAt: packed.updatedAt ?? null,
       hasMore,
       nextCursor: hasMore ? nextCursor : null,
+      olderTs: finiteNum(packed.olderTs),
     };
   }
-  return { items: [], updatedAt: null, hasMore: false, nextCursor: null };
+  return { items: [], updatedAt: null, hasMore: false, nextCursor: null, olderTs: null };
 }
 
 export async function fetchBlocksList(): Promise<BlockListItem[]> {
