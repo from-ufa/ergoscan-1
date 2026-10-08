@@ -1208,6 +1208,8 @@ export type HomePage = {
   rentEpochBoxes?: number | null;
   /** Additive: estimated rent nano due before this header epoch ends. Snapshot GET only. */
   rentEpochNano?: string | null;
+  /** Additive: tokens short on ERG, copied from snapshot_kv.rent.danger. Snapshot GET only. */
+  rentDanger?: unknown[];
 };
 
 function parseSeries(raw: unknown): { t: number; v: number }[] {
@@ -1425,15 +1427,21 @@ export async function getHomePage(): Promise<HomePage | null> {
       volume24h?: number | null;
       change24h?: number | null;
     }>(SNAP_HOME),
-    readSnapshot<{ addresses?: unknown; thisEpoch?: { boxCount?: unknown; rentNano?: unknown } }>(SNAP_RENT),
+    readSnapshot<{
+      addresses?: unknown;
+      thisEpoch?: { boxCount?: unknown; rentNano?: unknown };
+      danger?: unknown;
+    }>(SNAP_RENT),
   ]);
   const rentTape = parseRentTape(rentSnap?.payload?.addresses);
   const rentEpochBoxes = parseRentEpochBoxes(rentSnap?.payload?.thisEpoch);
   const rentEpochNano = parseRentEpochNano(rentSnap?.payload?.thisEpoch);
+  const rentDanger = Array.isArray(rentSnap?.payload?.danger) ? rentSnap.payload.danger : null;
   const rentField = {
     ...(rentTape != null ? { rentTape } : {}),
     ...(rentEpochBoxes != null ? { rentEpochBoxes } : {}),
     ...(rentEpochNano != null ? { rentEpochNano } : {}),
+    ...(rentDanger != null ? { rentDanger } : {}),
   };
   if (snap?.payload && Array.isArray(snap.payload.blocks)) {
     return {

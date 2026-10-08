@@ -55,6 +55,7 @@ import {
   type RentPageData,
   type RentWindow,
 } from "@/lib/list-snapshots";
+import { dangerHoldingUsd } from "@/lib/rent-danger";
 import { getGateway } from "@/lib/config";
 import { lookupAddress } from "@/lib/address-book";
 import { NameMarquee } from "@/components/NameMarquee";
@@ -964,17 +965,6 @@ function HistoryKpis({
   );
 }
 
-function dangerUsd(row: RentDangerRow): number {
-  const dec = row.decimals != null && row.decimals > 0 ? Math.min(18, row.decimals) : 0;
-  try {
-    const raw = BigInt(row.amount || "0");
-    const base = 10n ** BigInt(dec);
-    return (Number(raw / base) + Number(raw % base) / Number(base || 1n)) * row.priceUsd;
-  } catch {
-    return 0;
-  }
-}
-
 function formatDangerUsd(n: number, locale: string): string {
   if (!Number.isFinite(n) || n <= 0) return "—";
   if (n >= 1000) return `$${Math.round(n).toLocaleString(loc(locale))}`;
@@ -1034,7 +1024,7 @@ function RentDanger({
         >
           {rows.map((row) => {
             const meta = resolveTokenMeta(row.tokenId, null, row.name);
-            const usd = formatDangerUsd(dangerUsd(row), locale);
+            const usd = formatDangerUsd(dangerHoldingUsd(row), locale);
             const short = t("rent.danger.short").replace(
               "{n}",
               formatErgFixed(row.shortfallNano, locale, false)

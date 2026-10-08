@@ -3,14 +3,15 @@
 import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { rentToneInk } from "@/lib/rent-miner-patrol";
+import { drawWallE } from "./wall-e";
 import type { RentTapeRow } from "@ergoscan/shared";
 
 /**
- * Crates sit still. On open, the robot visits boxes one or two blocks
- * from collection first: the lid lifts, his eyes rise and the pupils spin,
- * then the lid shuts. After that pass he checks the rest.
+ * Crates sit still. Kayolo walks up to each one slowly, knocks with the pick,
+ * the lid opens, and the rent due rises out of the box.
  */
-const SOON_BLOCKS = 2;
+const WALK_PX = 28;
+const WORK_MS = 2600;
 type Hit = { address: string; x: number; y: number };
 type Slot = { x: number; y: number; depth: number };
 
@@ -39,26 +40,27 @@ function routeAround(from: Stop, fromSlot: Slot | null, toSlot: Slot, w: number,
   return pts;
 }
 
-function soonFirst(list: RentTapeRow[]): number[] {
-  const soon: number[] = [];
-  const rest: number[] = [];
-  list.forEach((row, i) => {
-    if (row.blocksUntilRent <= SOON_BLOCKS) soon.push(i);
-    else rest.push(i);
-  });
-  return [...soon, ...rest];
+/** Three pick strikes in the first part of the visit, then the pick rests. */
+function knocks(u: number): number {
+  if (u >= 0.42) return 0;
+  const local = ((u / 0.42) * 3) % 1;
+  return Math.sin(local * Math.PI);
 }
 
 function lidOpen(u: number): number {
-  if (u < 0.12) return 0;
-  if (u < 0.4) return (u - 0.12) / 0.28;
-  if (u < 0.7) return 1;
-  return Math.max(0, 1 - (u - 0.7) / 0.3);
+  if (u < 0.34) return 0;
+  if (u < 0.5) return (u - 0.34) / 0.16;
+  if (u < 0.88) return 1;
+  return Math.max(0, 1 - (u - 0.88) / 0.12);
 }
 
-function eyePop(u: number): number {
-  if (u < 0.28 || u > 0.78) return 0;
-  return Math.sin(((u - 0.28) / 0.5) * Math.PI);
+function purseMotion(u: number): { y: number; a: number } | null {
+  if (u < 0.4) return null;
+  const t = Math.min(1, (u - 0.4) / 0.3);
+  const ease = 1 - (1 - t) ** 3;
+  const fade = u > 0.9 ? Math.max(0, 1 - (u - 0.9) / 0.1) : 1;
+  const drift = u > 0.7 ? Math.sin((u - 0.7) * 7) * 1.1 : 0;
+  return { y: -ease * 28 - drift, a: Math.min(1, t * 1.35) * fade };
 }
 
 function slotsOf(n: number, w: number, h: number): Slot[] {
@@ -87,22 +89,26 @@ export function RentBelt({
   hover,
   onHover,
   onLead,
+  formatAmount,
 }: {
   rows: RentTapeRow[];
   reduce: boolean;
   hover: string | null;
   onHover: (address: string | null) => void;
   onLead: (address: string | null) => void;
+  formatAmount?: (nano: string) => string;
 }) {
   const host = useRef<HTMLCanvasElement>(null);
   const rowsRef = useRef(rows);
   const hoverRef = useRef(hover);
   const onHoverRef = useRef(onHover);
   const onLeadRef = useRef(onLead);
+  const formatRef = useRef(formatAmount);
   rowsRef.current = rows;
   hoverRef.current = hover;
   onHoverRef.current = onHover;
   onLeadRef.current = onLead;
+  formatRef.current = formatAmount;
   const router = useRouter();
   const hits = useRef<Hit[]>([]);
 
@@ -117,16 +123,15 @@ export function RentBelt({
     let ry = 80;
     let seq: number[] = [];
     let si = 0;
-    let firstPass = true;
     let mode: "go" | "check" = "go";
     let path: Stop[] = [];
     let leg = 0;
     let routed = -1;
     let struck = "";
-    let gesture: "no" | "open" = "no";
     let swingFrom = 0;
     let lastLead: string | null = null;
     let roll = 0;
+    let face = 1;
 
     const paint = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -148,21 +153,16 @@ export function RentBelt({
       const slots = slotsOf(list.length, w, h);
       const nanos = list.map((r) => r.rentNano);
       if (list.length && seq.length !== list.length) {
-        seq = soonFirst(list);
+        seq = list.map((_, i) => i);
         si = 0;
-        firstPass = true;
         routed = -1;
         mode = "go";
       }
       const idx = seq[si] ?? 0;
       const cur = list[idx];
       const slot = slots[idx];
-      let head = 0;
       let pickSwing = 0;
       let hopT = 0;
-      let eyeLift = 0;
-      let eyeScale = 1;
-      let pupil = 0;
       if (cur && slot && !reduce) {
         if (mode === "go") {
           if (routed !== idx) {
@@ -176,14 +176,15 @@ export function RentBelt({
           if (!goal) {
             mode = "check";
             struck = cur.address;
-            gesture = cur.blocksUntilRent <= SOON_BLOCKS ? "open" : "no";
             swingFrom = now;
+            face = 1;
           } else {
             const dx = goal.x - rx;
             const dy = goal.y - ry;
             const dist = Math.hypot(dx, dy);
-            const step = Math.min(dist, 54 * dt);
+            const step = Math.min(dist, (dist < 36 ? 16 : WALK_PX) * dt);
             if (dist > 2.5) {
+              if (Math.abs(dx) > 1) face = dx > 0 ? 1 : -1;
               rx += (dx / dist) * step;
               ry += (dy / dist) * step;
               roll += step;
@@ -192,31 +193,16 @@ export function RentBelt({
             } else {
               mode = "check";
               struck = cur.address;
-              gesture = cur.blocksUntilRent <= SOON_BLOCKS ? "open" : "no";
               swingFrom = now;
+              face = 1;
             }
           }
         } else {
-          const dur = gesture === "open" ? 1500 : 640;
-          hopT = Math.min(1, (now - swingFrom) / dur);
-          if (gesture === "no") head = Math.sin(hopT * Math.PI * 3) * 0.45;
-          else {
-            if (hopT < 0.2) pickSwing = Math.sin((hopT / 0.2) * Math.PI);
-            const pop = eyePop(hopT);
-            eyeLift = pop * 8;
-            eyeScale = 1 + pop * 0.62;
-            pupil = pop > 0 ? now * 0.012 : 0;
-          }
+          hopT = Math.min(1, (now - swingFrom) / WORK_MS);
+          pickSwing = knocks(hopT);
           if (hopT >= 1) {
             mode = "go";
-            si += 1;
-            if (firstPass && si >= seq.length) {
-              seq = list.map((_, i) => i);
-              si = 0;
-              firstPass = false;
-            } else if (!firstPass) {
-              si = si % Math.max(1, seq.length);
-            }
+            si = (si + 1) % Math.max(1, seq.length);
             routed = -1;
             hopT = 0;
           }
@@ -232,30 +218,39 @@ export function RentBelt({
         .sort((a, b) => a.slot.y - b.slot.y);
       for (const item of order) {
         const checking = mode === "check" && item.row.address === struck;
-        const hop = checking && gesture === "no" ? Math.sin(hopT * Math.PI) : 0;
-        const lid = checking && gesture === "open" ? lidOpen(hopT) : 0;
+        const lid = checking ? lidOpen(hopT) : 0;
+        const ink = rentToneInk(item.row.rentNano, nanos);
         drawDock(ctx, item.slot.x, item.slot.y, item.slot.depth);
-        drawCrate(
-          ctx,
-          item.slot.x,
-          item.slot.y,
-          rentToneInk(item.row.rentNano, nanos),
-          item.row.boxCount,
-          item.slot.depth,
-          hop,
-          lid
-        );
-        drawn.push({ address: item.row.address, x: item.slot.x, y: item.slot.y - 10 - hop * 12 });
+        drawCrate(ctx, item.slot.x, item.slot.y, ink, item.row.boxCount, item.slot.depth, 0, lid);
+        drawn.push({ address: item.row.address, x: item.slot.x, y: item.slot.y - 10 });
       }
       hits.current = drawn;
 
+      const performing = reduce ? (cur?.address ?? null) : mode === "check" ? struck : null;
+      const next = hoverRef.current ?? performing;
+      if (next !== lastLead) {
+        lastLead = next;
+        onLeadRef.current(next);
+      }
       if (cur) {
-        const next = hoverRef.current ?? cur.address;
-        if (next !== lastLead) {
-          lastLead = next;
-          onLeadRef.current(next);
-        }
-        drawWall(ctx, rx, ry, head, pickSwing, roll, eyeLift, eyeScale, pupil);
+        const look = mode === "check" ? lidOpen(hopT) : 0;
+        drawWallE(ctx, {
+          x: rx,
+          y: ry + 16,
+          head: 0,
+          look: 0,
+          pick: pickSwing,
+          roll,
+          face,
+          scale: 0.82,
+          eyeLift: look * 3,
+        });
+      }
+      if (mode === "check" && struck) {
+        const open = list.find((row) => row.address === struck);
+        const at = slots[list.findIndex((row) => row.address === struck)];
+        const label = open ? (formatRef.current?.(open.rentNano) ?? "") : "";
+        if (open && at && label) drawPurse(ctx, at.x, at.y, rentToneInk(open.rentNano, nanos), hopT, label);
       }
       raf = requestAnimationFrame(paint);
     };
@@ -383,88 +378,38 @@ function drawCrate(
   ctx.restore();
 }
 
-function drawWall(
+function drawPurse(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
-  head: number,
-  pickSwing: number,
-  roll = 0,
-  eyeLift = 0,
-  eyeScale = 1,
-  pupil = 0
+  ink: string,
+  u: number,
+  label: string
 ) {
+  const motion = purseMotion(u);
+  if (!motion || motion.a <= 0.02) return;
   ctx.save();
-  ctx.translate(x, y);
-  ctx.lineJoin = "round";
-  ctx.lineWidth = 1.35;
-  ctx.strokeStyle = "#3a2a14";
-  ctx.fillStyle = "#2a2622";
-  ctx.beginPath();
-  ctx.roundRect(-20, 8, 16, 8, 3);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.roundRect(4, 8, 16, 8, 3);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#f0c14a";
-  const tread = ((roll * 0.35) % 5 + 5) % 5;
-  for (const ox of [-18, 6]) {
-    ctx.fillRect(ox + tread, 10, 2.2, 4);
+  ctx.translate(x, y - 18);
+  ctx.fillStyle = ink;
+  for (let i = 0; i < 5; i++) {
+    const t = (u - (0.4 + i * 0.04)) / 0.48;
+    if (t <= 0 || t >= 1) continue;
+    ctx.globalAlpha = (1 - t) * motion.a * 0.9;
+    ctx.fillRect((i - 2) * 5.5 - 1, -8 - t * 20, 2.2, 2.2);
   }
-  ctx.fillStyle = "#e2a23a";
-  ctx.beginPath();
-  ctx.roundRect(-15, -8, 30, 18, 5);
-  ctx.fill();
-  ctx.stroke();
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.beginPath();
-  ctx.moveTo(-8, -2);
-  ctx.lineTo(8, -2);
-  ctx.stroke();
-  ctx.save();
-  ctx.translate(0, -10 - eyeLift);
-  ctx.rotate(head);
-  ctx.scale(eyeScale, eyeScale);
-  ctx.fillStyle = "#f7f3ea";
-  ctx.strokeStyle = "#3a2a14";
-  ctx.lineWidth = 1.3;
-  ctx.beginPath();
-  ctx.arc(-6, -8, 6.5, 0, Math.PI * 2);
-  ctx.arc(7, -8, 6.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#3a2a14";
-  ctx.fillRect(-2, -9, 5, 2.2);
-  ctx.fillStyle = "#1c1917";
-  const look = eyeLift > 0.4 ? 0 : head * 3;
-  const ox = Math.cos(pupil) * 1.7;
-  const oy = Math.sin(pupil) * 1.15;
-  ctx.beginPath();
-  ctx.arc(-5 + look + ox, -8 + oy, 2.3, 0, Math.PI * 2);
-  ctx.arc(8 + look + ox, -8 + oy, 2.3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-  ctx.save();
-  ctx.translate(12, -2);
-  ctx.rotate(-0.85 + pickSwing * 1.15);
-  ctx.strokeStyle = "#d6d3d1";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, 2);
-  ctx.lineTo(15, -12);
-  ctx.stroke();
-  ctx.fillStyle = "#f0c14a";
-  ctx.strokeStyle = "#3a2a14";
-  ctx.lineWidth = 1.15;
-  ctx.beginPath();
-  ctx.moveTo(11, -16);
-  ctx.lineTo(22, -12);
-  ctx.lineTo(15, -6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
+  ctx.globalAlpha = motion.a;
+  ctx.translate(0, motion.y);
+  ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const wide = ctx.measureText(label).width;
+  if (wide > 78) ctx.scale(78 / wide, 78 / wide);
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(16,12,10,0.5)";
+  ctx.strokeText(label, 0, 0);
+  ctx.fillStyle = "#ff8a65";
+  ctx.fillText(label, 0, 0);
   ctx.restore();
 }
+

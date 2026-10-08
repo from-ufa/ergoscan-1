@@ -258,6 +258,7 @@ export const en: Record<string, string> = {
   "home.rentBox": "1 box",
   "home.rentBoxes": "{n} boxes",
   "home.rentEmpty": "None due in this window.",
+  "home.rentDangerEmpty": "Nothing short in the next 7 days.",
   "home.node": "Node",
   "home.height": "Height",
   "home.txDay": "tx per day",

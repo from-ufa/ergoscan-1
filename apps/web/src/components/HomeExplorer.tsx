@@ -40,6 +40,7 @@ import {
   type RentTapeRow,
 } from "@ergoscan/shared";
 import { HomeRentTape } from "@/components/HomeRentTape";
+import { parseRentDanger, type RentDangerRow } from "@/lib/rent-danger";
 import { HomeMempoolStage } from "@/components/HomeMempoolStage";
 import { CadenceYard, type CadenceYardBlock } from "@/components/CadenceYard";
 import { ERGO_MAX_BLOCK_SIZE } from "@/lib/ergo-emission";
@@ -163,6 +164,7 @@ export function HomeExplorer({
   initialChartError = false,
   initialRentTape = [],
   initialRentEpochNano = null,
+  initialRentDanger = null,
   previewShare = false,
 }: {
   initialMempool?: number | null;
@@ -178,6 +180,8 @@ export function HomeExplorer({
   initialChartError?: boolean;
   initialRentTape?: RentTapeRow[];
   initialRentEpochNano?: string | null;
+  /** Tokens short on ERG, from the rent snapshot. Null until that field arrives. */
+  initialRentDanger?: RentDangerRow[] | null;
   /** Local `/?preview=share` — keep fixture rows, don't overwrite from stage. */
   previewShare?: boolean;
 }) {
@@ -211,6 +215,8 @@ export function HomeExplorer({
   const [poolHover, setPoolHover] = useState<{ label: string; pct: number } | null>(null);
   const [rentTape, setRentTape] = useState<RentTapeRow[]>(initialRentTape);
   const [rentEpochNano, setRentEpochNano] = useState<string | null>(initialRentEpochNano);
+  const [rentDanger, setRentDanger] = useState<RentDangerRow[]>(initialRentDanger ?? []);
+  const [rentDangerReady, setRentDangerReady] = useState(initialRentDanger != null);
   const snapRetry = useRef(0);
   const snapTries = useRef(0);
   const loadSnapRef = useRef<() => void>(() => {});
@@ -274,6 +280,7 @@ export function HomeExplorer({
           change24h?: number | null;
           rentTape?: unknown;
           rentEpochNano?: unknown;
+          rentDanger?: unknown;
         }>;
       })
       .then((j) => {
@@ -422,6 +429,20 @@ export function HomeExplorer({
           if (tape) setRentTape(tape);
           const epochNano = parseRentEpochNano(j.rentEpochNano);
           if (epochNano != null) setRentEpochNano(epochNano);
+          const danger = parseRentDanger(j.rentDanger);
+          if (danger) {
+            setRentDanger(danger);
+            setRentDangerReady(true);
+          } else if (j.rentDanger == null) {
+            void fetch(`${gw}/v1/page/rent?tab=upcoming&limit=1`, SNAPSHOT_FETCH)
+              .then(async (r) => (r.ok ? r.json() : null))
+              .then((page: { danger?: unknown } | null) => {
+                const rows = parseRentDanger(page?.danger);
+                if (rows) setRentDanger(rows);
+                setRentDangerReady(true);
+              })
+              .catch(() => setRentDangerReady(true));
+          }
         }
         markSynced(j.updatedAt);
         const gotH =
@@ -834,6 +855,8 @@ export function HomeExplorer({
         <HomeRentTape
           rows={rentTape}
           epochRentNano={rentEpochNano}
+          danger={rentDanger}
+          dangerReady={rentDangerReady}
           previewShare={previewShare}
           enter={12}
         />
