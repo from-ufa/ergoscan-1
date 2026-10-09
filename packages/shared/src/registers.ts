@@ -88,6 +88,10 @@ export function decodeRegisterHex(hex: string | null | undefined): DecodedRegist
       .decode(bytes)
       .replace(/\u0000/g, "")
       .trim();
+    // A stray byte becomes U+FFFD. That is not a name.
+    if (text.includes("\uFFFD")) {
+      return { raw: h, text: null, kind: "hex" };
+    }
     // Code points, not UTF-16 units — one emoji is length 2 in JS and
     // used to fail the 0.75 printable ratio (`🤡` → 1/2).
     const chars = [...text];

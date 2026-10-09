@@ -41,6 +41,7 @@ test("known ticker wins over leftover issuance R4", () => {
   assert.equal(displayErgoTokenName(rsbtc, "rsPALM"), "rsBTC");
   assert.equal(knownErgoTokenName(SIGUSD), "SigUSD");
   assert.equal(displayErgoTokenName("f".repeat(64), "Wolf"), "Wolf");
+  assert.equal(displayErgoTokenName("f".repeat(64), "dN\uFFFD"), null);
 });
 
 test("known map indexes ergo-side ids", () => {

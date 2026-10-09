@@ -140,7 +140,10 @@ export function NftBrowseView({
 
       <div className="mb-6 flex min-w-0 items-center gap-4">
         <span className="addr-nft-thumb h-16 w-16 shrink-0 overflow-hidden rounded-[16px]">
-          <NftThumb url={coverUrl ?? items.find((i) => i.artworkUrl)?.artworkUrl} />
+          <NftThumb
+            url={coverUrl ?? items.find((i) => i.artworkUrl)?.artworkUrl}
+            tokenId={items.find((i) => i.tokenId)?.tokenId ?? name}
+          />
         </span>
         <div className="min-w-0">
           <p className="text-[12px] text-[var(--muted)]">

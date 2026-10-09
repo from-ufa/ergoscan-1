@@ -243,7 +243,7 @@ function clipChars(s: string, max: number): string {
 
 function cleanTicker(raw: string | null | undefined, tokenId: string): string | null {
   const s = String(raw || "").trim();
-  if (!s || s === "?" || s === "SEED") return null;
+  if (!s || s === "?" || s === "SEED" || s.includes("\uFFFD")) return null;
   const id = tokenId.toLowerCase();
   if (id.startsWith(s.toLowerCase()) && /^[0-9a-f]+$/i.test(s) && s.length <= 8) return null;
   const chars = [...s];

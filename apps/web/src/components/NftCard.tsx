@@ -4,6 +4,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { KpiMarkNft } from "@/components/kpi-marks";
 import { shortId } from "@/lib/format";
+import { tokenIdenticonSrc } from "@/lib/token-identicon";
 import { useMediaSrc } from "@/lib/use-media-src";
 import { tokenTickerInk } from "@/lib/token-meta";
 import { INK } from "@/lib/palette";
@@ -20,12 +21,25 @@ export type NftCardItem = {
 
 export function NftThumb({
   url,
+  tokenId,
   className,
 }: {
   url?: string | null;
+  tokenId?: string | null;
   className?: string;
 }) {
   const { src, onError } = useMediaSrc(url, "image");
+  const missing = !String(url || "").trim();
+  if (missing && tokenId) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={tokenIdenticonSrc(tokenId)}
+        alt=""
+        className={clsx("h-full w-full object-cover", className)}
+      />
+    );
+  }
   if (!src) {
     return (
       <span
@@ -44,6 +58,7 @@ export function NftThumb({
       src={src}
       alt=""
       loading="lazy"
+      decoding="async"
       referrerPolicy="no-referrer"
       className={className}
       onError={onError}
@@ -64,8 +79,9 @@ export function NftCard({
   sheetEnter?: number;
 }) {
   const to = href ?? `/token/${item.tokenId}`;
-  const title = item.name ? `${item.name} · ${item.tokenId}` : item.tokenId;
-  const showColl = !!(item.collection && item.name && item.collection !== item.name);
+  const titleName = item.name && !item.name.includes("\uFFFD") ? item.name : null;
+  const title = titleName ? `${titleName} · ${item.tokenId}` : item.tokenId;
+  const showColl = !!(item.collection && titleName && item.collection !== titleName);
   return (
     <Link
       href={to}
@@ -74,7 +90,7 @@ export function NftCard({
       style={sheetEnter != null ? { ["--enter" as string]: sheetEnter } : undefined}
     >
       <span className="addr-nft-thumb relative">
-        <NftThumb url={item.artworkUrl} />
+        <NftThumb url={item.artworkUrl} tokenId={item.tokenId} />
         {item.kindLabel ? (
           <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium leading-none text-white/90">
             {item.kindLabel}
@@ -83,7 +99,7 @@ export function NftCard({
       </span>
       <span className="flex min-w-0 flex-col gap-0.5 px-3 py-2.5">
         <span className="truncate text-[13px] font-medium" style={{ color: tokenTickerInk(item.tokenId) }}>
-          {item.name || shortId(item.tokenId, 8)}
+          {titleName || shortId(item.tokenId, 8)}
         </span>
         {showColl ? (
           <span className="truncate text-[12px] text-[var(--muted)]">{item.collection}</span>
@@ -124,7 +140,7 @@ export function NftGroupCard({
       style={sheetEnter != null ? { ["--enter" as string]: sheetEnter } : undefined}
     >
       <span className="addr-nft-thumb">
-        <NftThumb url={coverUrl} />
+        <NftThumb url={coverUrl} tokenId={href} />
       </span>
       <span className="flex min-w-0 flex-col gap-0.5 px-3 py-2.5">
         <span className="truncate text-[13px] font-medium" style={{ color: INK.coral }}>

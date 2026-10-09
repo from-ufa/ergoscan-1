@@ -711,8 +711,10 @@ export function TokenView({
     return () => obs.disconnect();
   }, [tab, holders?.holders.length, txs.length, holderOff, txOff]);
 
-  const meta = resolveTokenMeta(tokenId, data?.name ?? catalog?.name, data?.name ?? catalog?.name);
-  const sym = meta.symbol || data?.name || catalog?.name || "token";
+  const rawName = (data?.name ?? catalog?.name ?? "").trim();
+  const named = rawName && !rawName.includes("\uFFFD") ? rawName : null;
+  const meta = resolveTokenMeta(tokenId, named, named);
+  const sym = named ? meta.symbol : shortId(tokenId, 8);
   const nft = data?.nft ?? null;
   const typeLabel = nft?.kind
     ? t(`token.nft.kind.${nft.kind}`)
@@ -741,7 +743,7 @@ export function TokenView({
   const lastTs = catalog?.lastTs ?? null;
   const descRaw = (data?.description ?? "").trim();
   const description = (() => {
-    if (!descRaw) return null;
+    if (!descRaw || descRaw === "0") return null;
     const n = String(meta.name ?? "").trim().toLowerCase();
     const s = String(sym).toLowerCase();
     const d = descRaw.toLowerCase();
@@ -810,6 +812,7 @@ export function TokenView({
                     <span className="h-12 w-12 overflow-hidden rounded-[14px] bg-[var(--wash)]">
                       <NftThumb
                         url={previewUrl}
+                        tokenId={tokenId}
                         className="h-full w-full object-cover"
                       />
                     </span>
@@ -953,7 +956,7 @@ export function TokenView({
           </div>
 
           {nft && (nft.kind || nft.url || nft.mintAddress || nft.collectionTokenId) ? (
-            <NftInfoPanel nft={nft} locale={locale} t={t} />
+            <NftInfoPanel nft={nft} tokenId={tokenId} locale={locale} t={t} />
           ) : null}
 
           {tab === "holders" && (
@@ -1210,10 +1213,12 @@ function clipNftFact(value: string): string {
 
 function NftInfoPanel({
   nft,
+  tokenId,
   locale,
   t,
 }: {
   nft: TokenNft;
+  tokenId: string;
   locale: string;
   t: (key: string) => string;
 }) {
@@ -1303,8 +1308,12 @@ function NftInfoPanel({
   }
   const artUrl = nft.coverUrl || nft.url;
   const showArt = Boolean(artUrl) && nft.kind !== "audio" && nft.kind !== "video";
+  const showFrame = nft.kind !== "audio" && nft.kind !== "video";
   return (
-    <section className="mt-2 flex flex-col gap-2">
+    <section
+      className="home-tile-enter mt-2 flex flex-col gap-2"
+      style={{ ["--enter" as string]: 6 }}
+    >
       {audio.src ? (
         <audio
           controls
@@ -1334,16 +1343,25 @@ function NftInfoPanel({
           {t("token.nft.openFile")}
         </a>
       ) : null}
-      <div className="addr-lane">
-        {showArt ? (
+      <div className="addr-lane" style={showArt ? undefined : { alignItems: "center" }}>
+        {showFrame ? (
           <div className="addr-nft-thumb col-span-2 overflow-hidden rounded-[20px] lg:col-span-1">
-            <NftThumb url={artUrl} />
+            <NftThumb url={showArt ? artUrl : null} tokenId={tokenId} />
           </div>
         ) : null}
-        <div className="col-span-2 flex min-h-0 min-w-0 lg:col-span-3">
+        <div
+          className={clsx(
+            "col-span-2 flex min-h-0 min-w-0",
+            showFrame ? "lg:col-span-3" : "lg:col-span-4"
+          )}
+        >
           <dl
-            className="grid min-h-0 w-full min-w-0 flex-1 grid-cols-[7.5rem_minmax(0,1fr)] gap-x-4"
-            style={{ gridTemplateRows: `repeat(${Math.max(rows.length, 1)}, minmax(0, 1fr))` }}
+            className="grid min-h-0 w-full min-w-0 flex-1 grid-cols-[7.5rem_minmax(0,1fr)] gap-x-4 gap-y-2"
+            style={
+              showArt
+                ? { gridTemplateRows: `repeat(${Math.max(rows.length, 1)}, minmax(0, 1fr))` }
+                : undefined
+            }
           >
             {rows.map((row) => (
               <div key={row.label} className="contents">

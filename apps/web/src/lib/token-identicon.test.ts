@@ -10,4 +10,5 @@ test("identicon is a data svg and stable for the same id", () => {
   assert.match(src, /^data:image\/svg\+xml/);
   assert.equal(tokenIdenticonSrc(A), src);
   assert.notEqual(tokenIdenticonSvg(A), tokenIdenticonSvg(B));
+  assert.notEqual(tokenIdenticonSvg("Aneta #1"), tokenIdenticonSvg("Aneta #2"));
 });

@@ -76,7 +76,11 @@ export function displayErgoTokenName(
   tokenId: string | null | undefined,
   fallback?: string | null
 ): string | null {
-  return knownErgoTokenName(tokenId) || String(fallback || "").trim() || null;
+  const known = knownErgoTokenName(tokenId);
+  if (known) return known;
+  const fb = String(fallback || "").trim();
+  if (!fb || fb.includes("\uFFFD")) return null;
+  return fb;
 }
 
 /** Every hex-64 id we can resolve, including decimals = 0. */

@@ -3999,6 +3999,7 @@ export type IdxNft = {
 function cleanNftName(s: string | null): string | null {
   if (!s) return null;
   const t = s.replace(/[\u0000-\u001f\u007f]/g, "").trim();
+  if (!t || t.includes("\uFFFD")) return null;
   if (t.length < 1 || t.length > 120) return null;
   const good = [...t].filter((ch) => ch.charCodeAt(0) >= 32).length;
   if (good / t.length < 0.85) return null;

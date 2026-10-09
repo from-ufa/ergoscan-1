@@ -16,6 +16,12 @@ test("nameFromIssuanceRegs: text R4, skip urls", () => {
     "Wolf"
   );
   assert.equal(nameFromIssuanceRegs({ R4: "0e0b68747470733a2f2f782e70" }), null);
+  assert.equal(
+    nameFromIssuanceRegs({
+      R4: "644ec61f485b98eb87153f7c57db4f5ecd75556fddbc403b41acf8441fde8e16",
+    }),
+    null
+  );
 });
 
 test("artFromIssuanceRegs: http, ipfs, on-chain data URI", () => {

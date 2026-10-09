@@ -72,6 +72,14 @@ test("sigma Int hex is not a decimal string (FIRO R7 0430 → 24)", () => {
   assert.equal(longFromRegister("0416"), 11n);
 });
 
+test("binary R4 is not a token name", () => {
+  const d = decodeRegisterHex(
+    "644ec61f485b98eb87153f7c57db4f5ecd75556fddbc403b41acf8441fde8e16"
+  );
+  assert.equal(d.kind, "hex");
+  assert.equal(d.text, null);
+});
+
 test("EIP-4 R4 emoji-only name (clown)", () => {
   const d = decodeRegisterHex("0e04f09fa4a1");
   assert.equal(d.kind, "text");

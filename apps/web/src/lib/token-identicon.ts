@@ -4,11 +4,26 @@
  */
 const HEX = /[^0-9a-f]/g;
 
+/** Hex ids keep their old tiles. Any other label is folded so it still differs. */
+function patternId(tokenId: string): string {
+  const raw = String(tokenId || "0").toLowerCase();
+  if (/^[0-9a-f]+$/.test(raw)) return raw.padEnd(16, "0");
+  let h = 2166136261;
+  for (let i = 0; i < raw.length; i++) {
+    h ^= raw.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  let out = "";
+  let x = h >>> 0;
+  while (out.length < 16) {
+    x = Math.imul(x ^ (x >>> 16), 0x7feb352d) >>> 0;
+    out += x.toString(16).padStart(8, "0");
+  }
+  return out;
+}
+
 export function tokenIdenticonSvg(tokenId: string): string {
-  const id = String(tokenId || "0")
-    .toLowerCase()
-    .replace(HEX, "0")
-    .padEnd(16, "0");
+  const id = patternId(tokenId).replace(HEX, "0");
   const hue = (parseInt(id.slice(0, 2), 16) * 360) / 255;
   const bg = `hsl(${hue.toFixed(1)} 22% 16%)`;
   const fg = `hsl(${((hue + 38) % 360).toFixed(1)} 58% 58%)`;

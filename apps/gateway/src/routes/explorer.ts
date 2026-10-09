@@ -661,7 +661,8 @@ export function registerExplorerRoutes(app: Express, deps: ExplorerDeps) {
     }
     const regs = idx?.registers ?? {};
     const decoded = decodeRegisterMap(regs);
-    const name = idx?.name?.trim() || known?.name || decoded.R4?.text || null;
+    const rawName = idx?.name?.trim() || known?.name || decoded.R4?.text || null;
+    const name = rawName && !rawName.includes("\uFFFD") ? rawName : null;
     const emission = idx?.emission ?? null;
     const storedDec = idx?.decimals ?? 0;
     const decimals = resolveDecimals(id, storedDec, emission);
