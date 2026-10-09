@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -149,16 +149,19 @@ function pathActive(
 
 const pillEase: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
-function BetaMark({ compact }: { compact?: boolean }) {
-  const t = useT();
-  return (
-    <span
-      className={clsx("beta-mark", compact && "beta-mark--compact")}
-      title={t("brand.betaHint")}
-    >
-      {t("brand.beta")}
+const SCAN_CORNERS = [
+  { key: "tl", d: "M18 10H10v8", viewBox: "8 8 12 12" },
+  { key: "tr", d: "M46 10h8v8", viewBox: "44 8 12 12" },
+  { key: "bl", d: "M10 46v8h8", viewBox: "8 44 12 12" },
+  { key: "br", d: "M54 46v8h-8", viewBox: "44 44 12 12" },
+] as const;
+
+function NavChars({ text, from = 0 }: { text: string; from?: number }) {
+  return Array.from(text).map((ch, n) => (
+    <span key={from + n} className="nav-ch" style={{ "--i": from + n } as CSSProperties}>
+      {ch === " " ? "\u00a0" : ch}
     </span>
-  );
+  ));
 }
 
 export function NavBrand({
@@ -177,70 +180,61 @@ export function NavBrand({
         "nav-brand flex shrink-0 items-center",
         compact
           ? "h-11 w-11 justify-center"
-          : clsx(
-              "relative z-10 h-[var(--toolbar)]",
-              collapsed ? "justify-center px-0" : "gap-3 px-4"
-            )
+          : "nav-brand-row relative z-10 h-[var(--toolbar)] w-full justify-center px-0"
       )}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/ergoscan-mark.svg"
-        alt=""
-        width={compact ? 28 : collapsed ? 28 : 32}
-        height={compact ? 28 : collapsed ? 28 : 32}
-        className={clsx(
-          "nav-brand-mark h-auto shrink-0 object-contain",
-          compact ? "w-7" : collapsed ? "w-7" : "w-8"
-        )}
-      />
-      {compact ? null : (
-      <span
-        className={clsx(
-          "flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap",
-          "transition-[max-width,opacity] duration-[420ms] ease-[var(--ease)]",
-          collapsed
-            ? "pointer-events-none max-w-0 opacity-0"
-            : "max-w-[14.5rem] opacity-100"
-        )}
-      >
-        <span className="flex min-w-0 flex-col justify-center">
-          <span
-            className="text-[15px] font-semibold uppercase leading-none tracking-[0.04em]"
-            style={{ color: HOME.forming }}
+      <span className={clsx("nav-scan", compact ? "h-7 w-7" : "h-8")}>
+        {SCAN_CORNERS.map((corner) => (
+          <svg
+            key={corner.key}
+            className={clsx("nav-scan-corner", corner.key)}
+            viewBox={corner.viewBox}
+            aria-hidden="true"
           >
-            ERGO
+            <path
+              d={corner.d}
+              fill="none"
+              stroke="#4DB7F2"
+              strokeWidth="4"
+              strokeLinecap="square"
+              strokeLinejoin="miter"
+            />
+          </svg>
+        ))}
+        {compact ? (
+          <span className="nav-scan-e" style={{ color: HOME.forming }}>
+            E
           </span>
-          {!compact && (
-            <span className="mt-[5px] flex items-baseline gap-[0.28em] leading-none">
-              <span
-                className="text-[11px] font-semibold tracking-[0.06em]"
-                style={{ color: INK.cyan }}
-              >
-                SCAN
-              </span>
-              <span
-                className="text-[11px] font-semibold tracking-[0.06em]"
-                style={{ color: "var(--down)" }}
-              >
-                ME
-              </span>
+        ) : (
+          <>
+          <span className="nav-scan-sizer" aria-hidden="true">ERGOSCANME</span>
+          <span className="nav-label nav-scan-word" aria-hidden={collapsed || undefined}>
+            <span className="nav-line items-baseline text-[15px] font-semibold uppercase leading-none">
+              {[
+                <span key="ergo" className="nav-line" style={{ color: HOME.forming }}>
+                  <NavChars text="ERGO" />
+                </span>,
+                <span key="scan" className="nav-line" style={{ color: INK.cyan }}>
+                  <NavChars text="SCAN" from={4} />
+                </span>,
+                <span key="me" className="nav-line" style={{ color: "var(--down)" }}>
+                  <NavChars text="ME" from={8} />
+                </span>,
+              ]}
             </span>
-          )}
-        </span>
-        <BetaMark compact={compact} />
+          </span>
+          </>
+        )}
       </span>
-      )}
     </Link>
   );
 }
 
-function rowPad(depth: number, collapsed: boolean) {
-  if (collapsed) return "justify-center gap-0 px-0 py-[7px]";
-  if (depth <= 0) return "gap-2.5 px-2.5 py-[7px]";
-  if (depth === 1) return "gap-2 px-2.5 py-[6px] pl-9";
-  if (depth === 2) return "gap-2 px-2.5 py-[5px] pl-12";
-  return "gap-2 px-2.5 py-[5px] pl-[4.75rem]";
+function rowPad(depth: number) {
+  if (depth <= 0) return "nav-row-root";
+  if (depth === 1) return "gap-2 py-[6px] pl-9 pr-[var(--nav-inset)]";
+  if (depth === 2) return "gap-2 py-[5px] pl-12 pr-[var(--nav-inset)]";
+  return "gap-2 py-[5px] pl-[4.75rem] pr-[var(--nav-inset)]";
 }
 
 function branchUnder(item: NavItem, path: string): boolean {
@@ -272,8 +266,7 @@ function NavRow({
   const { armed, disarm, bind } = usePaperPress(true);
   const className = clsx(
     "nav-row nav-row--press plane-drop relative flex items-center overflow-hidden rounded-[10px]",
-    "transition-[padding,gap,justify-content] duration-[420ms] ease-[var(--ease)]",
-    rowPad(depth, collapsed),
+    rowPad(depth),
     armed && "is-armed",
     active && "is-pressed",
     active ? "text-[var(--text)]" : "text-[var(--muted)] hover:text-[var(--text)]"
@@ -285,13 +278,13 @@ function NavRow({
       </span>
       <span
         className={clsx(
-          "relative z-[1] min-w-0 truncate font-medium tracking-[-0.02em]",
-          nested ? "text-[15px]" : "text-[17px]",
-          "transition-[max-width,opacity] duration-[420ms] ease-[var(--ease)]",
-          collapsed ? "pointer-events-none max-w-0 opacity-0" : "max-w-[13rem] opacity-100"
+          "nav-label relative z-[1] font-medium tracking-[-0.02em]",
+          nested ? "text-[15px]" : "text-[17px]"
         )}
       >
-        {label}
+        <span className="nav-line">
+          <NavChars text={label} />
+        </span>
       </span>
     </>
   );
@@ -372,8 +365,7 @@ function NavBranch({
       fill="none"
       aria-hidden
       className={clsx(
-        "relative z-[1] shrink-0 text-[var(--muted)] transition-[transform,opacity] duration-[400ms] ease-[var(--ease)]",
-        collapsed ? "pointer-events-none opacity-0" : "opacity-100",
+        "relative z-[1] shrink-0 text-[var(--muted)] transition-transform duration-[400ms] ease-[var(--ease)]",
         open && "rotate-90"
       )}
     >
@@ -388,21 +380,26 @@ function NavBranch({
   );
   const rowClass = clsx(
     "nav-row nav-row--press plane-drop relative flex w-full items-center overflow-hidden rounded-[10px]",
-    "transition-[padding,gap,justify-content] duration-[420ms] ease-[var(--ease)]",
-    rowPad(depth, collapsed),
+    rowPad(depth),
     armed && "is-armed",
     under ? "text-[var(--text)]" : "text-[var(--muted)] hover:text-[var(--text)]"
   );
 
   return (
     <div>
-      {item.linkLabel && !collapsed ? (
+      {item.linkLabel ? (
         <div className={rowClass}>
           <Link
             href={href}
             {...bind}
-            onClick={() => {
-              onNavigate?.();
+            onClick={(e) => {
+              if (collapsed) {
+                e.preventDefault();
+                onExpandRail?.();
+                setOpen(true);
+              } else {
+                onNavigate?.();
+              }
               disarm();
             }}
             aria-current={self ? "page" : undefined}
@@ -419,11 +416,13 @@ function NavBranch({
             </span>
             <span
               className={clsx(
-                "min-w-0 flex-1 truncate text-left font-medium tracking-[-0.02em]",
+                "nav-label text-left font-medium tracking-[-0.02em]",
                 nested ? "text-[15px]" : "text-[17px]"
               )}
             >
-              {label}
+              <span className="nav-line">
+                <NavChars text={label} />
+              </span>
             </span>
           </Link>
           <button
@@ -431,7 +430,7 @@ function NavBranch({
             aria-expanded={open}
             aria-label={open ? t("nav.collapse") : t("nav.expand")}
             onClick={() => setOpen((v) => !v)}
-            className="relative z-[1] inline-flex shrink-0 items-center justify-center"
+            className="nav-chevron relative z-[1] inline-flex shrink-0"
           >
             {chevron}
           </button>
@@ -457,61 +456,48 @@ function NavBranch({
         </span>
         <span
           className={clsx(
-            "relative z-[1] min-w-0 flex-1 truncate text-left font-medium tracking-[-0.02em]",
-            nested ? "text-[15px]" : "text-[17px]",
-            "transition-[max-width,opacity] duration-[420ms] ease-[var(--ease)]",
-            collapsed ? "pointer-events-none max-w-0 opacity-0" : "max-w-[13rem] opacity-100"
+            "nav-label relative z-[1] text-left font-medium tracking-[-0.02em]",
+            nested ? "text-[15px]" : "text-[17px]"
           )}
         >
-          {label}
+          <span className="nav-line">
+            <NavChars text={label} />
+          </span>
+          <span className="nav-ch inline-flex" style={{ "--i": label.length } as CSSProperties}>
+            {chevron}
+          </span>
         </span>
-        {collapsed ? null : chevron}
       </button>
       )}
-      <AnimatePresence initial={false}>
-        {open && !collapsed && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={
-              transition.duration === 0
-                ? { duration: 0 }
-                : {
-                    height: { duration: 0.36, ease: pillEase },
-                    opacity: { duration: 0.22, ease: pillEase },
-                  }
-            }
-            className="overflow-hidden"
-          >
-            <div className="flex flex-col gap-px pb-1">
-              {kids.map((child) =>
-                child.children?.length ? (
-                  <NavBranch
-                    key={child.href + child.key}
-                    item={child}
-                    path={path}
-                    collapsed={false}
-                    onNavigate={onNavigate}
-                    onExpandRail={onExpandRail}
-                    transition={transition}
-                    depth={depth + 1}
-                  />
-                ) : (
-                  <NavRow
-                    key={child.href + child.key}
-                    item={child}
-                    path={path}
-                    collapsed={false}
-                    onNavigate={onNavigate}
-                    depth={depth + 1}
-                  />
-                )
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className={clsx("nav-kids", open && !collapsed && "is-open", transition.duration === 0 && "is-instant")}>
+        <div className="nav-kids-clip">
+          <div className="flex flex-col gap-px pb-1">
+            {kids.map((child) =>
+              child.children?.length ? (
+                <NavBranch
+                  key={child.href + child.key}
+                  item={child}
+                  path={path}
+                  collapsed={collapsed}
+                  onNavigate={onNavigate}
+                  onExpandRail={onExpandRail}
+                  transition={transition}
+                  depth={depth + 1}
+                />
+              ) : (
+                <NavRow
+                  key={child.href + child.key}
+                  item={child}
+                  path={path}
+                  collapsed={collapsed}
+                  onNavigate={onNavigate}
+                  depth={depth + 1}
+                />
+              )
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -558,10 +544,7 @@ function NavList({
     <div className="plane-stage">
       <div className="flex flex-col gap-px">{NAV_MAIN.map(renderItem)}</div>
       <div
-        className={clsx(
-          "my-3 h-px bg-[var(--wash)] transition-[margin] duration-[420ms] ease-[var(--ease)]",
-          collapsed ? "mx-auto w-6" : "mx-2"
-        )}
+        className="nav-rule my-3 h-px bg-[var(--wash)]"
       />
       <div className="flex flex-col gap-px">{NAV_FOOT.map(renderItem)}</div>
     </div>
@@ -583,10 +566,8 @@ function RailToggle({
       aria-expanded={!collapsed}
       aria-label={collapsed ? t("nav.expand") : t("nav.collapse")}
       className={clsx(
-        "chip-press absolute bottom-3 z-20 flex h-8 w-8 items-center justify-center overflow-hidden rounded-[8px]",
-        "text-[var(--muted)] hover:bg-[var(--wash)] hover:text-[var(--text)]",
-        "transition-[left,right,transform,box-shadow,background-color] duration-[420ms] ease-[var(--ease)]",
-        collapsed ? "left-1/2 -translate-x-1/2" : "right-3"
+        "rail-toggle chip-press absolute bottom-3 z-20 flex h-8 w-8 -translate-x-1/2 items-center justify-center overflow-hidden rounded-[8px]",
+        "text-[var(--muted)] hover:bg-[var(--wash)] hover:text-[var(--text)]"
       )}
     >
       <svg
@@ -621,8 +602,9 @@ export function SideNavRail({
 }) {
   const t = useT();
   return (
-    <aside
+      <aside
       className="nav-rail relative sticky top-0 z-30 hidden h-dvh w-full min-w-0 flex-col border-r border-[var(--border)] bg-[var(--bg)] pt-[env(safe-area-inset-top,0px)] lg:flex"
+      data-collapsed={collapsed ? "true" : "false"}
       aria-label={t("nav.menu")}
     >
       <div className="nav-rail-inner flex h-full min-h-0 flex-col overflow-hidden rounded-[inherit]">

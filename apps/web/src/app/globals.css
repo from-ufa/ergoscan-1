@@ -4,8 +4,9 @@
 
 @property --rail {
   syntax: "<length>";
-  inherits: true;
-  initial-value: 15.5rem;
+  inherits: false;
+  /* rem is not allowed here: the initial value must not depend on font size, or the browser drops the registration and the rail cannot animate. */
+  initial-value: 248px;
 }
 
 /*
@@ -58,7 +59,14 @@ html[data-ink="oled"] {
     inset 0 1px 1px rgba(0, 0, 0, 0.55),
     inset 0 4px 12px rgba(0, 0, 0, 0.38);
   --rail: 15.5rem;
+  --rail-open: 15.5rem;
   --rail-collapsed: 4.5rem;
+  --rail-move: 0.75s;
+  /* Nearly even speed. The standard ease lurches in the middle and the whole page looks like it jumps. */
+  --rail-ease: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  --nav-icon: 1.375rem;
+  --nav-gutter: 0.5rem;
+  --nav-inset: calc((var(--rail-collapsed) - var(--nav-gutter) * 2 - var(--nav-icon)) / 2);
   --toolbar: 64px;
   --tabbar: 0px;
   --stage-max: 1320px;
@@ -456,7 +464,7 @@ html[data-float="ada"] .home-bento-col {
     box-sizing: border-box;
     padding: var(--float-pad);
     column-gap: var(--float-pad);
-    max-width: calc(var(--rail) + var(--stage-max) + 3 * var(--float-pad));
+    --stage-frame: calc(var(--rail) + var(--stage-max) + 3 * var(--float-pad));
   }
 
   html[data-float="ada"] .nav-rail {
@@ -4994,10 +5002,14 @@ html[data-ink="day"] .epoch-left {
 }
 
 .stage-frame {
-  width: 100%;
-  max-width: calc(var(--rail) + var(--stage-max));
+  /* Set on the frame itself. Inherited --rail restyles the whole page every frame and the slide stutters. */
+  --rail: var(--rail-open);
+  --stage-frame: calc(var(--rail) + var(--stage-max));
+  width: auto;
+  max-width: var(--stage-frame);
   min-width: 0;
-  margin-inline: auto;
+  /* auto margins hand the leftover pixel to one side, then the other, so the page shakes while the width moves. */
+  margin-inline: max(0px, calc(50% - var(--stage-frame) / 2));
 }
 
 /* Blocks margin chain sits under the sheet. The column keeps it above the page wash. */
@@ -5085,7 +5097,196 @@ html[data-ink="day"] .epoch-left {
 }
 
 .stage-frame.is-ready {
-  transition: --rail 0.42s var(--ease);
+  transition: --rail var(--rail-move) var(--rail-ease);
+}
+
+.nav-brand-row {
+  position: relative;
+  width: 100%;
+}
+
+.nav-scan {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.nav-scan.h-8 {
+  width: max-content;
+  max-width: calc(100% - 2.75rem);
+  transition: height var(--rail-move) var(--rail-ease);
+}
+
+.nav-scan-sizer {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  visibility: hidden;
+  padding-inline: 16px;
+}
+
+.nav-scan.h-8 .nav-scan-word {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  container-type: inline-size;
+  overflow: hidden;
+  padding-inline: min(16px, calc((100% - 10px) / 2));
+}
+
+.nav-rail[data-collapsed="true"] .nav-scan.h-8 {
+  height: 1.75rem;
+}
+
+.nav-scan-corner {
+  position: absolute;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Mark is 32px (w-8). Corner paint is 12 of the 64 viewBox, inset 8. */
+.nav-scan.h-8 .nav-scan-corner {
+  width: 6px;
+  height: 6px;
+}
+
+.nav-scan.h-8 .nav-scan-corner.tl { top: 4px; left: 4px; }
+.nav-scan.h-8 .nav-scan-corner.tr { top: 4px; right: 4px; }
+.nav-scan.h-8 .nav-scan-corner.bl { bottom: 4px; left: 4px; }
+.nav-scan.h-8 .nav-scan-corner.br { bottom: 4px; right: 4px; }
+
+/* Collapsed mark is 28px (w-7): 12/64*28 and 8/64*28. */
+.nav-scan.h-7 .nav-scan-corner,
+.nav-rail[data-collapsed="true"] .nav-scan .nav-scan-corner {
+  width: 5.25px;
+  height: 5.25px;
+}
+
+.nav-scan.h-7 .nav-scan-corner.tl,
+.nav-rail[data-collapsed="true"] .nav-scan .nav-scan-corner.tl { top: 3.5px; left: 3.5px; }
+.nav-scan.h-7 .nav-scan-corner.tr,
+.nav-rail[data-collapsed="true"] .nav-scan .nav-scan-corner.tr { top: 3.5px; right: 3.5px; }
+.nav-scan.h-7 .nav-scan-corner.bl,
+.nav-rail[data-collapsed="true"] .nav-scan .nav-scan-corner.bl { bottom: 3.5px; left: 3.5px; }
+.nav-scan.h-7 .nav-scan-corner.br,
+.nav-rail[data-collapsed="true"] .nav-scan .nav-scan-corner.br { bottom: 3.5px; right: 3.5px; }
+
+.nav-scan .nav-label {
+  container-type: normal;
+}
+
+.nav-scan-e {
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.nav-scan .nav-ch {
+  opacity: clamp(0, calc((100cqi - var(--i) * 10px) / 8px), 1);
+}
+
+.nav-row-root {
+  gap: 0.625rem;
+  padding: 7px var(--nav-inset);
+}
+
+.nav-label {
+  container-type: inline-size;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.nav-line {
+  display: inline-flex;
+  flex: none;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.nav-ch {
+  --nav-ch-w: 0.5em;
+  flex: none;
+  opacity: clamp(0, calc((100cqi - (var(--i) + 1) * var(--nav-ch-w)) / (var(--nav-ch-w) * 2.6)), 1);
+}
+
+.nav-rail[data-collapsed="true"] .nav-label {
+  pointer-events: none;
+}
+
+.nav-kids {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--rail-move) var(--rail-ease),
+    visibility 0s linear var(--rail-move);
+}
+
+.nav-kids.is-open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--rail-move) var(--rail-ease),
+    visibility 0s;
+}
+
+.nav-kids.is-instant {
+  transition: none;
+}
+
+.nav-kids-clip {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rail-toggle {
+  left: calc(100% - 1.75rem);
+  transition:
+    left var(--rail-move) var(--rail-ease),
+    background-color 0.15s linear,
+    color 0.15s linear;
+}
+
+.nav-rail[data-collapsed="true"] .rail-toggle {
+  left: 50%;
+}
+
+.nav-rule {
+  width: calc(100% - 1rem);
+  margin-inline: 0.5rem;
+  transition:
+    width var(--rail-move) var(--rail-ease),
+    margin var(--rail-move) var(--rail-ease);
+}
+
+.nav-rail[data-collapsed="true"] .nav-rule {
+  width: 1.5rem;
+  margin-inline: calc((100% - 1.5rem) / 2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-frame.is-ready,
+  .nav-label,
+  .nav-kids,
+  .rail-toggle {
+    transition: none;
+  }
 }
 
 .stage-frame[data-rail="collapsed"] {
@@ -5123,45 +5324,21 @@ html[data-ink="day"] .epoch-left {
   transform: scale(0.88);
 }
 
-.nav-brand-mark {
-  aspect-ratio: 1 / 1;
+.nav-scan {
+  transform-origin: center left;
+  transition: filter 0.4s var(--ease);
+}
+
+.nav-scan--compact {
   transform-origin: center;
-  transition: transform 0.4s var(--ease), filter 0.4s var(--ease);
 }
 
-/* Wordmark maturity chip — Linear/Vercel/EUI: one word, 18px capsule, no ribbon. */
-.beta-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 18px;
-  padding: 0 7px 0 8px;
-  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  line-height: 1;
-  text-transform: uppercase;
+.nav-brand:hover .nav-scan {
+  filter: brightness(1.12);
 }
 
-.beta-mark--compact {
-  height: 16px;
-  padding: 0 6px 0 7px;
-  font-size: 8px;
-  letter-spacing: 0.14em;
-}
-
-.nav-brand:hover .nav-brand-mark {
-  transform: scale(1.1);
-  filter: brightness(1.18);
-}
-
-.nav-brand:active .nav-brand-mark {
-  transform: scale(0.92);
-  filter: brightness(1.05);
+.nav-brand:active .nav-scan {
+  filter: brightness(1.02);
 }
 
 @keyframes route-nav-bar {
@@ -5209,9 +5386,9 @@ html[data-ink="day"] .epoch-left {
 
   .nav-row:hover .nav-glyph,
   .nav-row:active .nav-glyph,
-  .nav-brand:hover .nav-brand-mark,
-  .nav-brand:active .nav-brand-mark {
-    transform: none;
+  .nav-brand:hover .nav-scan,
+  .nav-brand:active .nav-scan {
+    filter: none;
   }
 }
 

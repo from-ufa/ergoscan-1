@@ -19,6 +19,22 @@ import { HOME, INK } from "@/lib/palette";
 import { HeaderScout } from "./HeaderScout";
 import { SCOUT_CUES_EN, SCOUT_CUES_RU } from "@/lib/header-scout";
 
+function registerRailLength() {
+  if (typeof window === "undefined" || typeof CSS === "undefined" || !CSS.registerProperty) return;
+  try {
+    CSS.registerProperty({
+      name: "--rail",
+      syntax: "<length>",
+      inherits: false,
+      initialValue: "248px",
+    });
+  } catch {
+    /* The stylesheet rule already registered it. */
+  }
+}
+
+registerRailLength();
+
 function SheetMark({ home }: { home: boolean }) {
   const prev = useRef(home);
   const [phase, setPhase] = useState<"hidden" | "arm" | "in" | "out">(home ? "hidden" : "in");
@@ -134,8 +150,8 @@ export function Shell({
       <div
         className={
           railReady
-            ? "stage-frame is-ready min-h-dvh lg:grid lg:grid-cols-[var(--rail)_minmax(0,1fr)]"
-            : "stage-frame min-h-dvh lg:grid lg:grid-cols-[var(--rail)_minmax(0,1fr)]"
+            ? "stage-frame is-ready min-h-dvh lg:grid lg:grid-cols-[var(--rail)_minmax(0,var(--stage-max))]"
+            : "stage-frame min-h-dvh lg:grid lg:grid-cols-[var(--rail)_minmax(0,var(--stage-max))]"
         }
         data-rail={railCollapsed ? "collapsed" : "open"}
       >
