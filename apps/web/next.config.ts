@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
   transpilePackages: ["@ergoscan/shared", "@lumen/amm-chart", "echarts", "zrender"],
   async rewrites() {
     if (process.env.NODE_ENV === "production") return [];
