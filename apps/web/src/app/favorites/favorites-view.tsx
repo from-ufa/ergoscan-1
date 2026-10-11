@@ -463,7 +463,7 @@ export function FavoritesView() {
     <Shell>
       {store == null || !listReady ? null : (
         <>
-          <div className="mb-3 grid grid-cols-2 items-stretch gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mb-2 grid grid-cols-2 items-stretch gap-2 sm:grid-cols-3 lg:grid-cols-5">
             {tiles.map((tile, i) => (
               <KindTile
                 key={tile.id}

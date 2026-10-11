@@ -693,7 +693,7 @@ export function BlockView({
             <p className="mt-6 text-[var(--muted)]">{t("block.noTxs")}</p>
           ) : null}
           {txs.length > 0 && (
-            <div className="mt-6">
+            <div className="mt-2">
               <div className="addr-sheet">
                 <div ref={pinRef} className="h-px w-full" aria-hidden />
                 <div className={packEnter.enterClass("pack")}>

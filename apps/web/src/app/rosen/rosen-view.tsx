@@ -302,7 +302,7 @@ export function RosenView({
       </div>
 
       {listReady ? (
-      <div className="addr-sheet mt-6">
+      <div className="addr-sheet mt-2">
         {empty ? (
           <p className="mb-3 text-[var(--muted)]">
             {scanCaption ? t("rosen.emptyScan") : t("rosen.emptyTape")}

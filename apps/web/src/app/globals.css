@@ -446,14 +446,14 @@ html[data-stamp="rail"] .kpi-tile-rail,
 }
 
 html[data-float="ada"] .home-bento,
-html[data-float="ada"] .home-kpi,
 html[data-float="ada"] .home-bento-col,
-html[data-float="ada"] .home-bento-top {
-  gap: var(--float-gap);
+html[data-float="ada"] .home-bento-top,
+html[data-float="ada"] .home-kpi {
+  gap: 0.5rem;
 }
 
 html[data-float="ada"] .home-bento {
-  margin-top: var(--float-gap);
+  margin-top: 0.5rem;
 }
 
 /* Let the paper shadow paint; clip stays on the module innards. */
@@ -974,10 +974,15 @@ header button:hover {
   top: calc(var(--toolbar) + env(safe-area-inset-top, 0px) + 8px);
   z-index: 20;
   background: var(--module);
+  color: var(--text);
   border-radius: var(--radius) var(--radius) 0 0;
   overflow: hidden;
   box-shadow: 0 0 0 0 transparent;
   transition: box-shadow 400ms var(--ease), border-radius 400ms var(--ease);
+}
+/* Column titles share the blocks ink. An active sort caret keeps its accent. */
+.addr-head :where(button, span, div, p) {
+  color: inherit;
 }
 
 .addr-head.is-stuck {
@@ -998,6 +1003,12 @@ header button:hover {
   position: relative;
   min-width: 0;
   max-width: 100%;
+}
+.addr-sheet > .h-px {
+  position: absolute;
+  top: 0;
+  height: 1px;
+  margin: 0;
 }
 
 .addr-nft-grid {
@@ -3192,6 +3203,8 @@ html[data-float="ada"] .explorer-dock {
 
 .addr-drop {
   animation: addr-sheet-lay 480ms var(--ease) both;
+  /* Same 8px as the address KPI tiles, including the step down to the column bar. */
+  margin-bottom: 0.5rem;
 }
 
 @keyframes addr-tile-drop {

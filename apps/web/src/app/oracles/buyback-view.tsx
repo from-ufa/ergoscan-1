@@ -284,7 +284,7 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
 
   return (
     <Shell>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col">
         {!pack.ready ? (
           <p className="px-1 text-[13px] text-[var(--muted)]">{t("buyback.empty")}</p>
         ) : (
@@ -469,7 +469,7 @@ export function BuybackView({ kind, initial }: { kind: BuybackKind; initial?: Bu
               </section>
             </div>
 
-            <div className="addr-sheet">
+            <div className="addr-sheet mt-2">
               <div ref={pinRef} className="h-px w-full" aria-hidden />
               <div className="addr-pan">
                 <div

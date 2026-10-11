@@ -408,7 +408,7 @@ export function PoolCardView({
         </AddrFactCard>
       </div>
 
-      <div className="addr-sheet mt-6">
+      <div className="addr-sheet mt-2">
           <div className={clsx("addr-pan kpi-tape transition-opacity duration-[400ms]", pending && "opacity-60")}>
             {view === "trades" ? (
               <TradesTape
