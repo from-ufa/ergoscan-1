@@ -516,6 +516,8 @@ export const en: Record<string, string> = {
   "defi.side.sell": "sell",
   "defi.side.mint": "mint",
   "defi.side.redeem": "redeem",
+  "defi.side.deposit": "deposit",
+  "defi.side.withdraw": "withdraw",
   "defi.side.add": "Add liq",
   "defi.side.remove": "Remove liq",
   "defi.venue.lithos": "LithosDex",

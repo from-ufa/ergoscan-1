@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { pickCfmmPool, poolsFromBoxes, type SpectrumAsset } from "./spectrum-pools.js";
+import { AGEUSD_BANK_V2_NFT } from "@ergoscan/shared";
+import { pickCfmmPool, poolsFromBoxes, spectrumCleanupIds, type SpectrumAsset } from "./spectrum-pools.js";
 
 const NFT = "aa".repeat(32);
 const QUOTE = "bb".repeat(32);
@@ -22,6 +23,14 @@ test("CFMM pool is the emission-1 NFT, the large LP, and the quote", () => {
     asset(LP, 9_223_372_018_346_669_354n, "Mew Fund ERG/FAKU LP", 9_223_372_036_854_774_807n),
   ]);
   assert.deepEqual(parts, { nft: NFT, quote: QUOTE, lp: LP });
+});
+
+test("spectrum cleanup keeps the bank nft out of the swap delete", () => {
+  const pool = "ab".repeat(32);
+  assert.deepEqual(spectrumCleanupIds([pool, AGEUSD_BANK_V2_NFT, "zz", ` ${pool.toUpperCase()} `]), [
+    pool,
+    pool,
+  ]);
 });
 
 test("a fat wallet box is not a CFMM pool", () => {

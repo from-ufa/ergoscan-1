@@ -50,6 +50,7 @@ type Trade = {
   time: number | null;
   side: string;
   tokenId: string;
+  tokenName?: string | null;
   baseId: string | null;
   tokenAmount: number;
   baseAmount: number;
@@ -594,13 +595,14 @@ function TradeTapeRow({
   t: (k: string) => string;
   enterClass?: string;
 }) {
-  const meta = row.tokenId ? resolveTokenMeta(row.tokenId, null) : null;
+  const meta = row.tokenId ? resolveTokenMeta(row.tokenId, row.tokenName) : null;
   const label = meta?.symbol || (row.tokenId ? shortId(row.tokenId, 4) : "—");
   const sid = row.side.toLowerCase();
-  const sideKey = `defi.side.${sid}`;
+  const sideKey =
+    sid === "mint" ? "defi.side.deposit" : sid === "redeem" ? "defi.side.withdraw" : `defi.side.${sid}`;
   const side = t(sideKey) !== sideKey ? t(sideKey) : row.side;
-  const buy = sid === "buy";
-  const sell = sid === "sell";
+  const buy = sid === "buy" || sid === "mint";
+  const sell = sid === "sell" || sid === "redeem";
   const ergoPaid = isErgBase(row.baseId, null);
   const price = row.tokenAmount > 0 && row.baseAmount > 0 ? row.baseAmount / row.tokenAmount : null;
   return (

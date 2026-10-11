@@ -451,10 +451,12 @@ export type AgeUsdEvent = {
   time: number | null;
   side: string;
   tokenId: string;
+  tokenName?: string | null;
   tokenAmount: number;
   baseAmount: number;
   trader: string | null;
   baseId?: string | null;
+  baseName?: string | null;
 };
 
 export type AgeUsdTrader = {

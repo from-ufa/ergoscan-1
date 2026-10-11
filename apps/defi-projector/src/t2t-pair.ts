@@ -39,7 +39,11 @@ export function pickT2tPair(assets: T2tAsset[], nftId: string): T2tPair | null {
   return { lp: lp.tokenId, tokenA, tokenB };
 }
 
-/** Swap: reserves move apart and LP stays. Mint/redeem: both reserves and LP move together. */
+/**
+ * Swap: reserves move apart and the LP in the box stays.
+ * Deposit: both reserves grow and LP leaves the box.
+ * Withdraw: both reserves shrink and LP comes back into the box.
+ */
 export function classifyT2tMove(
   dA: number,
   dB: number,
@@ -50,8 +54,8 @@ export function classifyT2tMove(
     if (dLp !== 0) return null;
     return "swap";
   }
-  if (dA > 0 && dB > 0 && dLp > 0) return "mint";
-  if (dA < 0 && dB < 0 && dLp < 0) return "redeem";
+  if (dA > 0 && dB > 0 && dLp < 0) return "mint";
+  if (dA < 0 && dB < 0 && dLp > 0) return "redeem";
   return null;
 }
 

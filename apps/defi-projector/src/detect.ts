@@ -293,12 +293,7 @@ async function detectChunk(
       const tokenRaw = Math.abs(dYraw);
       const baseAmount = Math.abs(dErg);
       if (tokenRaw < 1 || !(baseAmount > 0)) continue;
-      if (move.eventKind === "swap") {
-        const poolY = Math.max(yIn, yOut);
-        if (poolY > 1000 && tokenRaw / poolY > 0.5) continue;
-      } else if (baseAmount > 1e7) {
-        continue;
-      }
+      if (move.eventKind !== "swap" && baseAmount > 1e7) continue;
       const side = move.side;
 
       const known = ergoTokenDecimals(tokenId);

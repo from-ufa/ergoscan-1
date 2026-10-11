@@ -630,7 +630,7 @@ function BankRow({
   t: (k: string) => string;
   enterClass?: string;
 }) {
-  const meta = row.tokenId ? resolveTokenMeta(row.tokenId, null) : null;
+  const meta = row.tokenId ? resolveTokenMeta(row.tokenId, row.tokenName) : null;
   const label = meta?.symbol || (row.tokenId ? shortId(row.tokenId, 4) : "—");
   const sid = row.side.toLowerCase();
   const kind = sid.startsWith("mint")

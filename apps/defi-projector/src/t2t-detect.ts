@@ -254,13 +254,6 @@ async function detectChunk(
       const kind = classifyT2tMove(dA, dB, dLp);
       if (!kind) continue;
 
-      if (kind === "swap") {
-        const poolA = Math.max(aIn, aOut);
-        const poolB = Math.max(bIn, bOut);
-        if (poolA > 1000 && Math.abs(dA) / poolA > 0.5) continue;
-        if (poolB > 1000 && Math.abs(dB) / poolB > 0.5) continue;
-      }
-
       const ts = Number(row.timestamp_ms) || Date.now();
       const height = Number(row.height) || fromH;
       const trader =

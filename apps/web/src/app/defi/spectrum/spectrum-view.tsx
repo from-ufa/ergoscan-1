@@ -259,7 +259,8 @@ export function SpectrumView({
   const pools = spectrumListedPools(snap?.pools ?? [], floor);
   const tvl = snap?.tvlErg != null && Number.isFinite(snap.tvlErg) ? snap.tvlErg : null;
   const vol = snap?.volErg != null && Number.isFinite(snap.volErg) ? snap.volErg : null;
-  const filterMeta = tokenId ? resolveTokenMeta(tokenId, null) : null;
+  const filterPool = tokenId ? pools.find((p) => p.tokenId === tokenId) : null;
+  const filterMeta = tokenId ? resolveTokenMeta(tokenId, filterPool?.symbol) : null;
 
   const onSort = (k: TapeSort) => {
     if (sort === k) setDir((d) => (d === "desc" ? "asc" : "desc"));
@@ -659,15 +660,16 @@ function TapeRow({
   t: (k: string) => string;
   enterClass?: string;
 }) {
-  const meta = row.tokenId ? resolveTokenMeta(row.tokenId, null) : null;
+  const meta = row.tokenId ? resolveTokenMeta(row.tokenId, row.tokenName) : null;
   const label = meta?.symbol || (row.tokenId ? shortId(row.tokenId, 4) : "—");
   const sid = row.side.toLowerCase();
-  const sideKey = `defi.side.${sid}`;
+  const sideKey =
+    sid === "mint" ? "defi.side.deposit" : sid === "redeem" ? "defi.side.withdraw" : `defi.side.${sid}`;
   const side = t(sideKey) !== sideKey ? t(sideKey) : row.side;
-  const buy = sid === "buy" || sid === "add";
-  const sell = sid === "sell" || sid === "remove";
+  const buy = sid === "buy" || sid === "add" || sid === "mint";
+  const sell = sid === "sell" || sid === "remove" || sid === "redeem";
   const ergoPaid = isErgBase(row.baseId, null);
-  const baseMeta = !ergoPaid && row.baseId ? resolveTokenMeta(row.baseId, null) : null;
+  const baseMeta = !ergoPaid && row.baseId ? resolveTokenMeta(row.baseId, row.baseName) : null;
   const paidUnit = ergoPaid
     ? "ERG"
     : baseMeta?.symbol || (row.baseId && row.baseId !== ERG_ZERO ? shortId(row.baseId, 4) : "");

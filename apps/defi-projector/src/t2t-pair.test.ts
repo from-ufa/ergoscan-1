@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { AGEUSD_BANK_V2_NFT } from "@ergoscan/shared";
-import { isT2tSwapDelta, pickT2tPair } from "./t2t-pair.js";
+import { classifyT2tMove, isT2tSwapDelta, pickT2tPair } from "./t2t-pair.js";
 
 const nft = "080e453271ff4d2f85f97569b09755e67537bf2a1bc1cd09411b459cf901b902";
 const lp = "ef8b8067973e3f96e3b39d54a9b53039414986392b1861ed572db67ac96f7f60";
@@ -36,6 +36,13 @@ test("AgeUSD bank (3 assets) is not a T2T pool", () => {
     ),
     null
   );
+});
+
+test("LP leaves the box on deposit and returns on withdraw", () => {
+  assert.equal(classifyT2tMove(100, 50, -10), "mint");
+  assert.equal(classifyT2tMove(-100, -50, 10), "redeem");
+  assert.equal(classifyT2tMove(100, 50, 10), null);
+  assert.equal(classifyT2tMove(-100, -50, -10), null);
 });
 
 test("swap vs add: opposite token deltas and unchanged LP", () => {

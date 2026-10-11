@@ -34,6 +34,9 @@ import { ensureProjectorSchema } from "./schema.js";
 import { listRegistryNfts, registryForWindow } from "./registry.js";
 import { syncLiveSpectrumPools } from "./spectrum-pools.js";
 import { backfillQuietPools } from "./backfill-quiet.js";
+import { backfillAgeUsdHistory } from "./ageusd-backfill.js";
+import { backfillLpHistory } from "./lp-history.js";
+import { backfillSwapGap } from "./swap-gap.js";
 import { listT2tRegistry, seedT2tFromUnspent } from "./t2t-registry.js";
 import { materializeRanks } from "./ranks.js";
 import { seedPoolRoll } from "./pool-roll.js";
@@ -236,6 +239,15 @@ async function loop(): Promise<void> {
   }
   void backfillQuietPools(db).catch((e) =>
     console.warn(JSON.stringify({ type: "quiet_backfill_skip", err: String(e) }))
+  );
+  void backfillAgeUsdHistory(db).catch((e) =>
+    console.warn(JSON.stringify({ type: "ageusd_backfill_skip", err: String(e) }))
+  );
+  void backfillLpHistory(db).catch((e) =>
+    console.warn(JSON.stringify({ type: "lp_backfill_skip", err: String(e) }))
+  );
+  void backfillSwapGap(db).catch((e) =>
+    console.warn(JSON.stringify({ type: "swap_gap_skip", err: String(e) }))
   );
   if (LITHOS_ON && !lithosReg.length) {
     try {

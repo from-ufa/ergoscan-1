@@ -1101,13 +1101,19 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           token_amount: string | number;
           base_amount: string | number;
           trader: string | null;
+          token_name: string | null;
         }>(
         `
-        SELECT tx_id, height, ts_ms, side, token_id, token_amount, base_amount, trader
-        FROM defi.swaps
-        WHERE venue = 'ageusd_bank'
-        ORDER BY ${evOrder}
-        LIMIT $1 OFFSET $2
+        SELECT e.tx_id, e.height, e.ts_ms, e.side, e.token_id, e.token_amount, e.base_amount, e.trader,
+               tok.name AS token_name
+        FROM (
+          SELECT tx_id, height, ts_ms, side, token_id, token_amount, base_amount, trader
+          FROM defi.swaps
+          WHERE venue = 'ageusd_bank'
+          ORDER BY ${evOrder}
+          LIMIT $1 OFFSET $2
+        ) e
+        LEFT JOIN tokens tok ON tok.token_id = e.token_id
         `,
         [limit, eventsOffset]
         ),
@@ -1228,6 +1234,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           time: Number(e.ts_ms) || null,
           side: String(e.side || ""),
           tokenId: String(e.token_id || ""),
+          tokenName: e.token_name ? String(e.token_name) : null,
           tokenAmount: Number(e.token_amount) || 0,
           baseAmount: Number(e.base_amount) || 0,
           trader: e.trader || null,
@@ -1295,13 +1302,19 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           token_amount: string | number;
           base_amount: string | number;
           trader: string | null;
+          token_name: string | null;
         }>(
           `
-          SELECT tx_id, height, ts_ms, side, token_id, token_amount, base_amount, trader
-          FROM defi.swaps
-          WHERE ${eventWhere}
-          ORDER BY ${evOrder}
-          LIMIT $1 OFFSET $2
+          SELECT e.tx_id, e.height, e.ts_ms, e.side, e.token_id, e.token_amount, e.base_amount, e.trader,
+                 tok.name AS token_name
+          FROM (
+            SELECT tx_id, height, ts_ms, side, token_id, token_amount, base_amount, trader
+            FROM defi.swaps
+            WHERE ${eventWhere}
+            ORDER BY ${evOrder}
+            LIMIT $1 OFFSET $2
+          ) e
+          LEFT JOIN tokens tok ON tok.token_id = e.token_id
           `,
           eventParams
         ),
@@ -1397,6 +1410,7 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           time: Number(e.ts_ms) || null,
           side: String(e.side || ""),
           tokenId: String(e.token_id || ""),
+          tokenName: e.token_name ? String(e.token_name) : null,
           tokenAmount: Number(e.token_amount) || 0,
           baseAmount: Number(e.base_amount) || 0,
           trader: e.trader || null,
@@ -1481,13 +1495,21 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           token_amount: string | number;
           base_amount: string | number;
           trader: string | null;
+          token_name: string | null;
+          base_name: string | null;
         }>(
           `
-          SELECT tx_id, height, ts_ms, side, token_id, base_id, token_amount, base_amount, trader
-          FROM defi.swaps
-          WHERE ${eventWhere}
-          ORDER BY ${evOrder}
-          LIMIT $1 OFFSET $2
+          SELECT e.tx_id, e.height, e.ts_ms, e.side, e.token_id, e.base_id, e.token_amount, e.base_amount, e.trader,
+                 tok.name AS token_name, base.name AS base_name
+          FROM (
+            SELECT tx_id, height, ts_ms, side, token_id, base_id, token_amount, base_amount, trader
+            FROM defi.swaps
+            WHERE ${eventWhere}
+            ORDER BY ${evOrder}
+            LIMIT $1 OFFSET $2
+          ) e
+          LEFT JOIN tokens tok ON tok.token_id = e.token_id
+          LEFT JOIN tokens base ON base.token_id = e.base_id
           `,
           eventParams
         ),
@@ -1665,7 +1687,9 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           time: Number(e.ts_ms) || null,
           side: String(e.side || ""),
           tokenId: String(e.token_id || ""),
+          tokenName: e.token_name ? String(e.token_name) : null,
           baseId: e.base_id ? String(e.base_id).toLowerCase() : null,
+          baseName: e.base_name ? String(e.base_name) : null,
           tokenAmount: Number(e.token_amount) || 0,
           baseAmount: Number(e.base_amount) || 0,
           trader: e.trader || null,
@@ -2072,13 +2096,21 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           token_amount: string | number;
           base_amount: string | number;
           trader: string | null;
+          token_name: string | null;
+          base_name: string | null;
         }>(
           `
-          SELECT tx_id, height, ts_ms, side, token_id, base_id, token_amount, base_amount, trader
-          FROM defi.swaps
-          WHERE pool_id = $1 AND event_kind IN ('swap', 'mint', 'redeem')
-          ORDER BY ${order}
-          LIMIT $2 OFFSET $3
+          SELECT e.tx_id, e.height, e.ts_ms, e.side, e.token_id, e.base_id, e.token_amount, e.base_amount, e.trader,
+                 tok.name AS token_name, base.name AS base_name
+          FROM (
+            SELECT tx_id, height, ts_ms, side, token_id, base_id, token_amount, base_amount, trader
+            FROM defi.swaps
+            WHERE pool_id = $1 AND event_kind IN ('swap', 'mint', 'redeem')
+            ORDER BY ${order}
+            LIMIT $2 OFFSET $3
+          ) e
+          LEFT JOIN tokens tok ON tok.token_id = e.token_id
+          LEFT JOIN tokens base ON base.token_id = e.base_id
           `,
           [poolId, limit, offset]
         ),
@@ -2101,7 +2133,9 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           time: Number(e.ts_ms) || null,
           side: String(e.side || ""),
           tokenId: String(e.token_id || ""),
+          tokenName: e.token_name ? String(e.token_name) : null,
           baseId: e.base_id ? String(e.base_id).toLowerCase() : null,
+          baseName: e.base_name ? String(e.base_name) : null,
           tokenAmount: Number(e.token_amount) || 0,
           baseAmount: Number(e.base_amount) || 0,
           trader: e.trader || null,

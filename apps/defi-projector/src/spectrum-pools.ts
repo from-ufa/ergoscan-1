@@ -16,6 +16,13 @@ export const SPECTRUM_N2N_TEMPLATE =
 
 const ERG_ZERO = "0".repeat(64);
 const HEX64 = /^[0-9a-f]{64}$/;
+
+/** Bank NFTs share pool_id with ageusd_bank rows. A Spectrum cleanup must not take those. */
+export function spectrumCleanupIds(ids: string[]): string[] {
+  return ids
+    .map((id) => id.trim().toLowerCase())
+    .filter((id) => HEX64.test(id) && !isAgeUsdBankNft(id));
+}
 const MIN_CFMM = 200;
 const MIN_N2N = 200;
 
@@ -300,11 +307,13 @@ export async function syncLiveSpectrumPools(db: Db): Promise<SpectrumSync> {
       `,
       [pools.map((p) => p.poolId)]
     );
-    const removedIds = gone.rows.map((r) => r.pool_id).filter((id) => HEX64.test(id));
+    const removedIds = spectrumCleanupIds(gone.rows.map((r) => r.pool_id));
     let swaps = 0;
     if (removedIds.length) {
       const sw = await client.query(
-        `DELETE FROM defi.swaps WHERE pool_id = ANY($1::text[])`,
+        `DELETE FROM defi.swaps
+          WHERE pool_id = ANY($1::text[])
+            AND venue IN ('spectrum_cfmm', 'spectrum_n2n')`,
         [removedIds]
       );
       swaps = sw.rowCount ?? 0;
