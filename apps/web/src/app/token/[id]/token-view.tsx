@@ -960,7 +960,7 @@ export function TokenView({
           ) : null}
 
           {tab === "holders" && (
-            <div className="mt-6">
+            <div className="mt-2">
               {holderRows.length === 0 && (!holdersSettled || holdersPending) ? null : holderRows.length === 0 ? (
                 <p className="text-[var(--muted)]">
                   {holdersFailed ? t("token.holdersErr") : t("token.holdersEmpty")}
@@ -1073,7 +1073,7 @@ export function TokenView({
           )}
 
           {(tab === "txs" || tab === "swaps" || tab === "mintburn") && (
-            <div className="mt-6">
+            <div className="mt-2">
               {!txSettled ? null : !txs.length ? (
                 <p className="text-[var(--muted)]">
                   {txFailed && (txN ?? 0) > 0

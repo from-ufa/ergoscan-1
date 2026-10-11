@@ -553,9 +553,9 @@ export function HomeExplorer({
         txUnit={t("home.txUnit")}
       />
 
-      <div className="home-bento mt-3 grid items-stretch gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] lg:grid-rows-[22.5rem_22.5rem]">
-        <div className="home-bento-top contents gap-3 lg:col-span-2 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-subgrid lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-        <div className="home-kpi grid min-h-0 grid-cols-2 gap-3 sm:grid-cols-3 max-lg:order-1 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:h-full lg:grid-rows-2">
+      <div className="home-bento grid items-stretch gap-2 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] lg:grid-rows-[22.5rem_22.5rem]">
+        <div className="home-bento-top contents gap-2 lg:col-span-2 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-subgrid lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <div className="home-kpi grid min-h-0 grid-cols-2 gap-2 sm:grid-cols-3 max-lg:order-1 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:h-full lg:grid-rows-2">
           <article className={TILE} style={enterAt(2)}>
             <div className="flex shrink-0 items-end justify-between gap-2">
               <TileName>{t("home.price")}</TileName>
@@ -748,7 +748,7 @@ export function HomeExplorer({
             )}
           </article>
         </div>
-        <div className="flex max-lg:order-2 max-lg:min-h-[22.5rem] flex-col gap-3 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:grid lg:h-full lg:min-h-0 lg:grid-rows-subgrid">
+        <div className="flex max-lg:order-2 max-lg:min-h-[22.5rem] flex-col gap-2 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:grid lg:h-full lg:min-h-0 lg:grid-rows-subgrid">
           <HomeActivityTile
             enter={5}
             title={t("home.txs")}
@@ -1559,7 +1559,7 @@ function HomeLiveStrip({
 
   return (
     <div className="relative">
-      <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
+      <div className="grid grid-cols-1 items-stretch gap-2 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
         {tape.length > 0 ? (
           <BlockCadence
             blocks={cadenceBlocks}

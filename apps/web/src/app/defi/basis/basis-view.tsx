@@ -365,7 +365,7 @@ export function BasisView({ initial }: { initial: BasisSnap | null }) {
     <Shell>
       <KpiGrid items={kpis} dense className="mb-4" />
       <article
-        className="home-tile-enter mb-4 flex min-w-0 flex-col gap-3 rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3 sm:flex-row sm:items-stretch"
+        className="home-tile-enter mb-2 flex min-w-0 flex-col gap-3 rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3 sm:flex-row sm:items-stretch"
         style={{ "--enter": 4 } as CSSProperties}
       >
         <div className="min-w-0 max-w-3xl">

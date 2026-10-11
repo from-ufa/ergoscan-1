@@ -427,7 +427,7 @@ export function RentView({
 
           <div
             className={clsx(
-              "mt-3 grid min-w-0 items-stretch gap-3",
+              "mt-2 grid min-w-0 items-stretch gap-2",
               (hasRentMinerRows(data.collected?.miners) ||
                 hasRentMinerRows(data.collected?.minersDay) ||
                 hasRentMinerRows(data.collected?.minersMonth)) &&
@@ -456,7 +456,7 @@ export function RentView({
             ) : null}
           </div>
 
-          <div className="mt-3 min-w-0">
+          <div className="mt-2 min-w-0">
             <div className="addr-sheet">
             <div className="addr-pan kpi-tape">
             <div className="addr-head addr-lane addr-lane-x block-tx-pairs rent-tape text-[12px] font-medium">
@@ -560,7 +560,7 @@ export function RentView({
           <>
           <RentDanger rows={data.danger ?? []} settled locale={locale} t={t} />
           {listReady && (
-          <div className="mt-3 min-w-0">
+          <div className="mt-2 min-w-0">
             <div className="addr-sheet">
               <div ref={pinRef} className="h-px w-full" aria-hidden />
               <div className={packEnter.enterClass("pack")}>
@@ -994,7 +994,7 @@ function RentDanger({
 }) {
   return (
     <section
-      className="home-tile-enter mod mt-3 min-w-0 max-w-full overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3.5 sm:px-5"
+      className="home-tile-enter mod mt-2 min-w-0 max-w-full overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3.5 sm:px-5"
       style={{ "--enter": 5 } as CSSProperties}
     >
       <div className="flex items-start gap-3">

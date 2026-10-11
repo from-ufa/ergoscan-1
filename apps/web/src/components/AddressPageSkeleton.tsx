@@ -16,7 +16,7 @@ export function AddressPageSkeleton() {
         </div>
         <div className="addr-facts-qr animate-pulse rounded-[20px] border border-[var(--border)] bg-[var(--module)]" />
       </div>
-      <div className="addr-sheet mt-6" aria-hidden>
+      <div className="addr-sheet mt-2" aria-hidden>
         <div className="h-9 animate-pulse rounded-[14px] bg-[var(--wash)]" />
         {Array.from({ length: 8 }, (_, i) => (
           <div

@@ -1333,7 +1333,7 @@ export function AddressView({
           </div>
 
           {tab === "activity" && (
-            <div className="addr-facts-body mt-6">
+            <div className="addr-facts-body mt-2">
               {activityFirstWait ? null : err && !tapeRows.length && txPage === 0 ? (
                 <p className="text-[var(--muted)]">{addrFailCopy(err, t)}</p>
               ) : !tapeRows.length && txPage === 0 ? (
@@ -1443,7 +1443,7 @@ export function AddressView({
           )}
 
           {tab === "tokens" && (
-            <div className="addr-facts-body mt-6">
+            <div className="addr-facts-body mt-2">
               {tokensFirstWait ? null : tokensFailed && !tokenRows.length ? (
                 <p className="text-[var(--muted)]">{t("address.err")}</p>
               ) : !tokenRows.length ? (
@@ -1504,7 +1504,7 @@ export function AddressView({
           )}
 
           {tab === "nfts" && (
-            <div className="addr-facts-body mt-6">
+            <div className="addr-facts-body mt-2">
               {nftsFirstWait ? null : nftsFailed && !nfts.length ? (
                 <p className="text-[var(--muted)]">{t("address.err")}</p>
               ) : !nftTotal && !nfts.length ? (
@@ -1554,7 +1554,7 @@ export function AddressView({
           )}
 
           {tab === "boxes" && (
-            <div className="addr-facts-body mt-6">
+            <div className="addr-facts-body mt-2">
               {!listsPending &&
                 !(data.unspentBoxes?.length ?? 0) &&
                 boxOffset === 0 &&

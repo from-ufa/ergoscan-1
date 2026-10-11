@@ -208,7 +208,7 @@ export function StableView({ initial }: { initial: AgeUsdBank | null }) {
     <Shell>
       <KpiGrid items={kpis} dense className="mb-4 sm:grid-cols-4" />
 
-      <div className="mb-4 grid min-w-0 items-stretch gap-3 md:grid-cols-3">
+      <div className="mb-2 grid min-w-0 items-stretch gap-2 md:grid-cols-3">
         <article
           className="home-tile-enter min-w-0 max-w-full overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--module)] px-4 py-3"
           style={{ "--enter": 4 } as CSSProperties}
@@ -257,7 +257,7 @@ export function StableView({ initial }: { initial: AgeUsdBank | null }) {
         />
       </div>
 
-      <div className="grid min-w-0 items-start gap-3 lg:grid-cols-4">
+      <div className="grid min-w-0 items-start gap-2 lg:grid-cols-4">
         <div className="min-w-0 lg:col-span-3">
           {!listReady ? null : !rows.length ? (
             <p className="text-[var(--muted)]">{t("stable.emptyTape")}</p>
