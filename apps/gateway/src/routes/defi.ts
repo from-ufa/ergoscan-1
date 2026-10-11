@@ -1844,7 +1844,10 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
         res.status(400).json({ ok: false, error: "bad_pool" });
         return;
       }
-      const view = String(req.query.view || "trades") === "lp" ? "lp" : "trades";
+      const viewRaw = String(req.query.view || "trades");
+      const view =
+        viewRaw === "lp" || viewRaw === "deposit" || viewRaw === "withdraw" ? viewRaw : "trades";
+      const eventKind = view === "deposit" ? "mint" : view === "withdraw" ? "redeem" : "swap";
       const limit = 25;
       const offset = Math.max(0, Math.floor(Number(req.query.offset) || 0));
       const sortRaw = String(req.query.sort || "time");
@@ -2105,18 +2108,18 @@ export function registerDefiRoutes(app: Express, _deps: DefiDeps = {}) {
           FROM (
             SELECT tx_id, height, ts_ms, side, token_id, base_id, token_amount, base_amount, trader
             FROM defi.swaps
-            WHERE pool_id = $1 AND event_kind IN ('swap', 'mint', 'redeem')
+            WHERE pool_id = $1 AND event_kind = $4
             ORDER BY ${order}
             LIMIT $2 OFFSET $3
           ) e
           LEFT JOIN tokens tok ON tok.token_id = e.token_id
           LEFT JOIN tokens base ON base.token_id = e.base_id
           `,
-          [poolId, limit, offset]
+          [poolId, limit, offset, eventKind]
         ),
         q<{ c: string }>(
-          `SELECT count(*)::text AS c FROM defi.swaps WHERE pool_id = $1 AND event_kind IN ('swap', 'mint', 'redeem')`,
-          [poolId]
+          `SELECT count(*)::text AS c FROM defi.swaps WHERE pool_id = $1 AND event_kind = $2`,
+          [poolId, eventKind]
         ),
       ]);
       cacheTokens(res);

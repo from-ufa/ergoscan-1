@@ -1164,7 +1164,7 @@ export function AddressView({
                   t={t}
                 />
               </AddrFactCard>
-              <SegBar cols={4} className="shrink-0">
+              <SegBar cols={4} className="addr-seg shrink-0">
                 {ADDR_TABS.map((idTab) => (
                   <a
                     key={idTab}
