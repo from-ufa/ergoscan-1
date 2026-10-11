@@ -1727,7 +1727,7 @@ function TokenFlowPeek({
     if (!menu || !(cell instanceof HTMLElement)) return;
     const cellBox = cell.getBoundingClientRect();
     const sheet = rootRef.current?.closest(".addr-sheet");
-    const foot = sheet?.querySelector(".addr-foot");
+    const foot = sheet?.querySelector(".list-more");
     const cols = sheet?.querySelector(".addr-head");
     const floor =
       Math.min(

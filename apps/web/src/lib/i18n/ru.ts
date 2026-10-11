@@ -1428,6 +1428,7 @@ export const ru: Record<string, string> = {
   "address.loadMoreBoxes": "Ещё boxes",
   "address.loadMoreTxs": "Ещё транзакции",
   "address.showMore": "Показать ещё",
+  "list.page": "Страница",
   "address.more": "ещё",
   "address.err": "Не найдено",
   "address.stale": "Индекс не успел ответить. Попробуйте ещё раз.",

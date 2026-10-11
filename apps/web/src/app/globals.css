@@ -69,7 +69,8 @@ html[data-ink="oled"] {
   --nav-inset: calc((var(--rail-collapsed) - var(--nav-gutter) * 2 - var(--nav-icon)) / 2);
   --toolbar: 64px;
   --price-tape-h: 26px;
-  --price-tape-gap: 0px;
+  --price-tape-gap: 8px;
+  --dock-h: var(--price-tape-h);
   --tabbar: 0px;
   --stage-max: 1320px;
   --addr-bar: 2.5rem;
@@ -496,16 +497,12 @@ html[data-float="ada"] .home-bento-col {
     box-shadow: none;
   }
 
-  html[data-float="ada"] {
-    --price-tape-gap: var(--float-gap);
-  }
-
   html[data-float="ada"] .addr-head {
-    top: calc(var(--toolbar) + var(--float-pad) + var(--price-tape-gap) + var(--price-tape-h) + var(--float-gap));
+    top: calc(var(--toolbar) + var(--float-pad) + 8px);
   }
 
   html[data-float="ada"] .addr-foot {
-    bottom: calc(var(--float-pad) + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--float-pad) + var(--dock-h) + 8px);
   }
 }
 
@@ -974,7 +971,7 @@ header button:hover {
 .addr-head {
   position: sticky;
   /* 8px under the toolbar so the 20px corners stay visible, not clipped into a square */
-  top: calc(var(--toolbar) + env(safe-area-inset-top, 0px) + var(--price-tape-gap) + var(--price-tape-h) + 8px);
+  top: calc(var(--toolbar) + env(safe-area-inset-top, 0px) + 8px);
   z-index: 20;
   background: var(--module);
   border-radius: var(--radius) var(--radius) 0 0;
@@ -1647,10 +1644,10 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
   }
 
   .addr-foot {
-    bottom: calc(var(--tabbar) + 8px);
+    bottom: calc(var(--tabbar) + var(--dock-h) + 8px);
   }
   .addr-head {
-    top: calc(var(--toolbar) + var(--price-tape-gap) + var(--price-tape-h) + 8px);
+    top: calc(var(--toolbar) + 8px);
   }
 
   /*
@@ -1678,7 +1675,7 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     pointer-events: none;
     position: absolute;
     z-index: 0;
-    top: calc(100% + var(--price-tape-gap) + var(--price-tape-h));
+    top: 100%;
     bottom: auto;
     height: 4.5rem;
     left: -0.75rem;
@@ -2694,37 +2691,62 @@ html[data-ink="day"] {
   animation-play-state: paused;
 }
 html {
-  scroll-padding-top: calc(var(--toolbar) + var(--price-tape-gap) + var(--price-tape-h) + 0.75rem);
+  scroll-padding-top: calc(var(--toolbar) + 8px);
 }
 @media (min-width: 1024px) {
   html[data-float="ada"] {
-    scroll-padding-top: calc(
-      var(--float-pad) + var(--toolbar) + var(--price-tape-gap) + var(--price-tape-h) + var(--float-gap)
-    );
+    scroll-padding-top: calc(var(--float-pad) + var(--toolbar) + 8px);
   }
 }
-.price-tape-slot {
-  position: sticky;
-  z-index: 30;
-  top: var(--toolbar);
-  padding-top: var(--price-tape-gap);
-  /* Same inset as the page cards, so the strip is not wider than they are. */
-  padding-inline: 1rem;
-  background: transparent;
+.page-tail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+  padding: 0.75rem 1rem 0;
+  font-size: 11px;
+  color: var(--muted-2);
 }
 @media (min-width: 640px) {
-  .price-tape-slot {
+  .page-tail {
     padding-inline: 1.5rem;
   }
 }
 @media (min-width: 1024px) {
-  .price-tape-slot {
-    top: calc(env(safe-area-inset-top, 0px) + var(--toolbar));
+  .page-tail {
     padding-inline: 2rem;
   }
-  html[data-float="ada"] .price-tape-slot {
-    top: calc(var(--float-pad) + env(safe-area-inset-top, 0px) + var(--toolbar));
+}
+.explorer-dock {
+  position: sticky;
+  z-index: 35;
+  bottom: env(safe-area-inset-bottom, 0px);
+  margin-top: auto;
+  background: transparent;
+  box-shadow: none;
+}
+@media (max-width: 1023px) {
+  .explorer-dock {
+    bottom: var(--tabbar);
+    /* Above the phone edge haze, under the tab bar. */
+    z-index: 45;
   }
+}
+@media (min-width: 1024px) {
+  html[data-float="ada"] .explorer-dock {
+    bottom: var(--float-pad);
+  }
+}
+/* Same paper as the header: module fill and lift live on the dock so the
+   tape's overflow clip does not eat the shadow. Height stays one text line. */
+html[data-float="ada"] .explorer-dock {
+  border-radius: var(--radius);
+  box-shadow: var(--float-shadow);
+}
+.price-tape-slot {
+  background: transparent;
 }
 .price-tape {
   position: relative;
@@ -2732,58 +2754,23 @@ html {
   align-items: stretch;
   height: var(--price-tape-h);
   overflow: hidden;
-  background: transparent;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
-  mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
-}
-.price-tape::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    rgba(60, 162, 255, 0.28),
-    rgba(240, 193, 74, 0.16) 46%,
-    rgba(94, 224, 160, 0.24)
-  );
-  mask-image: linear-gradient(to bottom, transparent, #000 40%, #000 60%, transparent);
+  background: var(--module);
+  border-radius: var(--radius);
 }
 .price-tape-view {
   position: relative;
+  z-index: 1;
   min-width: 0;
   flex: 1;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 0.875rem, #000 calc(100% - 0.875rem), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 0.875rem, #000 calc(100% - 0.875rem), transparent);
 }
-.price-tape-view::before,
-.price-tape-view::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  bottom: 0;
-  width: min(22%, 180px);
-  pointer-events: none;
-}
-.price-tape-view::before {
-  left: 0;
-  background: linear-gradient(
-    90deg,
-    var(--bg) 0%,
-    var(--bg) 14%,
-    color-mix(in srgb, var(--bg) 70%, transparent) 46%,
-    transparent 100%
-  );
-}
-.price-tape-view::after {
-  right: 0;
-  background: linear-gradient(
-    270deg,
-    var(--bg) 0%,
-    var(--bg) 14%,
-    color-mix(in srgb, var(--bg) 70%, transparent) 46%,
-    transparent 100%
-  );
+@media (min-width: 1024px) {
+  .price-tape-view {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 1.25rem, #000 calc(100% - 1.25rem), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 1.25rem, #000 calc(100% - 1.25rem), transparent);
+  }
 }
 .price-tape-run {
   display: flex;
@@ -2965,9 +2952,73 @@ html {
   padding-right: 0.5rem;
 }
 
+.list-more {
+  container-type: inline-size;
+  margin-top: 8px;
+  min-height: 2.25rem;
+}
+.list-more-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+}
+.list-more-btn {
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2rem;
+  padding: 0 0.95rem;
+  overflow: hidden;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--module));
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--float-shadow);
+}
+.list-more-btn svg {
+  color: var(--soft);
+}
+@media (hover: hover) {
+  .list-more-btn:hover:not(:disabled):not(:active):not(.is-armed) {
+    background: color-mix(in srgb, var(--accent) 22%, var(--module));
+    box-shadow: var(--float-shadow-hover);
+  }
+}
+.list-more-btn:active,
+.list-more-btn.is-armed {
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+}
+.list-more-btn:disabled {
+  opacity: 0.45;
+}
+.list-more-page {
+  grid-column: 3;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 0;
+}
+@container (max-width: 36rem) {
+  .list-more-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 0.5rem;
+  }
+  .list-more-btn,
+  .list-more-page {
+    grid-column: 1;
+    justify-self: center;
+  }
+}
+
 .addr-foot {
   position: sticky;
-  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(var(--dock-h) + 8px + env(safe-area-inset-bottom, 0px));
   z-index: 20;
   margin-top: 8px;
   height: var(--addr-bar);

@@ -1426,6 +1426,7 @@ export const en: Record<string, string> = {
   "address.loadMoreBoxes": "Load more boxes",
   "address.loadMoreTxs": "Load more transactions",
   "address.showMore": "Show more",
+  "list.page": "Page",
   "address.more": "More",
   "address.err": "Not found",
   "address.stale": "The index did not answer in time. Try again.",

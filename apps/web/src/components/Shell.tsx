@@ -6,14 +6,14 @@ import clsx from "clsx";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { CommandPalette } from "./CommandPalette";
 import { RouteNavProgress } from "./RouteNavProgress";
-import { IndexerStatus } from "./IndexerStatus";
+import { SyncChip, useKeepFresh } from "@/lib/page-sync";
 import { ChromeHeading } from "./ChromeHeading";
 import { MobileTabBar } from "./MobileTabBar";
 import { NavBrand, SideNavDrawer, SideNavRail } from "./SideNav";
-import { SyncChip, useKeepFresh } from "@/lib/page-sync";
 import { useI18n, useT } from "@/lib/i18n/I18nProvider";
 import { fetchChainStats } from "@/lib/chain-stats";
 import { formatCompact, formatUsd } from "@/lib/format";
+import { IndexerStatus } from "./IndexerStatus";
 import { HOME, INK } from "@/lib/palette";
 import { HeaderScout } from "./HeaderScout";
 import { ErgUsdContext, PriceTape, useSiteMarket } from "./PriceTape";
@@ -186,24 +186,24 @@ export function Shell({
             </div>
           </header>
 
-          <PriceTape rows={live.rows} fresh={live.fresh} />
-
           <main className="stage-main flex-1 pt-2 pb-[max(2rem,env(safe-area-inset-bottom))] max-lg:pb-5 lg:pt-2 lg:pb-5">
             <div className={clsx("stage-width plane-stage px-4 sm:px-6 lg:px-8", path === "/" && "home-stage")}>{children}</div>
           </main>
 
-          <footer className="pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] max-lg:pb-[calc(var(--tabbar)+0.75rem)]">
-            <div className="stage-width flex flex-col gap-1.5 px-4 text-[11px] text-[var(--muted-2)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6 lg:px-8">
-              <span className="inline-flex min-w-0 flex-wrap items-center gap-3">
-                <span className="inline-flex items-baseline gap-[0.28em] font-semibold tracking-[0.06em]">
-                  <span style={{ color: HOME.forming }}>ERGO</span>
-                  <span style={{ color: INK.cyan }}>SCAN</span>
-                  <span style={{ color: "var(--down)" }}>ME</span>
-                </span>
-                <SyncChip compact />
+          <footer className="page-tail">
+            <span className="inline-flex min-w-0 flex-wrap items-center gap-3">
+              <span className="inline-flex shrink-0 items-baseline gap-[0.28em] font-semibold tracking-[0.06em]">
+                <span style={{ color: HOME.forming }}>ERGO</span>
+                <span style={{ color: INK.cyan }}>SCAN</span>
+                <span style={{ color: "var(--down)" }}>ME</span>
               </span>
-              <IndexerStatus />
-            </div>
+              <SyncChip compact />
+            </span>
+            <IndexerStatus />
+          </footer>
+
+          <footer className="explorer-dock">
+            <PriceTape rows={live.rows} fresh={live.fresh} />
           </footer>
         </div>
       </div>
