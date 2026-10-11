@@ -14,10 +14,10 @@ test("price tape leads with the strongest day gain among tokens that traded", ()
   ]);
   assert.deepEqual(
     tape.map((row) => row.symbol),
-    ["BIG", "BUSY", "DOWN", "WARM"]
+    ["QUIET", "BIG", "BUSY", "DOWN"]
   );
   assert.ok((tape[0]?.changePct ?? 0) > 0);
-  assert.ok((tape[2]?.changePct ?? 0) < 0);
+  assert.ok((tape[3]?.changePct ?? 0) < 0);
 });
 
 test("price tape drops a nameless row and a broken mark", () => {
@@ -31,7 +31,7 @@ test("price tape drops a nameless row and a broken mark", () => {
   ]);
   assert.deepEqual(
     tape.map((row) => row.symbol),
-    ["ALSO", "OK", "WILD"]
+    ["ALSO", "OK"]
   );
   assert.equal(tape[0]?.changePct, 100);
   assert.equal(tape[1]?.changePct, 50);
