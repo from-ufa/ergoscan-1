@@ -84,17 +84,14 @@ function usePagerAfterRows(resetKey: string) {
   const endRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    setOpen(false);
     const el = endRef.current;
     if (!el) return;
-    let below = false;
+    // Open once the list end is on screen. Do not close on a page change:
+    // the first observation after Show more is already intersecting, and a
+    // "must leave and come back" latch hid the button until the next scroll.
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) {
-          below = true;
-          return;
-        }
-        if (below) setOpen(true);
+        if (entry.isIntersecting) setOpen(true);
       },
       { threshold: 0.85 }
     );
