@@ -1670,25 +1670,6 @@ html[data-ink="day"] .token-tx-tape a[data-addr].is-twin {
     inset: 0;
     background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 62%, transparent 100%);
   }
-  .stage-col > header.sticky::after {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    z-index: 0;
-    top: 100%;
-    bottom: auto;
-    height: 4.5rem;
-    left: -0.75rem;
-    right: -0.75rem;
-    background: linear-gradient(
-      180deg,
-      var(--bg) 0%,
-      color-mix(in srgb, var(--bg) 78%, transparent) 28%,
-      color-mix(in srgb, var(--bg) 42%, transparent) 54%,
-      color-mix(in srgb, var(--bg) 16%, transparent) 78%,
-      transparent 100%
-    );
-  }
 
   .phone-edge-haze {
     pointer-events: none;
